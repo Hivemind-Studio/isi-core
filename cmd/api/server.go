@@ -10,12 +10,17 @@ import (
 	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	servicerole "github.com/Hivemind-Studio/isi-core/internal/service/role"
 
+	handleAuth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
+	repoAuth "github.com/Hivemind-Studio/isi-core/internal/repository/auth"
+	serviceAuth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 type AppApi struct {
 	userHandle *handleuser.Handler
 	roleHandle *handlerole.Handler
+	authHandle *handleAuth.Handler
 }
 
 type Router interface {
@@ -26,6 +31,12 @@ func routerList(app *AppApi) []Router {
 	return []Router{
 		app.userHandle,
 		app.roleHandle,
+	}
+}
+
+func unProtectedRouter(app *AppApi) []Router {
+	return []Router{
+		app.authHandle,
 	}
 }
 
@@ -40,5 +51,9 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleService := servicerole.NewRoleService(roleRepo)
 	roleHandler := handlerole.NewRoleHandler(roleService)
 
-	return &AppApi{userHandle: userHandler, roleHandle: roleHandler}, nil
+	authRepo := repoAuth.NewAuthRepo(dbConn)
+	authService := serviceAuth.NewAuthService(authRepo)
+	authHandler := handleAuth.NewAuthHandler(authService)
+
+	return &AppApi{userHandle: userHandler, roleHandle: roleHandler, authHandle: authHandler}, nil
 }

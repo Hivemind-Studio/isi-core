@@ -1,15 +1,8 @@
 package user
 
-import "github.com/go-playground/validator"
-
 type LoginDTO struct {
-	Username string `json:"username"`
+	Email    string `json:"Email"`
 	Password string `json:"password"`
-}
-
-func ValidateLoginReq(loginReq LoginDTO) error {
-	validate := validator.New()
-	return validate.Struct(loginReq)
 }
 
 type RegisterDTO struct {
@@ -18,7 +11,7 @@ type RegisterDTO struct {
 	Email    string `json:"email" validate:"required"`
 }
 
-func ValidateRegisterReq(registerDto RegisterDTO) error {
-	validate := validator.New()
-	return validate.Struct(registerDto)
+type RegisterResponse struct {
+	Name  string `json:"Name"`
+	Email string `json:"email"`
 }

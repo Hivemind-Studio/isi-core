@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
+	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
@@ -23,7 +24,13 @@ func main() {
 
 	api, _ := initApp(config)
 
+	app.Group("/api/v1", middleware.AuthMiddleware())
+
 	for _, r := range routerList(api) {
+		r.RegisterRoutes(app)
+	}
+
+	for _, r := range unProtectedRouter(api) {
 		r.RegisterRoutes(app)
 	}
 

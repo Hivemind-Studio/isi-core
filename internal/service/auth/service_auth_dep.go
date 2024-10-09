@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
@@ -6,9 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type repoUserInterface interface {
+type repoAuthInterface interface {
 	dbtx.DBTXInterface
-	GetTest(ctx *fiber.Ctx, id int) (result string, err error)
-	Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error)
 	Login(ctx *fiber.Ctx, body *user.LoginDTO) (result string, err error)
 }

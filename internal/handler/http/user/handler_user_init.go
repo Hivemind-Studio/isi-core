@@ -17,6 +17,6 @@ func NewUserHandler(userService serviceUserInterface) *Handler {
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
-	v1.Post("/user", h.CreateUser)
-	v1.Get("/user/:id", h.GetStorageUnitDetail)
+	v1.Post("/users", h.CreateUser)
+	v1.Get("/users/:id", h.GetStorageUnitDetail)
 }

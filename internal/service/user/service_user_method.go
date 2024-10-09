@@ -9,6 +9,6 @@ func (s *Service) GetTest(ctx *fiber.Ctx, id int) (result string, err error) {
 	return s.repoUser.GetTest(ctx, id)
 }
 
-func (s *Service) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterDTO, err error) {
+func (s *Service) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error) {
 	return s.repoUser.Create(ctx, body)
 }
