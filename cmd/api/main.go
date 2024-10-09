@@ -30,10 +30,6 @@ func main() {
 		r.RegisterRoutes(app)
 	}
 
-	for _, r := range unProtectedRouter(api) {
-		r.RegisterRoutes(app)
-	}
-
 	log.Fatal(app.Listen(":3000"))
 }
 

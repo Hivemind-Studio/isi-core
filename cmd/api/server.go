@@ -31,11 +31,6 @@ func routerList(app *AppApi) []Router {
 	return []Router{
 		app.userHandle,
 		app.roleHandle,
-	}
-}
-
-func unProtectedRouter(app *AppApi) []Router {
-	return []Router{
 		app.authHandle,
 	}
 }
