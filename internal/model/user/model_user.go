@@ -1,6 +1,6 @@
 package user
 
-import "https://github.com/Hivemind-Studio/isi-core/internal/model/base"
+import "github.com/Hivemind-Studio/isi-core/internal/model/base"
 
 type User struct {
 	Name     string `json:"name" binding:"required"`
