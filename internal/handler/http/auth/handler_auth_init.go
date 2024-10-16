@@ -15,7 +15,7 @@ func NewAuthHandler(authService serviceAuthInterface) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
-	v1 := app.Group("/api/v1/auth")
+	v1 := app.Group("/api/auth")
 
 	v1.Post("/login", h.Login)
 }

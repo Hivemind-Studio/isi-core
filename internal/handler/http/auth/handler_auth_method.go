@@ -22,7 +22,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	}
 
 	// If login is successful, generate a cookie
-	utils.GenerateCookie(c, result) // `result` can be a token or user ID depending on the logic
+	utils.GenerateCookie(c, result, "Admin") // `result` can be a token or user ID depending on the logic
 
 	// Return a success response
 	return c.Status(fiber.StatusOK).
