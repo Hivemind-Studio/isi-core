@@ -18,9 +18,9 @@ import (
 )
 
 type AppApi struct {
+	authHandle *handleAuth.Handler
 	userHandle *handleuser.Handler
 	roleHandle *handlerole.Handler
-	authHandle *handleAuth.Handler
 }
 
 type Router interface {
@@ -29,9 +29,9 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
+		app.authHandle,
 		app.userHandle,
 		app.roleHandle,
-		app.authHandle,
 	}
 }
 
