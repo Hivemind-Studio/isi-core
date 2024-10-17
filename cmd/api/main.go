@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"github.com/Hivemind-Studio/isi-core/configs"
+	"github.com/Hivemind-Studio/isi-core/pkg/redis"
 	//"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
 	"github.com/gofiber/fiber/v2"
@@ -17,10 +19,26 @@ func main() {
 	app := fiber.New(fiber.Config{AppName: "Awesome Project"})
 	app.Use(cors.New())
 	app.Use(compress.New())
+	//app.Use(utils.LoggerMiddleware(utils.NewLogger()))
 	app.Use(logger.New())
 	app.Use(recover.New())
 
 	config := configs.Init()
+
+	err := redis.InitRedis("localhost:6379", "", 0)
+
+	if err != nil {
+		logger.New(logger.Config{
+			Format: "Failed to initialize Redis",
+		})
+	}
+
+	client := redis.GetRedisClient()
+
+	err = client.Set(context.Background(), "key", "value", 0).Err()
+	if err != nil {
+		log.Fatalf("Failed to set key: %v", err)
+	}
 
 	api, _ := initApp(config)
 
