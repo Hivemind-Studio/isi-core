@@ -18,9 +18,9 @@ import (
 )
 
 type AppApi struct {
-	userHandle *handleuser.Handler
-	roleHandle *handlerole.Handler
-	authHandle *handleAuth.Handler
+	userHandle *handleuser.UserHandler
+	roleHandle *handlerole.RoleHandler
+	authHandle *handleAuth.AuthHandler
 }
 
 type Router interface {
