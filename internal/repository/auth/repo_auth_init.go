@@ -5,12 +5,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type Repository struct {
+type AuthRepository struct {
 	dbtx.DBTX
 }
 
-func NewAuthRepo(db *sqlx.DB) *Repository {
-	r := &Repository{}
+func NewAuthRepo(db *sqlx.DB) *AuthRepository {
+	r := &AuthRepository{}
 
 	r.SetConnDB(db)
 

@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (h *Handler) GetStorageUnitDetail(c *fiber.Ctx) error {
+func (h *UserHandler) GetStorageUnitDetail(c *fiber.Ctx) error {
 	// Retrieve the "id" parameter from the request URL
 	id, _ := strconv.Atoi(c.Params("id"))
 
@@ -28,7 +28,7 @@ func (h *Handler) GetStorageUnitDetail(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) CreateUser(c *fiber.Ctx) error {
+func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	// Parse the incoming JSON request body into a newUser object
 	var newUser user.RegisterDTO
 	if err := c.BodyParser(&newUser); err != nil {

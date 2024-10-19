@@ -50,5 +50,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	authService := serviceAuth.NewAuthService(authRepo)
 	authHandler := handleAuth.NewAuthHandler(authService)
 
-	return &AppApi{userHandle: userHandler, roleHandle: roleHandler, authHandle: authHandler}, nil
+	return &AppApi{userHandle: userHandler,
+		roleHandle: roleHandler,
+		authHandle: authHandler}, nil
 }

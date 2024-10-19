@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h *Handler) Login(c *fiber.Ctx) error {
+func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	// Parse login credentials from request body
 	var loginDTO user.LoginDTO
 	if err := c.BodyParser(&loginDTO); err != nil {

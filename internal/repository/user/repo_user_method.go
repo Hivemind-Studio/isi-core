@@ -9,11 +9,11 @@ import (
 	"strconv"
 )
 
-func (r *Repository) GetTest(ctx *fiber.Ctx, id int) (result string, err error) {
+func (r *UserRepository) GetTest(ctx *fiber.Ctx, id int) (result string, err error) {
 	return "Test Get Repo" + strconv.FormatInt(int64(id), 10), nil
 }
 
-func (r *Repository) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error) {
+func (r *UserRepository) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error) {
 	// Start the transaction
 	err = r.StartTx()
 	if err != nil {
@@ -66,7 +66,7 @@ func (r *Repository) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *use
 	return result, nil
 }
 
-func (r *Repository) Login(ctx *fiber.Ctx, body *user.LoginDTO) (result string, err error) {
+func (r *UserRepository) Login(ctx *fiber.Ctx, body *user.LoginDTO) (result string, err error) {
 	// Start a new transaction
 	err = r.StartTx()
 	if err != nil {

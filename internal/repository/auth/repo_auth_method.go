@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (r *Repository) Login(ctx *fiber.Ctx, body *user.LoginDTO) (result string, err error) {
+func (r *AuthRepository) Login(ctx *fiber.Ctx, body *user.LoginDTO) (result string, err error) {
 	// Start a new transaction
 	err = r.StartTx()
 	if err != nil {

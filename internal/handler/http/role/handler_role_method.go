@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h *Handler) CreateRole(c *fiber.Ctx) error {
+func (h *RoleHandler) CreateRole(c *fiber.Ctx) error {
 	var dto struct {
 		Name string `json:"name"`
 	}

@@ -4,17 +4,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Handler struct {
+type UserHandler struct {
 	userService serviceUserInterface
 }
 
-func NewUserHandler(userService serviceUserInterface) *Handler {
-	return &Handler{
+func NewUserHandler(userService serviceUserInterface) *UserHandler {
+	return &UserHandler{
 		userService: userService,
 	}
 }
 
-func (h *Handler) RegisterRoutes(app *fiber.App) {
+func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
 	v1.Post("/users", h.CreateUser)
