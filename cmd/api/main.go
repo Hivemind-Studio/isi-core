@@ -16,7 +16,10 @@ import (
 )
 
 func main() {
-	app := fiber.New(fiber.Config{AppName: "Awesome Project"})
+	app := fiber.New(fiber.Config{
+		AppName:      "Awesome Project",
+		ErrorHandler: globalErrorHandler,
+	})
 	app.Use(cors.New())
 	app.Use(compress.New())
 	//app.Use(utils.LoggerMiddleware(utils.NewLogger()))
@@ -57,4 +60,20 @@ func dbInitConnection(cfg *configs.Config) *sqlx.DB {
 		dbConf.Username,
 		dbConf.Password,
 		dbConf.DatabaseName)
+}
+
+func globalErrorHandler(c *fiber.Ctx, err error) error {
+	code := fiber.StatusInternalServerError
+
+	if e, ok := err.(*fiber.Error); ok {
+		code = e.Code
+	}
+
+	log.Printf("Error: %v", err)
+
+	return c.Status(code).JSON(fiber.Map{
+		"status":  "error",
+		"message": err.Error() + " error jing",
+		"code":    code,
+	})
 }
