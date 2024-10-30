@@ -1,9 +1,11 @@
 package main
 
 import (
-	"context"
 	"github.com/Hivemind-Studio/isi-core/configs"
+	"github.com/Hivemind-Studio/isi-core/db"
 	"github.com/Hivemind-Studio/isi-core/pkg/redis"
+	"strings"
+
 	//"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
 	"github.com/gofiber/fiber/v2"
@@ -35,13 +37,13 @@ func main() {
 			Format: "Failed to initialize Redis",
 		})
 	}
-
-	client := redis.GetRedisClient()
-
-	err = client.Set(context.Background(), "key", "value", 0).Err()
-	if err != nil {
-		log.Fatalf("Failed to set key: %v", err)
-	}
+	//
+	//client := redis.GetRedisClient()
+	//
+	//err = client.Set(context.Background(), "key", "value", 0).Err()
+	//if err != nil {
+	//	log.Fatalf("Failed to set key: %v", err)
+	//}
 
 	api, _ := initApp(config)
 
@@ -54,12 +56,19 @@ func main() {
 
 func dbInitConnection(cfg *configs.Config) *sqlx.DB {
 	dbConf := cfg.Database
-	return mysqlconn.Init(
+	dbConn := mysqlconn.Init(
 		dbConf.Host,
 		dbConf.Port,
 		dbConf.Username,
 		dbConf.Password,
 		dbConf.DatabaseName)
+
+	enableMigration := strings.EqualFold(dbConf.EnableDbMigration, "true")
+	if enableMigration {
+		db.InitMigration(dbConn.DB)
+	}
+
+	return dbConn
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {

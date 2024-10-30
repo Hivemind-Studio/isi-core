@@ -11,7 +11,7 @@ import (
 func GenerateCookie(c *fiber.Ctx, userID string, role string) {
 	cookieName := os.Getenv("COOKIE_NAME")
 	if cookieName == "" {
-		cookieName = "default_cookie"
+		cookieName = "token"
 	}
 
 	// Create the cookie value by appending the role to the userID

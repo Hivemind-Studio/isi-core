@@ -8,12 +8,12 @@ import (
 
 type Config struct {
 	Database struct {
-		Host         string `envconfig:"MYSQL_HOST"`
-		Port         string `envconfig:"MYSQL_PORT"`
-		Username     string `envconfig:"MYSQL_USER"`
-		Password     string `envconfig:"MYSQL_PASSWORD"`
-		DatabaseName string `envconfig:"MYSQL_DB"`
-		JuanAnjing   string `envconfig:"JUAN_ANJING"`
+		Host              string `envconfig:"MYSQL_HOST"`
+		Port              string `envconfig:"MYSQL_PORT"`
+		Username          string `envconfig:"MYSQL_USER"`
+		Password          string `envconfig:"MYSQL_PASSWORD"`
+		DatabaseName      string `envconfig:"MYSQL_DB"`
+		EnableDbMigration string `envconfig:"ENABLE_DB_MIGRATION"`
 	}
 }
 
