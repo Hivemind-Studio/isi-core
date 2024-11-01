@@ -2,8 +2,8 @@ package user
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -20,9 +20,9 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
 	err = tx.QueryRow(checkEmailQuery, body.Email).Scan(&existingID)
 	if err == nil {
-		return result, fmt.Errorf("email already exists")
+		return result, httperror.Wrap(fiber.StatusBadRequest, err, "email already exists")
 	} else if err != sql.ErrNoRows {
-		return result, fmt.Errorf("failed to check for duplicate email: %w", err)
+		return result, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
 	}
 
 	hashedPassword, _ := utils.HashPassword(body.Password)
@@ -30,7 +30,7 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
 	insertQuery := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
 	_, err = tx.Exec(insertQuery, body.Name, body.Email, hashedPassword)
 	if err != nil {
-		return result, fmt.Errorf("failed to insert user: %w", err)
+		return result, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}
 
 	result = &user.RegisterResponse{
@@ -41,18 +41,45 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
 	return result, nil
 }
 
-func (r *Repository) FindByEmail(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.LoginDTO) (User, error) {
+func (r *Repository) FindByEmail(ctx *fiber.Ctx, tx *sqlx.Tx, email string,
+) (User, error) {
 	var result User
 
-	// Query only the fields that are needed
 	query := `SELECT users.* FROM users WHERE email = ?`
-	err := tx.QueryRowx(query, body.Email).StructScan(&result)
+	err := tx.QueryRowx(query, email).StructScan(&result)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return User{}, fmt.Errorf("user not found")
+			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
-		return User{}, fmt.Errorf("failed to retrieve user: %w", err)
+		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return result, nil
+}
+
+func (r *Repository) GetUsers(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string,
+) ([]User, error) {
+	var users []User
+	var query string
+	var args []interface{}
+
+	query = "SELECT * FROM users WHERE 1=1"
+
+	if name != "" {
+		query += " AND name LIKE ?"
+		args = append(args, "%"+name+"%")
+	}
+
+	if email != "" {
+		query += " AND email LIKE ?"
+		args = append(args, "%"+email+"%")
+	}
+
+	err := tx.Select(&users, query, args...)
+	if err != nil {
+		return nil, httperror.
+			Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+	}
+
+	return users, nil
 }

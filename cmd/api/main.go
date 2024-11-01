@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/redis"
 	"strings"
 
@@ -19,7 +20,7 @@ import (
 
 func main() {
 	app := fiber.New(fiber.Config{
-		AppName:      "Awesome Project",
+		AppName:      "Inspirasi Satu",
 		ErrorHandler: globalErrorHandler,
 	})
 	app.Use(cors.New())
@@ -74,15 +75,17 @@ func dbInitConnection(cfg *configs.Config) *sqlx.DB {
 func globalErrorHandler(c *fiber.Ctx, err error) error {
 	code := fiber.StatusInternalServerError
 
-	if e, ok := err.(*fiber.Error); ok {
-		code = e.Code
+	if customErr, ok := err.(*httperror.CustomError); ok {
+		code = customErr.Code
+	} else if fiberErr, ok := err.(*fiber.Error); ok {
+		code = fiberErr.Code
 	}
 
 	log.Printf("Error: %v", err)
 
 	return c.Status(code).JSON(fiber.Map{
 		"status":  "error",
-		"message": err.Error() + " error jing",
+		"message": err.Error(),
 		"code":    code,
 	})
 }

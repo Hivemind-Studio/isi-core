@@ -1,17 +1,25 @@
 -- +goose Up
 CREATE TABLE users (
-                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       username VARCHAR(50) UNIQUE NOT NULL,
-                       password VARCHAR(255) NOT NULL,
-                       name VARCHAR(100),
-                       email VARCHAR(100) UNIQUE NOT NULL,
-                       address TEXT,
-                       phone_number VARCHAR(15),
-                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                       created_by BIGINT,
-                       updated_by BIGINT
+   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+   username VARCHAR(50) NOT NULL,
+   password VARCHAR(255) NOT NULL,
+   name VARCHAR(100),
+   email VARCHAR(100) NOT NULL,
+   address VARCHAR(255),
+   phone_number VARCHAR(20),
+   date_of_birth DATE,
+   gender INT,
+   occupation VARCHAR(255),
+   verification BOOLEAN DEFAULT FALSE,  -- Keep this line
+   status BOOLEAN DEFAULT TRUE,          -- Changed field name to `status` (was `verification` again)
+   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_users_name ON users(name);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_name_email ON users(name, email);
+
 
 -- +goose Down
 DROP TABLE users;
