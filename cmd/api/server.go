@@ -11,7 +11,6 @@ import (
 	servicerole "github.com/Hivemind-Studio/isi-core/internal/service/role"
 
 	handleAuth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
-	repoAuth "github.com/Hivemind-Studio/isi-core/internal/repository/auth"
 	serviceAuth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
 
 	"github.com/gofiber/fiber/v2"
@@ -46,9 +45,11 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleService := servicerole.NewRoleService(roleRepo)
 	roleHandler := handlerole.NewRoleHandler(roleService)
 
-	authRepo := repoAuth.NewAuthRepo(dbConn)
-	authService := serviceAuth.NewAuthService(authRepo)
+	authService := serviceAuth.NewAuthService(userRepo)
 	authHandler := handleAuth.NewAuthHandler(authService)
 
-	return &AppApi{userHandle: userHandler, roleHandle: roleHandler, authHandle: authHandler}, nil
+	return &AppApi{userHandle: userHandler,
+			roleHandle: roleHandler,
+			authHandle: authHandler},
+		nil
 }
