@@ -1,43 +1,57 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-// User represents the structure of the user information in the cookie
-type User struct {
-	Role   string `json:"role"`
+type UserClaims struct {
 	UserID string `json:"userID"`
+	Role   string `json:"role"`
+	jwt.RegisteredClaims
 }
 
-// RoleMiddleware Middleware to enforce role-based access
 func RoleMiddleware(allowedRoles ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Retrieve the role from the "ISI" cookie
-		cookieValue := c.Cookies("ISI")
+		cookieName := os.Getenv("COOKIE_NAME")
+		if cookieName == "" {
+			cookieName = "token"
+		}
+		tokenString := c.Cookies(cookieName)
 
-		if cookieValue == "" {
+		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized",
 			})
 		}
 
-		var user User
-		// Deserialize the JSON string from the cookie
-		if err := json.Unmarshal([]byte(cookieValue), &user); err != nil {
-			fmt.Println("Error parsing cookie:", err)
+		token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		})
+
+		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized",
 			})
 		}
 
-		fmt.Println("User Role:", user.Role)
+		claims, ok := token.Claims.(*UserClaims)
+		if !ok || claims.ExpiresAt.Before(time.Now().UTC()) {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Unauthorized",
+			})
+		}
 
-		// Check if the user's role is in the allowed roles
 		for _, role := range allowedRoles {
-			if user.Role == role {
+			if claims.Role == role {
 				return c.Next()
 			}
 		}
