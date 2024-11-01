@@ -14,17 +14,14 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 			JSON(fiber.Map{"status": "error", "message": "Invalid input"})
 	}
 
-	// Call the login service to authenticate user
-	result, err := h.authService.Login(c, &loginDTO)
+	userEmail, err := h.authService.Login(c, &loginDTO)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).
-			JSON(fiber.Map{"status": "error", "message": "Login failed"})
+			JSON(fiber.Map{"status": "error", "message": "findByEmail failed"})
 	}
 
-	// If login is successful, generate a cookie
-	utils.GenerateCookie(c, result, "Admin") // `result` can be a token or user ID depending on the logic
+	utils.GenerateCookie(c, userEmail, "Admin")
 
-	// Return a success response
 	return c.Status(fiber.StatusOK).
-		JSON(fiber.Map{"status": "success", "message": "Login successful"})
+		JSON(fiber.Map{"status": "success", "message": "login successful"})
 }

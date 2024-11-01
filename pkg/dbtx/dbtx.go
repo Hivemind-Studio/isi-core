@@ -62,3 +62,9 @@ func (t *DBTX) RollbackTx() (err error) {
 	}
 	return nil
 }
+
+func HandleRollback(tx *sqlx.Tx) {
+	if tx != nil {
+		_ = tx.Rollback()
+	}
+}

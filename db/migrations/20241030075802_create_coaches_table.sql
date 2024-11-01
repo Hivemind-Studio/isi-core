@@ -4,6 +4,7 @@ CREATE TABLE coaches (
                          user_id BIGINT,
                          certifications TEXT,
                          experiences TEXT,
+                         education TEXT,
                          rate DECIMAL(10, 2),
                          phone_number VARCHAR(15),
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
