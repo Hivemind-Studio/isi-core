@@ -16,7 +16,6 @@ func (r *Repository) GetTest(ctx *fiber.Ctx, id int) (result string, err error) 
 
 func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
 ) (result *user.RegisterResponse, err error) {
-	// Check if the email already exists in the database
 	var existingID int
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
 	err = tx.QueryRow(checkEmailQuery, body.Email).Scan(&existingID)
@@ -26,7 +25,6 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
 		return result, fmt.Errorf("failed to check for duplicate email: %w", err)
 	}
 
-	// Hash the password with the salt
 	hashedPassword, _ := utils.HashPassword(body.Password)
 
 	insertQuery := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
