@@ -15,10 +15,10 @@ CREATE TABLE users (
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
-
-CREATE INDEX idx_users_name ON users(name);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_name_email ON users(name, email);
+--
+-- CREATE INDEX idx_users_name ON users(name);
+-- CREATE INDEX idx_users_email ON users(email);
+-- CREATE INDEX idx_users_name_email ON users(name, email);
 
 
 -- +goose Down
