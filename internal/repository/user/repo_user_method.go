@@ -29,8 +29,8 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email stri
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertQuery := `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`
-	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId)
+	insertQuery := `INSERT INTO users (name, email, password, role_id, status, verification) VALUES (?, ?, ?, ?, ?, ?)`
+	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId, 1, 0)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}
