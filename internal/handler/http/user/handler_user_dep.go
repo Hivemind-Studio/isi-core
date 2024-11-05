@@ -6,6 +6,5 @@ import (
 )
 
 type serviceUserInterface interface {
-	GetTest(ctx *fiber.Ctx, id int) (result string, err error)
-	Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error)
+	Create(ctx *fiber.Ctx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error)
 }
