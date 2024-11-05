@@ -10,33 +10,28 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error) {
+func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO, roleId int) (result *user.RegisterResponse, err error) {
 	var existingID int
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
 	err = tx.QueryRow(checkEmailQuery, body.Email).Scan(&existingID)
 
 	if err == nil {
-		// Email already exists
 		return nil, httperror.New(fiber.StatusBadRequest, "email already exists")
 	} else if !errors.Is(err, sql.ErrNoRows) {
-		// Unexpected error during the duplicate check
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
 	}
 
-	// Hash the password and handle errors if any
 	hashedPassword, hashErr := utils.HashPassword(body.Password)
 	if hashErr != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	// Insert the new user
-	insertQuery := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
-	_, err = tx.Exec(insertQuery, body.Name, body.Email, hashedPassword)
+	insertQuery := `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`
+	_, err = tx.Exec(insertQuery, body.Name, body.Email, hashedPassword, roleId)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}
 
-	// Return the response with user details
 	result = &user.RegisterResponse{
 		Name:  body.Name,
 		Email: body.Email,

@@ -9,5 +9,7 @@ import (
 
 type repoUserInterface interface {
 	dbtx.DBTXInterface
-	Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error)
+
+	Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO, role int,
+	) (result *user.RegisterResponse, err error)
 }

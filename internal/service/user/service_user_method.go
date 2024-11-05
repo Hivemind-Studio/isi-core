@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/internal/enum"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
@@ -21,7 +22,7 @@ func (s *Service) Create(ctx *fiber.Ctx, body *user.RegistrationDTO) (result *us
 		return result, httperror.New(fiber.StatusInternalServerError, "error when get transaction")
 	}
 
-	result, err = s.repoUser.Create(ctx, tx, body)
+	result, err = s.repoUser.Create(ctx, tx, body, enum.CoacheeRoleId)
 	if err != nil {
 		dbtx.HandleRollback(tx)
 		return result, err
