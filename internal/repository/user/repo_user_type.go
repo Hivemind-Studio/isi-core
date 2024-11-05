@@ -21,3 +21,19 @@ type User struct {
 	CreatedAt    time.Time    `db:"created_at"`
 	UpdatedAt    time.Time    `db:"updated_at"`
 }
+
+type Login struct {
+	ID       int64  `db:"id"`
+	Password string `db:"password"`
+	Email    string `db:"email" json:"email" validate:"required,email"`
+	Name     string `db:"name" json:"name"`
+	RoleName string `db:"role_name"`
+	RoleId   int64  `db:"role_id"`
+	Photo    string `db:"photo" json:"photo"`
+}
+
+type LoginResponse struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Photo string `json:"photo"`
+}
