@@ -10,6 +10,7 @@ CREATE TABLE users (
    gender INT,
    occupation VARCHAR(255),
    role_id BIGINT,
+   photo VARCHAR(200),
    verification BOOLEAN DEFAULT FALSE,  -- Keep this line
    status BOOLEAN DEFAULT TRUE,          -- Changed field name to `status` (was `verification` again)
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
