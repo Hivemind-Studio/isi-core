@@ -8,11 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *Service) GetTest(ctx *fiber.Ctx, id int) (result string, err error) {
-	return s.repoUser.GetTest(ctx, id)
-}
-
-func (s *Service) Create(ctx *fiber.Ctx, body *user.RegisterDTO) (result *user.RegisterResponse, err error) {
+func (s *Service) Create(ctx *fiber.Ctx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error) {
 	err = s.repoUser.StartTx()
 	if err != nil {
 		return result, httperror.New(fiber.StatusInternalServerError, "error when start transaction")

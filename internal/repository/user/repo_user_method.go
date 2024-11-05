@@ -2,37 +2,41 @@ package user
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	"strconv"
 )
 
-func (r *Repository) GetTest(ctx *fiber.Ctx, id int) (result string, err error) {
-	return "Test Get Repo" + strconv.FormatInt(int64(id), 10), nil
-}
-
-func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegisterDTO,
-) (result *user.RegisterResponse, err error) {
+func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error) {
 	var existingID int
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
 	err = tx.QueryRow(checkEmailQuery, body.Email).Scan(&existingID)
+
 	if err == nil {
-		return result, httperror.Wrap(fiber.StatusBadRequest, err, "email already exists")
-	} else if err != sql.ErrNoRows {
-		return result, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
+		// Email already exists
+		return nil, httperror.New(fiber.StatusBadRequest, "email already exists")
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		// Unexpected error during the duplicate check
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
 	}
 
-	hashedPassword, _ := utils.HashPassword(body.Password)
+	// Hash the password and handle errors if any
+	hashedPassword, hashErr := utils.HashPassword(body.Password)
+	if hashErr != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+	}
 
+	// Insert the new user
 	insertQuery := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
 	_, err = tx.Exec(insertQuery, body.Name, body.Email, hashedPassword)
 	if err != nil {
-		return result, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}
 
+	// Return the response with user details
 	result = &user.RegisterResponse{
 		Name:  body.Name,
 		Email: body.Email,
@@ -48,7 +52,7 @@ func (r *Repository) FindByEmail(ctx *fiber.Ctx, tx *sqlx.Tx, email string,
 	query := `SELECT users.* FROM users WHERE email = ?`
 	err := tx.QueryRowx(query, email).StructScan(&result)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
 		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
