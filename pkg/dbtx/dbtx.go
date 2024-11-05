@@ -6,11 +6,12 @@ import (
 )
 
 type DBTXInterface interface {
-	StartTx() (err error)
+	StartTx() (tx *sqlx.Tx, err error)
 	CommitTx() (err error)
 	RollbackTx() (err error)
 	GetTx() (*sqlx.Tx, error)
 	SetConnDB(db *sqlx.DB)
+	GetConnDb() *sqlx.DB
 }
 
 type DBTX struct {
@@ -22,6 +23,13 @@ func (t *DBTX) SetConnDB(db *sqlx.DB) {
 	t.conndb = db
 }
 
+func (t *DBTX) GetConnDb() *sqlx.DB {
+	if t.conndb != nil {
+		return t.conndb
+	}
+	return nil
+}
+
 func (t *DBTX) GetTx() (*sqlx.Tx, error) {
 	if t.tx != nil {
 		return t.tx, nil
@@ -29,13 +37,13 @@ func (t *DBTX) GetTx() (*sqlx.Tx, error) {
 	return nil, errors.New("Transaction not started")
 }
 
-func (t *DBTX) StartTx() (err error) {
-	tx, err := t.conndb.Beginx()
+func (t *DBTX) StartTx() (tx *sqlx.Tx, err error) {
+	tx, err = t.conndb.Beginx()
 	if err != nil {
-		return err
+		return tx, err
 	}
 	t.tx = tx
-	return nil
+	return tx, nil
 }
 
 func (t *DBTX) SetTx(tx *sqlx.Tx) (err error) {

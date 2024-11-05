@@ -18,4 +18,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
 	v1.Post("/users", h.Create)
+	v1.Get("/users", h.GetUsers)
 }

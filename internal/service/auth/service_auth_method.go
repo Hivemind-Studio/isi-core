@@ -1,28 +1,14 @@
 package auth
 
 import (
-	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
-	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 )
 
 func (s *Service) Login(ctx *fiber.Ctx, body *user.LoginDTO) (userId string, err error) {
-	err = s.repoAuth.StartTx()
-	if err != nil {
-		return userId, fmt.Errorf("failed to start transaction: %w", err)
-	}
-
-	tx, err := s.repoAuth.GetTx()
-	defer dbtx.HandleRollback(tx)
-	if err != nil {
-		dbtx.HandleRollback(tx)
-		return "", fmt.Errorf("failed to get transaction: %w", err)
-	}
-
-	savedUser, err := s.repoAuth.FindByEmail(ctx, tx, body.Email)
+	savedUser, err := s.repoAuth.FindByEmail(ctx, body.Email)
 	if err != nil {
 		return "", err
 	}
@@ -31,8 +17,6 @@ func (s *Service) Login(ctx *fiber.Ctx, body *user.LoginDTO) (userId string, err
 	if !isValidPassword {
 		return "", httperror.New(fiber.StatusBadRequest, "invalid password")
 	}
-
-	err = tx.Commit()
 	if err != nil {
 		return "", err
 	}

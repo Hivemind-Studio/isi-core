@@ -3,54 +3,47 @@ package user
 import (
 	"database/sql"
 	"errors"
-	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
-func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.RegistrationDTO) (result *user.RegisterResponse, err error) {
+func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64,
+) (err error) {
 	var existingID int
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
-	err = tx.QueryRow(checkEmailQuery, body.Email).Scan(&existingID)
+	err = tx.QueryRow(checkEmailQuery, email).Scan(&existingID)
 
 	if err == nil {
 		// Email already exists
-		return nil, httperror.New(fiber.StatusBadRequest, "email already exists")
+		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		// Unexpected error during the duplicate check
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
 	}
 
-	// Hash the password and handle errors if any
-	hashedPassword, hashErr := hash.HashPassword(body.Password)
+	hashedPassword, hashErr := hash.HashPassword(password)
 	if hashErr != nil {
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	// Insert the new user
-	insertQuery := `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`
-	_, err = tx.Exec(insertQuery, body.Name, body.Email, hashedPassword)
+	insertQuery := `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`
+	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId)
 	if err != nil {
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}
 
-	// Return the response with user details
-	result = &user.RegisterResponse{
-		Name:  body.Name,
-		Email: body.Email,
-	}
-
-	return result, nil
+	return nil
 }
 
-func (r *Repository) FindByEmail(ctx *fiber.Ctx, tx *sqlx.Tx, email string,
+func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string,
 ) (User, error) {
 	var result User
 
 	query := `SELECT users.* FROM users WHERE email = ?`
-	err := tx.QueryRowx(query, email).StructScan(&result)
+	err := r.GetConnDb().QueryRowx(query, email).StructScan(&result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
@@ -61,28 +54,36 @@ func (r *Repository) FindByEmail(ctx *fiber.Ctx, tx *sqlx.Tx, email string,
 	return result, nil
 }
 
-func (r *Repository) GetUsers(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string,
+func (r *Repository) GetUsers(ctx *fiber.Ctx, name string, email string,
+	startDate, endDate *time.Time, page int64, perPage int64,
 ) ([]User, error) {
 	var users []User
-	var query string
+	query := "SELECT * FROM users WHERE 1=1"
 	var args []interface{}
-
-	query = "SELECT * FROM users WHERE 1=1"
 
 	if name != "" {
 		query += " AND name LIKE ?"
 		args = append(args, "%"+name+"%")
 	}
-
 	if email != "" {
 		query += " AND email LIKE ?"
 		args = append(args, "%"+email+"%")
 	}
+	if startDate != nil {
+		query += " AND created_at >= ?"
+		args = append(args, *startDate)
+	}
+	if endDate != nil {
+		query += " AND created_at <= ?"
+		args = append(args, *endDate)
+	}
 
-	err := tx.Select(&users, query, args...)
+	query += " LIMIT ? OFFSET ?"
+	args = append(args, perPage, (page-1)*perPage)
+
+	err := r.GetConnDb().Select(&users, query, args...)
 	if err != nil {
-		return nil, httperror.
-			Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
 	}
 
 	return users, nil
