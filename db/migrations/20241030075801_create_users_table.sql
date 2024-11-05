@@ -9,10 +9,12 @@ CREATE TABLE users (
    date_of_birth DATE,
    gender INT,
    occupation VARCHAR(255),
+   role_id BIGINT,
    verification BOOLEAN DEFAULT FALSE,  -- Keep this line
    status BOOLEAN DEFAULT TRUE,          -- Changed field name to `status` (was `verification` again)
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 --
 -- CREATE INDEX idx_users_name ON users(name);

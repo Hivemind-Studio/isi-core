@@ -19,7 +19,7 @@ func InitMigration(db *sql.DB) {
 
 	err := goose.Up(db, "db/migrations", goose.WithAllowMissing())
 	if err != nil {
-		defer db.Close()
+		db.Close()
 		panic(err)
 	}
 
