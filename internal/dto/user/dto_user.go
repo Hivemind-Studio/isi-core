@@ -25,6 +25,12 @@ type RegisterResponse struct {
 	Email string `json:"email"`
 }
 
+type LoginResponse struct {
+	Name  string `json:"Name"`
+	Email string `json:"email"`
+	Photo string `json:"photo"`
+}
+
 func (p *RegistrationDTO) ValidatePassword() error {
 	if p.Password != p.ConfirmPassword {
 		return httperror.New(fiber.StatusBadRequest, "password and confirm password do not match")

@@ -38,17 +38,33 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email stri
 	return nil
 }
 
-func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string,
-) (User, error) {
-	var result User
+func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string) (Cookie, error) {
+	var result Cookie
 
-	query := `SELECT users.* FROM users WHERE email = ?`
+	query := `
+		SELECT 
+			users.id, 
+			users.name, 
+			users.email, 
+			users.password, 
+			users.role_id, 
+			roles.name AS role_name 
+		FROM 
+			users 
+		LEFT JOIN 
+			roles 
+		ON 
+			users.role_id = roles.id 
+		WHERE 
+			users.email = ?
+	`
+
 	err := r.GetConnDb().QueryRowx(query, email).StructScan(&result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
+			return Cookie{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
-		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+		return Cookie{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return result, nil

@@ -17,7 +17,18 @@ type User struct {
 	Gender       *enum.Gender `db:"gender"`
 	Verification *bool        `db:"verification"`
 	Occupation   *string      `db:"occupation"`
+	Photo        *string      `db:"photo"`
 	Status       *bool        `db:"status"`
 	CreatedAt    time.Time    `db:"created_at"`
 	UpdatedAt    time.Time    `db:"updated_at"`
+}
+
+type Cookie struct {
+	ID       int64   `db:"id"`
+	Password string  `db:"password"`
+	Name     string  `db:"name"`
+	RoleId   *int64  `db:"role_id"`
+	RoleName *string `db:"role_name"`
+	Email    *string `db:"email"`
+	Photo    *string `db:"photo"`
 }

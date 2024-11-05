@@ -9,5 +9,5 @@ import (
 type repoAuthInterface interface {
 	dbtx.DBTXInterface
 
-	FindByEmail(ctx *fiber.Ctx, email string) (user.User, error)
+	FindByEmail(ctx *fiber.Ctx, email string) (user.Cookie, error)
 }

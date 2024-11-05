@@ -1,13 +1,14 @@
 package cookie
 
 import (
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"os"
 	"time"
 )
 
-func GenerateCookie(c *fiber.Ctx, userID string, role string) {
+func GenerateCookie(c *fiber.Ctx, user user.Cookie) {
 	cookieName := os.Getenv("auth")
 	if cookieName == "" {
 		cookieName = "token"
@@ -21,9 +22,10 @@ func GenerateCookie(c *fiber.Ctx, userID string, role string) {
 	expirationTime := time.Now().Add(24 * time.Hour).Unix()
 
 	claims := jwt.MapClaims{
-		"userID": userID,
-		"role":   role,
-		"exp":    expirationTime,
+		"name":  user.Name,
+		"email": user.Email,
+		"role":  user.RoleName,
+		"exp":   expirationTime,
 	}
 
 	// Generate the token

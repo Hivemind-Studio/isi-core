@@ -5,6 +5,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/cookie"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,16 +15,23 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	userEmail, err := h.authService.Login(c, &loginDTO)
+	result, err := h.authService.Login(c, &loginDTO)
 	if err != nil {
 		return err
 	}
 
-	cookie.GenerateCookie(c, userEmail, "Admin")
+	cookie.GenerateCookie(c, result)
+
+	res := user.LoginResponse{
+		Name:  result.Name,
+		Email: *result.Email,
+		Photo: utils.SafeDereferenceString(result.Photo),
+	}
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
 			Message: "login successful",
+			Data:    res,
 		})
 }

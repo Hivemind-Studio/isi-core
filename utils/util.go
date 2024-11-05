@@ -11,3 +11,11 @@ func ParseBody(c *fiber.Ctx, dto interface{}) error {
 	}
 	return nil
 }
+
+// Helper function to safely dereference *string pointers
+func SafeDereferenceString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
