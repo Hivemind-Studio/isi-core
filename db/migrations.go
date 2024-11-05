@@ -7,18 +7,19 @@ import (
 )
 
 func InitMigration(db *sql.DB) {
-	defer db.Close()
-
 	if err := db.Ping(); err != nil {
+		db.Close()
 		panic(err)
 	}
 
 	if err := goose.SetDialect("mysql"); err != nil {
+		defer db.Close()
 		panic(err)
 	}
 
 	err := goose.Up(db, "db/migrations", goose.WithAllowMissing())
 	if err != nil {
+		defer db.Close()
 		panic(err)
 	}
 
