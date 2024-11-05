@@ -1,4 +1,4 @@
-package utils
+package cookie
 
 import (
 	"github.com/gofiber/fiber/v2"

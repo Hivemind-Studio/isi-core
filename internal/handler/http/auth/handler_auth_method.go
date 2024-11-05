@@ -2,9 +2,9 @@ package user
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/pkg/cookie"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
-	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,7 +19,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	utils.GenerateCookie(c, userEmail, "Admin")
+	cookie.GenerateCookie(c, userEmail, "Admin")
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{

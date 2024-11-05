@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
+	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -27,7 +27,7 @@ func (s *Service) Login(ctx *fiber.Ctx, body *user.LoginDTO) (userId string, err
 		return "", err
 	}
 
-	isValidPassword, _ := utils.ComparePassword(savedUser.Password, body.Password)
+	isValidPassword, _ := hash.ComparePassword(savedUser.Password, body.Password)
 	if !isValidPassword {
 		return "", httperror.New(fiber.StatusBadRequest, "invalid password")
 	}

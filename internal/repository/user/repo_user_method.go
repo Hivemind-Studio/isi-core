@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -24,7 +24,7 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, body *user.Registration
 	}
 
 	// Hash the password and handle errors if any
-	hashedPassword, hashErr := utils.HashPassword(body.Password)
+	hashedPassword, hashErr := hash.HashPassword(body.Password)
 	if hashErr != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
