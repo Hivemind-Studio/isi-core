@@ -1,14 +1,15 @@
 package s3
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"os"
 )
 
-func S3Client() (*s3.S3, error) {
+func s3Client() (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(os.Getenv("DO_SPACE_REGION")),
 		Credentials: credentials.NewStaticCredentials(os.Getenv("DO_SPACE_ACCESS_KEY"), os.Getenv("DO_SPACE_SECRET_KEY"), ""),
@@ -18,5 +19,35 @@ func S3Client() (*s3.S3, error) {
 		return nil, err
 	}
 
-	return s3.New(sess), nil
+	return sess, nil
+}
+
+func UploadFile(filePath string, fileName string, username string) (string, error) {
+	s, err := s3Client()
+	if err != nil {
+		return "", fmt.Errorf("failed to create S3 client: %v", err)
+	}
+
+	uploader := s3manager.NewUploader(s)
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file %s: %v", filePath, err)
+	}
+	defer file.Close()
+
+	fileName = username + "/" + fileName
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(os.Getenv("DO_SPACE_BUCKET")),
+		Key:    aws.String(fileName),
+		Body:   file,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload file: %v", err)
+	}
+
+	cdnURL := fmt.Sprintf("https://%s.%s/%s", os.Getenv("DO_SPACE_BUCKET"), os.Getenv("DO_SPACE_ENDPOINT"), fileName)
+
+	return cdnURL, nil
 }
