@@ -57,5 +57,24 @@ func (s *Service) GetUserByID(ctx *fiber.Ctx, id int64) (*user.UserDTO, error) {
 	userDto := user.ConvertUserToDTO(res)
 
 	return &userDto, nil
+}
 
+func (s *Service) SuspendUsers(ctx *fiber.Ctx, ids []int64) error {
+	tx, err := s.repoUser.StartTx()
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "error when start transaction")
+	}
+	defer dbtx.HandleRollback(tx)
+
+	err = s.repoUser.SuspendUsers(ctx, tx, ids)
+	if err != nil {
+		dbtx.HandleRollback(tx)
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

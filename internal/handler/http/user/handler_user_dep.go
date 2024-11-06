@@ -12,5 +12,5 @@ type serviceUserInterface interface {
 	GetUsers(ctx *fiber.Ctx, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
 	GetUserByID(ctx *fiber.Ctx, id int64) (result *user.UserDTO, err error)
-	//Update(ctx *fiber.Ctx)
+	SuspendUsers(ctx *fiber.Ctx, ids []int64) (err error)
 }

@@ -3,10 +3,13 @@ package user
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"strings"
 	"time"
 )
 
@@ -136,4 +139,24 @@ func (r *Repository) GetUserByID(ctx *fiber.Ctx, id int64) (User, error) {
 	}
 
 	return result, nil
+}
+
+func (r *Repository) SuspendUsers(ctx *fiber.Ctx, tx *sqlx.Tx, ids []int64) error {
+	if len(ids) == 0 {
+		return httperror.New(fiber.StatusBadRequest, "no user IDs provided")
+	}
+
+	placeholders := make([]string, len(ids))
+	for i := range ids {
+		placeholders[i] = "?"
+	}
+
+	query := fmt.Sprintf("UPDATE users SET status = 1 WHERE id IN (%s)", strings.Join(placeholders, ","))
+
+	_, err := tx.Exec(query, utils.ToInterfaceSlice(ids)...)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to suspend users")
+	}
+
+	return nil
 }

@@ -20,4 +20,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
 	v1.Get("/users/:id", h.GetUserByID)
+	v1.Patch("/users/suspend", h.SuspendUsers)
 }

@@ -19,5 +19,5 @@ type repoUserInterface interface {
 	) ([]user.User, error)
 
 	GetUserByID(ctx *fiber.Ctx, id int64) (user.User, error)
-	//Update(ctx *fiber.Ctx, tx *sqlx.Tx, user user.Update, id string) (user.User, error)
+	SuspendUsers(ctx *fiber.Ctx, tx *sqlx.Tx, ids []int64) error
 }

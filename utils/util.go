@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// ParseBody is a generic function to parse request body into the provided struct reference
 func ParseBody(c *fiber.Ctx, dto interface{}) error {
 	if err := c.BodyParser(dto); err != nil {
 		return err
@@ -12,10 +11,17 @@ func ParseBody(c *fiber.Ctx, dto interface{}) error {
 	return nil
 }
 
-// Helper function to safely dereference *string pointers
 func SafeDereferenceString(s *string) string {
 	if s == nil {
 		return ""
 	}
 	return *s
+}
+
+func ToInterfaceSlice(intSlice []int64) []interface{} {
+	result := make([]interface{}, len(intSlice))
+	for i, v := range intSlice {
+		result[i] = v
+	}
+	return result
 }

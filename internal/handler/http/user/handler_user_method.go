@@ -114,3 +114,25 @@ func (h *Handler) GetUserByID(c *fiber.Ctx) error {
 		Data:    user,
 	})
 }
+
+func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
+	var input struct {
+		IDs []int64 `json:"ids"` // Field name should match the JSON structure
+	}
+
+	if err := c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	err := h.userService.SuspendUsers(c, input.IDs)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Suspend users successfully",
+		})
+}
