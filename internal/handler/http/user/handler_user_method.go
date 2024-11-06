@@ -1,7 +1,8 @@
 package user
 
 import (
-	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
@@ -11,7 +12,7 @@ import (
 )
 
 func (h *Handler) Create(c *fiber.Ctx) error {
-	var newUser user.RegistrationDTO
+	var newUser auth.RegistrationDTO
 	if err := c.BodyParser(&newUser); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
 	}
@@ -88,5 +89,28 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		Status:  fiber.StatusOK,
 		Message: "Users retrieved successfully",
 		Data:    users,
+	})
+}
+
+func (h *Handler) GetUserByID(c *fiber.Ctx) error {
+	param := c.Params("id")
+
+	id, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+	}
+
+	user, err := h.userService.GetUserByID(c, id)
+
+	fmt.Println(user)
+	if err != nil {
+		return err
+	}
+
+	// Return the user details in the response
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Users retrieved successfully",
+		Data:    user,
 	})
 }

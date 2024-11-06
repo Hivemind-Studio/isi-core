@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/cookie"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
-	var loginDTO user.LoginDTO
+	var loginDTO auth.LoginDTO
 	if err := c.BodyParser(&loginDTO); err != nil {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
@@ -22,7 +22,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 
 	cookie.GenerateCookie(c, result)
 
-	res := user.LoginResponse{
+	res := auth.LoginResponse{
 		Name:  result.Name,
 		Email: *result.Email,
 		Photo: utils.SafeDereferenceString(result.Photo),

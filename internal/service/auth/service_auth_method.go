@@ -1,14 +1,14 @@
 package auth
 
 import (
-	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	userRepo "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *Service) Login(ctx *fiber.Ctx, body *user.LoginDTO) (user userRepo.Cookie, err error) {
+func (s *Service) Login(ctx *fiber.Ctx, body *auth.LoginDTO) (user userRepo.Cookie, err error) {
 	savedUser, err := s.repoAuth.FindByEmail(ctx, body.Email)
 	if err != nil {
 		return userRepo.Cookie{}, err
