@@ -38,7 +38,7 @@ go.work
 !go.mod
 !README.md
 !LICENSE
-.env
+!.env-example
 # !Makefile
 
 # ...even if they are in subdirectories
