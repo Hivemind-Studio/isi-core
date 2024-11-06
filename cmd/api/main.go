@@ -17,6 +17,11 @@ import (
 	"log"
 )
 
+type EmailData struct {
+	Name    string
+	Message string
+}
+
 func main() {
 	app := fiber.New(fiber.Config{
 		AppName:      "Inspirasi Satu",
