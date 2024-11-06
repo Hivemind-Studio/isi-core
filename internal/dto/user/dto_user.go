@@ -3,8 +3,6 @@ package user
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/enum"
 	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
-	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/gofiber/fiber/v2"
 	"time"
 )
 
@@ -30,13 +28,6 @@ type LoginResponse struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Photo string `json:"photo"`
-}
-
-func (p *RegistrationDTO) ValidatePassword() error {
-	if p.Password != p.ConfirmPassword {
-		return httperror.New(fiber.StatusBadRequest, "password and confirm password do not match")
-	}
-	return nil
 }
 
 type UserDTO struct {

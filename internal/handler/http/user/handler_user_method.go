@@ -4,6 +4,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
+	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 	"time"
@@ -15,7 +16,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := newUser.ValidatePassword()
+	err := validator.ValidatePassword(&newUser)
 
 	if err != nil {
 		return err
