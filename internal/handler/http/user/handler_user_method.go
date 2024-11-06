@@ -117,7 +117,7 @@ func (h *Handler) GetUserByID(c *fiber.Ctx) error {
 
 func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
 	var input struct {
-		IDs []int64 `json:"ids"` // Field name should match the JSON structure
+		IDs []int64 `json:"ids"`
 	}
 
 	if err := c.BodyParser(&input); err != nil {
