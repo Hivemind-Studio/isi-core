@@ -11,7 +11,7 @@ import (
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64,
+	Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64, phoneNumber string,
 	) (err error)
 
 	GetUsers(ctx *fiber.Ctx, name string, email string, startDate, endDate *time.Time,

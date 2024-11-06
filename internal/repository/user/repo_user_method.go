@@ -10,8 +10,7 @@ import (
 	"time"
 )
 
-func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64,
-) (err error) {
+func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64, phoneNumber string) (err error) {
 	var existingID int
 	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
 	err = tx.QueryRow(checkEmailQuery, email).Scan(&existingID)
@@ -29,8 +28,8 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email stri
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertQuery := `INSERT INTO users (name, email, password, role_id, status, verification) VALUES (?, ?, ?, ?, ?, ?)`
-	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId, 1, 0)
+	insertQuery := `INSERT INTO users (name, email, password, role_id, phone_number,  status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId, phoneNumber, 1, 0)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
 	}

@@ -17,7 +17,7 @@ func (s *Service) Create(ctx *fiber.Ctx, body *user.RegistrationDTO) (result *us
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId)
+	err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId, body.PhoneNumber)
 	if err != nil {
 		dbtx.HandleRollback(tx)
 		return nil, err
