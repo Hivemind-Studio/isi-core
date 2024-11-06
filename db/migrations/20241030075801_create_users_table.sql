@@ -3,16 +3,16 @@ CREATE TABLE users (
    id BIGINT AUTO_INCREMENT PRIMARY KEY,
    password VARCHAR(255) NOT NULL,
    name VARCHAR(100),
-   email VARCHAR(100) NOT NULL,
+   email VARCHAR(100) NOT NULL UNIQUE,
    address VARCHAR(255),
-   phone_number VARCHAR(20),
+   phone_number VARCHAR(20) UNIQUE,
    date_of_birth DATE,
    gender INT,
    occupation VARCHAR(255),
    role_id BIGINT,
    photo VARCHAR(200),
-   verification BOOLEAN DEFAULT FALSE,  -- Keep this line
-   status BOOLEAN DEFAULT TRUE,          -- Changed field name to `status` (was `verification` again)
+   verification BOOLEAN DEFAULT FALSE,
+   status BOOLEAN DEFAULT TRUE,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
    FOREIGN KEY (role_id) REFERENCES roles(id)
