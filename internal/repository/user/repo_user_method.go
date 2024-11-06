@@ -11,16 +11,8 @@ import (
 )
 
 func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email string, password string, roleId int64, phoneNumber string) (err error) {
-	var existingID int
-	checkEmailQuery := `SELECT id FROM users WHERE email = ?`
-	err = tx.QueryRow(checkEmailQuery, email).Scan(&existingID)
-
-	if err == nil {
-		// Email already exists
-		return httperror.New(fiber.StatusBadRequest, "email already exists")
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		// Unexpected error during the duplicate check
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
+	if err := r.checkExistingData(tx, email, phoneNumber); err != nil {
+		return err
 	}
 
 	hashedPassword, hashErr := hash.HashPassword(password)
@@ -28,10 +20,11 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email stri
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertQuery := `INSERT INTO users (name, email, password, role_id, phone_number,  status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	insertQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
 	_, err = tx.Exec(insertQuery, name, email, hashedPassword, roleId, phoneNumber, 1, 0)
+
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert")
+		return httperror.New(fiber.StatusConflict, "failed to insert")
 	}
 
 	return nil
@@ -102,4 +95,29 @@ func (r *Repository) GetUsers(ctx *fiber.Ctx, name string, email string,
 	}
 
 	return users, nil
+}
+
+func (r *Repository) checkForDuplicate(tx *sqlx.Tx, column, value string) error {
+	var exists string
+	query := `SELECT 1 FROM users WHERE ` + column + ` = ?`
+	err := tx.QueryRow(query, value).Scan(&exists)
+
+	if err == nil {
+		return httperror.New(fiber.StatusBadRequest, column+" already exists")
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
+	}
+	return nil
+}
+
+func (r *Repository) checkExistingData(tx *sqlx.Tx, email string, phoneNumber string) error {
+	if err := r.checkForDuplicate(tx, "email", email); err != nil {
+		return err
+	}
+
+	if err := r.checkForDuplicate(tx, "phone_number", phoneNumber); err != nil {
+		return err
+	}
+
+	return nil
 }
