@@ -23,6 +23,17 @@ type User struct {
 	UpdatedAt    time.Time    `db:"updated_at"`
 }
 
+type Update struct {
+	Name        string       `db:"name"`
+	Email       string       `db:"email"`
+	Address     string       `db:"address"`
+	PhoneNumber string       `db:"phone_number"`
+	DateOfBirth *time.Time   `db:"date_of_birth"`
+	Gender      *enum.Gender `db:"gender"`
+	Occupation  string       `db:"occupation"`
+	Photo       string       `db:"photo"`
+}
+
 type Cookie struct {
 	ID       int64   `db:"id"`
 	Password string  `db:"password"`

@@ -121,3 +121,19 @@ func (r *Repository) checkExistingData(tx *sqlx.Tx, email string, phoneNumber st
 
 	return nil
 }
+
+func (r *Repository) GetUserByID(ctx *fiber.Ctx, id int64) (User, error) {
+	var result User
+
+	query := "SELECT * FROM users WHERE id = ? LIMIT 1"
+
+	err := r.GetConnDb().QueryRowx(query, id).StructScan(&result)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
+		}
+		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return result, nil
+}
