@@ -52,6 +52,8 @@ func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string) (Cookie, error) {
 			users.role_id = roles.id 
 		WHERE 
 			users.email = ?
+		AND
+		    users.status = false;
 	`
 
 	err := r.GetConnDb().QueryRowx(query, email).StructScan(&result)
