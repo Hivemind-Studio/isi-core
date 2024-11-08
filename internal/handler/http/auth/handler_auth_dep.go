@@ -9,3 +9,7 @@ import (
 type serviceAuthInterface interface {
 	Login(ctx *fiber.Ctx, body *auth.LoginDTO) (result dto.UserDTO, err error)
 }
+
+type serviceUserInterface interface {
+	Create(ctx *fiber.Ctx, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+}

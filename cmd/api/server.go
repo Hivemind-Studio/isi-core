@@ -46,7 +46,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleHandler := handlerole.NewRoleHandler(roleService)
 
 	authService := serviceAuth.NewAuthService(userRepo)
-	authHandler := handleAuth.NewAuthHandler(authService)
+	authHandler := handleAuth.NewAuthHandler(authService, userService)
 
 	return &AppApi{userHandle: userHandler,
 			roleHandle: roleHandler,
