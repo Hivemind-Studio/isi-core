@@ -34,6 +34,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
+	app.Use(middleware.RequestIdMiddleware)
 
 	config := configs.Init()
 

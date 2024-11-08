@@ -4,6 +4,7 @@ import (
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
@@ -49,7 +50,13 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 
 func (h *Handler) Create(c *fiber.Ctx) error {
 	var newUser authdto.RegistrationDTO
+	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, "Auth Handler", "Create",
+		"", string(c.Body()))
+
 	if err := c.BodyParser(&newUser); err != nil {
+		logger.Print("error", requestId, "Auth Handler", "Create",
+			"Invalid input", string(c.Body()))
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
 	}
 
@@ -65,6 +72,8 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	result, err := h.userService.Create(c.Context(), &newUser)
 	if err != nil {
+		logger.Print("error", requestId, "Auth Handler", "Create",
+			err.Error(), newUser)
 		return err
 	}
 
