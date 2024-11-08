@@ -85,10 +85,9 @@ func JWTAuthMiddleware(accessControlRules map[string]AccessControlRule) fiber.Ha
 		}
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), user)
-
 		if err != nil || !validRole {
 			if err != nil {
-				return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+				return fiber.ErrUnauthorized
 			}
 		}
 
