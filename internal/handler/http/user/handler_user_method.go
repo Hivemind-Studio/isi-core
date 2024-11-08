@@ -92,10 +92,10 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	})
 }
 
-func (h *Handler) GetUserByID(c *fiber.Ctx) error {
-	param := c.Params("id")
+func (h *Handler) GetUserById(c *fiber.Ctx) error {
+	paramId := c.Params("id")
 
-	id, err := strconv.ParseInt(param, 10, 64)
+	id, err := strconv.ParseInt(paramId, 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
 	}
@@ -107,7 +107,6 @@ func (h *Handler) GetUserByID(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Return the user details in the response
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
 		Message: "Users retrieved successfully",

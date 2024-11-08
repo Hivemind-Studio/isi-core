@@ -1,10 +1,10 @@
 package auth
 
 type Service struct {
-	repoAuth repoAuthInterface
+	repoAuth repoUserInterface
 }
 
-func NewAuthService(repoAuth repoAuthInterface) *Service {
+func NewAuthService(repoAuth repoUserInterface) *Service {
 	return &Service{
 		repoAuth,
 	}

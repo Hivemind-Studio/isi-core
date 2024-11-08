@@ -33,8 +33,8 @@ func (r *Repository) Create(ctx *fiber.Ctx, tx *sqlx.Tx, name string, email stri
 	return nil
 }
 
-func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string) (Cookie, error) {
-	var result Cookie
+func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string) (User, error) {
+	var result User
 
 	query := `
 		SELECT 
@@ -52,16 +52,14 @@ func (r *Repository) FindByEmail(ctx *fiber.Ctx, email string) (Cookie, error) {
 			users.role_id = roles.id 
 		WHERE 
 			users.email = ?
-		AND
-		    users.status = false;
 	`
 
 	err := r.GetConnDb().QueryRowx(query, email).StructScan(&result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Cookie{}, httperror.New(fiber.StatusNotFound, "user not found")
+			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
-		return Cookie{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return result, nil

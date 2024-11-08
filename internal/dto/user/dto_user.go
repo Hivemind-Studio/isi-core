@@ -7,7 +7,6 @@ import (
 )
 
 type UserDTO struct {
-	ID          int64        `json:"id"`
 	Name        string       `json:"name,omitempty"`
 	Email       string       `json:"email"`
 	Address     *string      `json:"address,omitempty"`
@@ -16,14 +15,15 @@ type UserDTO struct {
 	Gender      *enum.Gender `json:"gender"`
 	Occupation  *string      `json:"occupation"`
 	Status      *bool        `json:"status"`
-	CreatedAt   time.Time    `json:"created_at"`
+	Role        *string      `json:"role"`
+	Photo       *string      `json:"photo"`
+	CreatedAt   *time.Time   `json:"created_at"`
 }
 
 func ConvertUsersToDTOs(users []user.User) []UserDTO {
 	dtos := make([]UserDTO, len(users))
 	for i, u := range users {
 		dtos[i] = UserDTO{
-			ID:          u.ID,
 			Name:        u.Name,
 			Email:       u.Email,
 			Address:     u.Address,
@@ -32,7 +32,6 @@ func ConvertUsersToDTOs(users []user.User) []UserDTO {
 			Gender:      u.Gender,
 			Occupation:  u.Occupation,
 			Status:      u.Status,
-			CreatedAt:   u.CreatedAt,
 		}
 	}
 	return dtos
@@ -40,7 +39,6 @@ func ConvertUsersToDTOs(users []user.User) []UserDTO {
 
 func ConvertUserToDTO(user user.User) UserDTO {
 	return UserDTO{
-		ID:          user.ID,
 		Name:        user.Name,
 		Email:       user.Email,
 		Address:     user.Address,
@@ -49,6 +47,5 @@ func ConvertUserToDTO(user user.User) UserDTO {
 		Gender:      user.Gender,
 		Occupation:  user.Occupation,
 		Status:      user.Status,
-		CreatedAt:   user.CreatedAt,
 	}
 }

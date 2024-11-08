@@ -1,16 +1,16 @@
 package user
 
 import (
-	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	"github.com/Hivemind-Studio/isi-core/pkg/cookie"
+	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
-	var loginDTO auth.LoginDTO
+	var loginDTO authdto.LoginDTO
 	if err := c.BodyParser(&loginDTO); err != nil {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
@@ -20,18 +20,27 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	cookie.GenerateCookie(c, result)
+	token, err := middleware.GenerateToken(
+		middleware.User{
+			Name:  result.Name,
+			Email: result.Email,
+			Role:  *result.Role,
+		})
 
-	res := auth.LoginResponse{
-		Name:  result.Name,
-		Email: *result.Email,
-		Photo: utils.SafeDereferenceString(result.Photo),
+	if err != nil {
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
 			Message: "login successful",
-			Data:    res,
+			Data: authdto.LoginResponse{
+				Name:  result.Name,
+				Email: result.Email,
+				Role:  *result.Role,
+				Photo: utils.SafeDereferenceString(result.Photo),
+				Token: token,
+			},
 		})
 }

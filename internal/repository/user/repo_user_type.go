@@ -8,6 +8,7 @@ import (
 type User struct {
 	ID           int64        `db:"id"`
 	RoleId       *int64       `db:"role_id"`
+	RoleName     *string      `db:"role_name"`
 	Password     string       `db:"password"`
 	Name         string       `db:"name"`
 	Email        string       `db:"email"`
@@ -32,14 +33,4 @@ type Update struct {
 	Gender      *enum.Gender `db:"gender"`
 	Occupation  string       `db:"occupation"`
 	Photo       string       `db:"photo"`
-}
-
-type Cookie struct {
-	ID       int64   `db:"id"`
-	Password string  `db:"password"`
-	Name     string  `db:"name"`
-	RoleId   *int64  `db:"role_id"`
-	RoleName *string `db:"role_name"`
-	Email    *string `db:"email"`
-	Photo    *string `db:"photo"`
 }

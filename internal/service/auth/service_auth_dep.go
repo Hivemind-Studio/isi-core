@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type repoAuthInterface interface {
+type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	FindByEmail(ctx *fiber.Ctx, email string) (user.Cookie, error)
+	FindByEmail(ctx *fiber.Ctx, email string) (user.User, error)
 }

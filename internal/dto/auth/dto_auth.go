@@ -21,5 +21,7 @@ type RegisterResponse struct {
 type LoginResponse struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 	Photo string `json:"photo"`
+	Token string `json:"token"`
 }

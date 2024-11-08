@@ -2,25 +2,30 @@ package auth
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	userRepo "github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *Service) Login(ctx *fiber.Ctx, body *auth.LoginDTO) (user userRepo.Cookie, err error) {
+func (s *Service) Login(ctx *fiber.Ctx, body *auth.LoginDTO) (user dto.UserDTO, err error) {
 	savedUser, err := s.repoAuth.FindByEmail(ctx, body.Email)
 	if err != nil {
-		return userRepo.Cookie{}, err
+		return dto.UserDTO{}, err
 	}
 
-	isValidPassword, _ := hash.ComparePassword(savedUser.Password, body.Password)
+	isValidPassword, _ := hash.ComparePassword(body.Password, savedUser.Password)
 	if !isValidPassword {
-		return userRepo.Cookie{}, httperror.New(fiber.StatusBadRequest, "invalid password")
+		return dto.UserDTO{}, httperror.New(fiber.StatusBadRequest, "invalid password")
 	}
 	if err != nil {
-		return userRepo.Cookie{}, err
+		return dto.UserDTO{}, err
 	}
 
-	return savedUser, nil
+	return dto.UserDTO{
+		Name:  savedUser.Name,
+		Role:  savedUser.RoleName,
+		Email: savedUser.Email,
+		Photo: savedUser.Photo,
+	}, nil
 }
