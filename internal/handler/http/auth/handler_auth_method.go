@@ -17,7 +17,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	result, err := h.authService.Login(c, &loginDTO)
+	result, err := h.authService.Login(c.Context(), &loginDTO)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	result, err := h.userService.Create(c, &newUser)
+	result, err := h.userService.Create(c.Context(), &newUser)
 	if err != nil {
 		return err
 	}

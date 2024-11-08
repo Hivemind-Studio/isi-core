@@ -1,12 +1,13 @@
 package dbtx
 
 import (
+	"context"
 	"errors"
 	"github.com/jmoiron/sqlx"
 )
 
 type DBTXInterface interface {
-	StartTx() (tx *sqlx.Tx, err error)
+	StartTx(ctx context.Context) (tx *sqlx.Tx, err error)
 	CommitTx() (err error)
 	RollbackTx() (err error)
 	GetTx() (*sqlx.Tx, error)
@@ -37,8 +38,8 @@ func (t *DBTX) GetTx() (*sqlx.Tx, error) {
 	return nil, errors.New("Transaction not started")
 }
 
-func (t *DBTX) StartTx() (tx *sqlx.Tx, err error) {
-	tx, err = t.conndb.Beginx()
+func (t *DBTX) StartTx(ctx context.Context) (tx *sqlx.Tx, err error) {
+	tx, err = t.conndb.BeginTxx(ctx, nil)
 	if err != nil {
 		return tx, err
 	}

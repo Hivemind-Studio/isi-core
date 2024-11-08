@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
@@ -11,10 +12,10 @@ import (
 	"time"
 )
 
-func (s *Service) Create(ctx *fiber.Ctx, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
-	tx, err := s.repoUser.StartTx()
+func (s *Service) Create(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
+	tx, err := s.repoUser.StartTx(ctx) // Pass ctx here
 	if err != nil {
-		return nil, httperror.New(fiber.StatusInternalServerError, "error when start transaction")
+		return nil, httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
@@ -35,7 +36,7 @@ func (s *Service) Create(ctx *fiber.Ctx, body *auth.RegistrationDTO) (result *au
 	}, err
 }
 
-func (s *Service) GetUsers(ctx *fiber.Ctx, name string, email string, startDate,
+func (s *Service) GetUsers(ctx context.Context, name string, email string, startDate,
 	endDate *time.Time, page int64, perPage int64,
 ) ([]user.UserDTO, error) {
 	users, err := s.repoUser.GetUsers(ctx, name, email, startDate, endDate, page, perPage)
@@ -47,9 +48,8 @@ func (s *Service) GetUsers(ctx *fiber.Ctx, name string, email string, startDate,
 	return userDTOs, nil
 }
 
-func (s *Service) GetUserByID(ctx *fiber.Ctx, id int64) (*user.UserDTO, error) {
+func (s *Service) GetUserByID(ctx context.Context, id int64) (*user.UserDTO, error) {
 	res, err := s.repoUser.GetUserByID(ctx, id)
-
 	if err != nil {
 		return nil, httperror.New(fiber.StatusNotFound, "user not found")
 	}
@@ -59,10 +59,10 @@ func (s *Service) GetUserByID(ctx *fiber.Ctx, id int64) (*user.UserDTO, error) {
 	return &userDto, nil
 }
 
-func (s *Service) SuspendUsers(ctx *fiber.Ctx, ids []int64) error {
-	tx, err := s.repoUser.StartTx()
+func (s *Service) SuspendUsers(ctx context.Context, ids []int64) error {
+	tx, err := s.repoUser.StartTx(ctx) // Pass ctx here
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "error when start transaction")
+		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
@@ -71,6 +71,7 @@ func (s *Service) SuspendUsers(ctx *fiber.Ctx, ids []int64) error {
 		dbtx.HandleRollback(tx)
 		return err
 	}
+
 	err = tx.Commit()
 	if err != nil {
 		return err

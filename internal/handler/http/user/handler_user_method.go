@@ -27,7 +27,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	result, err := h.userService.Create(c, &newUser)
+	result, err := h.userService.Create(c.Context(), &newUser)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.userService.GetUsers(c, name, email, start, end, page, perPage)
+	users, err := h.userService.GetUsers(c.Context(), name, email, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
 	}
 
-	user, err := h.userService.GetUserByID(c, id)
+	user, err := h.userService.GetUserByID(c.Context(), id)
 
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.userService.SuspendUsers(c, input.IDs)
+	err := h.userService.SuspendUsers(c.Context(), input.IDs)
 
 	if err != nil {
 		return err

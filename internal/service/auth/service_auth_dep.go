@@ -1,13 +1,13 @@
 package auth
 
 import (
+	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
-	"github.com/gofiber/fiber/v2"
 )
 
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	FindByEmail(ctx *fiber.Ctx, email string) (user.User, error)
+	FindByEmail(ctx context.Context, email string) (user.User, error)
 }

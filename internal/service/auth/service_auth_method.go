@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
@@ -8,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *Service) Login(ctx *fiber.Ctx, body *auth.LoginDTO) (user dto.UserDTO, err error) {
+func (s *Service) Login(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error) {
 	savedUser, err := s.repoAuth.FindByEmail(ctx, body.Email)
 	if err != nil {
 		return dto.UserDTO{}, err
