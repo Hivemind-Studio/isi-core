@@ -4,7 +4,9 @@ import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"strings"
+	"time"
 
 	//"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
@@ -31,6 +33,7 @@ func main() {
 	app.Use(compress.New())
 	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 
 	config := configs.Init()
 
