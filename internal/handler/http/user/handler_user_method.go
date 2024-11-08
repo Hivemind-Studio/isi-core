@@ -1,8 +1,8 @@
 package user
 
 import (
-	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
@@ -97,12 +97,11 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 
 	id, err := strconv.ParseInt(paramId, 10, 64)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid user ID"})
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
 	}
 
 	user, err := h.userService.GetUserByID(c, id)
 
-	fmt.Println(user)
 	if err != nil {
 		return err
 	}
