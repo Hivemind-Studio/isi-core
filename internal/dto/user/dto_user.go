@@ -2,7 +2,6 @@ package user
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/enum"
-	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"time"
 )
 
@@ -20,32 +19,10 @@ type UserDTO struct {
 	CreatedAt   *time.Time   `json:"created_at"`
 }
 
-func ConvertUsersToDTOs(users []user.User) []UserDTO {
-	dtos := make([]UserDTO, len(users))
-	for i, u := range users {
-		dtos[i] = UserDTO{
-			Name:        u.Name,
-			Email:       u.Email,
-			Address:     u.Address,
-			PhoneNumber: u.PhoneNumber,
-			DateOfBirth: u.DateOfBirth,
-			Gender:      u.Gender,
-			Occupation:  u.Occupation,
-			Status:      u.Status,
-		}
-	}
-	return dtos
-}
-
-func ConvertUserToDTO(user user.User) UserDTO {
-	return UserDTO{
-		Name:        user.Name,
-		Email:       user.Email,
-		Address:     user.Address,
-		PhoneNumber: user.PhoneNumber,
-		DateOfBirth: user.DateOfBirth,
-		Gender:      user.Gender,
-		Occupation:  user.Occupation,
-		Status:      user.Status,
-	}
+type GetUsersDTO struct {
+	Name      string     `json:"name"`
+	Email     string     `json:"email"`
+	Role      *int64     `json:"role"`
+	StartDate *time.Time `json:"start_date"`
+	EndDate   *time.Time `json:"end_date"`
 }

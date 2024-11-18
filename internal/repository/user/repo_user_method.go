@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"strings"
-	"time"
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
@@ -67,28 +67,31 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 	return result, nil
 }
 
-func (r *Repository) GetUsers(ctx context.Context, name string, email string,
-	startDate, endDate *time.Time, page int64, perPage int64,
+func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
 ) ([]User, error) {
 	var users []User
 	query := "SELECT * FROM users WHERE 1=1"
 	var args []interface{}
 
-	if name != "" {
+	if params.Name != "" {
 		query += " AND name LIKE ?"
-		args = append(args, "%"+name+"%")
+		args = append(args, "%"+params.Name+"%")
 	}
-	if email != "" {
+	if params.Email != "" {
 		query += " AND email LIKE ?"
-		args = append(args, "%"+email+"%")
+		args = append(args, "%"+params.Email+"%")
 	}
-	if startDate != nil {
+	if params.Role != nil {
+		query += " AND role_id = ?"
+		args = append(args, params.Role)
+	}
+	if params.StartDate != nil {
 		query += " AND created_at >= ?"
-		args = append(args, *startDate)
+		args = append(args, *params.StartDate)
 	}
-	if endDate != nil {
+	if params.EndDate != nil {
 		query += " AND created_at <= ?"
-		args = append(args, *endDate)
+		args = append(args, *params.EndDate)
 	}
 
 	query += " LIMIT ? OFFSET ?"

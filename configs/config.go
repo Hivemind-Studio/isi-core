@@ -15,6 +15,14 @@ type Config struct {
 		DatabaseName      string `envconfig:"MYSQL_DB"`
 		EnableDbMigration string `envconfig:"ENABLE_DB_MIGRATION"`
 	}
+	Mail struct {
+		Host      string `envconfig:"MAIL_SMTP_HOST"`
+		Port      string `envconfig:"MAIL_SMTP_PORT"`
+		Username  string `envconfig:"MAIL_SMTP_USERNAME"`
+		Password  string `envconfig:"MAIL_SMTP_PASSWORD"`
+		NameFrom  string `envconfig:"MAIL_SENDER_NAME"`
+		EmailFrom string `envconfig:"MAIL_AUTH_EMAIL"`
+	}
 }
 
 func Init() *Config {

@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/internal/enum"
+	user "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -43,8 +44,14 @@ func (s *Service) Create(ctx context.Context, body *auth.RegistrationDTO) (resul
 
 func (s *Service) GetUsers(ctx context.Context, name string, email string, startDate,
 	endDate *time.Time, page int64, perPage int64,
-) ([]user.UserDTO, error) {
-	users, err := s.repoUser.GetUsers(ctx, name, email, startDate, endDate, page, perPage)
+) ([]dto.UserDTO, error) {
+	params := dto.GetUsersDTO{Name: name,
+		Email:     email,
+		StartDate: startDate,
+		EndDate:   endDate,
+		Role:      nil,
+	}
+	users, err := s.repoUser.GetUsers(ctx, params, page, perPage)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
 	}
@@ -53,7 +60,7 @@ func (s *Service) GetUsers(ctx context.Context, name string, email string, start
 	return userDTOs, nil
 }
 
-func (s *Service) GetUserByID(ctx context.Context, id int64) (*user.UserDTO, error) {
+func (s *Service) GetUserByID(ctx context.Context, id int64) (*dto.UserDTO, error) {
 	res, err := s.repoUser.GetUserByID(ctx, id)
 	if err != nil {
 		return nil, httperror.New(fiber.StatusNotFound, "user not found")

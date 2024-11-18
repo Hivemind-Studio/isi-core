@@ -5,7 +5,7 @@ CREATE TABLE coaches (
      certifications TEXT,
      experiences TEXT,
      education TEXT,
-     rate DECIMAL(10, 2),
+     level INT,
      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
      FOREIGN KEY (user_id) REFERENCES users(id)
