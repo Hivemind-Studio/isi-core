@@ -47,7 +47,7 @@ func (c *EmailClient) SendMail(to []string, subject string, templateFile string,
 	}
 
 	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", fmt.Sprintf("%s <%s>", c.config.Username, c.config.SenderEmail))
+	mailer.SetHeader("From", fmt.Sprintf("%s <%s>", os.Getenv("MAIL_SENDER_NAME"), c.config.SenderEmail))
 	mailer.SetHeader("To", to...)
 	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", body.String())
