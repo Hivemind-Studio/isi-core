@@ -8,10 +8,13 @@ import (
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"os"
 	"strings"
+	"time"
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
@@ -25,14 +28,61 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	_, err = tx.ExecContext(ctx, insertQuery, name, email, hashedPassword, roleId, phoneNumber, 1, 0)
-
+	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	res, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, 1, 0)
 	if err != nil {
-		return httperror.New(fiber.StatusConflict, "failed to insert")
+		return httperror.New(fiber.StatusConflict, "failed to insert user")
+	}
+
+	userId, err := res.LastInsertId()
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to get last inserted ID")
+	}
+
+	token := utils.GenerateVerificationToken()
+	expiresAt := time.Now().Add(1 * time.Hour)
+
+	insertVerificationQuery := `INSERT INTO user_verified_account (user_id, verification_token, expires_at) VALUES (?, ?, ?)`
+	_, err = tx.ExecContext(ctx, insertVerificationQuery, userId, token, expiresAt)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
+	}
+
+	err, done := r.EmailVerification(name, token, err, email)
+	if done {
+		return err
 	}
 
 	return nil
+}
+
+func (r *Repository) EmailVerification(name string, token string, err error, email string) (error, bool) {
+	emailClient := mail.NewEmailClient(&mail.EmailConfig{
+		Host:        os.Getenv("MAIL_SMTP_HOST"),
+		Port:        os.Getenv("MAIL_SMTP_PORT"),
+		Username:    os.Getenv("MAIL_SMTP_USERNAME"),
+		Password:    os.Getenv("MAIL_SMTP_PASSWORD"),
+		SenderEmail: os.Getenv("MAIL_AUTH_EMAIL"),
+	})
+
+	emailData := struct {
+		Name            string
+		VerificationURL string
+	}{
+		Name:            name,
+		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+	}
+
+	err = emailClient.SendMail(
+		[]string{email},
+		"Verify Your Email",
+		"template/verification_email.html",
+		emailData,
+	)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email"), true
+	}
+	return err, false
 }
 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error) {
