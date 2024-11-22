@@ -80,7 +80,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusCreated,
-			Message: "User created successfully",
+			Message: "Registration successful! Please check your email to verify your account.",
 			Data:    result,
 		})
 }
