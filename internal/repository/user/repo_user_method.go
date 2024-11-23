@@ -48,15 +48,15 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 	}
 
-	err, done := r.EmailVerification(name, token, err, email)
-	if done {
+	err = r.EmailVerification(name, token, err, email)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *Repository) EmailVerification(name string, token string, err error, email string) (error, bool) {
+func (r *Repository) EmailVerification(name string, token string, err error, email string) error {
 	emailClient := mail.NewEmailClient(&mail.EmailConfig{
 		Host:        os.Getenv("MAIL_SMTP_HOST"),
 		Port:        os.Getenv("MAIL_SMTP_PORT"),
@@ -80,9 +80,10 @@ func (r *Repository) EmailVerification(name string, token string, err error, ema
 		emailData,
 	)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email"), true
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email")
 	}
-	return err, false
+
+	return nil
 }
 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error) {
