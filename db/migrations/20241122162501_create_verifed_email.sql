@@ -8,3 +8,6 @@ CREATE TABLE user_verified_account (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- +goose Down
+DROP TABLE user_verified_account;
