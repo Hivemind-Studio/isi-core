@@ -30,3 +30,12 @@ func (s *Service) Login(ctx context.Context, body *auth.LoginDTO) (user dto.User
 		Photo: savedUser.Photo,
 	}, nil
 }
+
+func (s *Service) SignUp(ctx context.Context, body *auth.SignUpDTO) (err error) {
+	_, err = s.repoAuth.FindByEmail(ctx, body.Email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -8,8 +8,10 @@ import (
 
 type serviceAuthInterface interface {
 	Login(context context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
+	SignUp(context context.Context, body *auth.SignUpDTO) (err error)
 }
 
 type serviceUserInterface interface {
 	Create(context context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+	SignUp(context context.Context, body *auth.SignUpDTO) (result string, err error)
 }
