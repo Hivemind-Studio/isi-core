@@ -68,9 +68,11 @@ func (r *Repository) EmailVerification(name string, token string, err error, ema
 	emailData := struct {
 		Name            string
 		VerificationURL string
+		Year            int
 	}{
 		Name:            name,
 		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+		Year:            time.Now().Year(),
 	}
 
 	err = emailClient.SendMail(

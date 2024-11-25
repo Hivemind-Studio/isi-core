@@ -47,6 +47,7 @@ go.work
 # Allow SQL files in the db/migrations directory
 !/db/migrations/
 !/db/migrations/*.sql
+!/template/*.html
 
 # Optional: Ignore log and temp files
 *.log

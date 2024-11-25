@@ -13,5 +13,4 @@ type serviceAuthInterface interface {
 
 type serviceUserInterface interface {
 	Create(context context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
-	SignUp(context context.Context, body *auth.SignUpDTO) (result string, err error)
 }
