@@ -4,6 +4,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"strings"
 	"time"
@@ -18,11 +19,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log"
 )
-
-type EmailData struct {
-	Name    string
-	Message string
-}
 
 func main() {
 	app := fiber.New(fiber.Config{
@@ -62,6 +58,19 @@ func dbInitConnection(cfg *configs.Config) *sqlx.DB {
 	}
 
 	return dbConn
+}
+
+func initEmailClient(cfg *configs.Config) *mail.EmailClient {
+	mailConfig := cfg.Mail
+	emailClient := mail.NewEmailClient(&mail.EmailConfig{
+		Host:        mailConfig.Host,
+		Port:        mailConfig.Port,
+		Username:    mailConfig.Username,
+		Password:    mailConfig.Password,
+		SenderEmail: mailConfig.EmailFrom,
+	})
+
+	return emailClient
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {

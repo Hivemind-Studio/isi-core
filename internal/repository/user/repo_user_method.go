@@ -5,14 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	userstatus "github.com/Hivemind-Studio/isi-core/internal/constant"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	"os"
 	"strings"
 	"time"
 )
@@ -29,60 +28,9 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	res, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, 1, 0)
+	_, err = tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, userstatus.ACTIVE, 0)
 	if err != nil {
 		return httperror.New(fiber.StatusConflict, "failed to insert user")
-	}
-
-	userId, err := res.LastInsertId()
-	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to get last inserted ID")
-	}
-
-	token := utils.GenerateVerificationToken()
-	expiresAt := time.Now().Add(1 * time.Hour)
-
-	insertVerificationQuery := `INSERT INTO user_verified_account (user_id, verification_token, expires_at) VALUES (?, ?, ?)`
-	_, err = tx.ExecContext(ctx, insertVerificationQuery, userId, token, expiresAt)
-	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
-	}
-
-	err = r.EmailVerification(name, token, err, email)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *Repository) EmailVerification(name string, token string, err error, email string) error {
-	emailClient := mail.NewEmailClient(&mail.EmailConfig{
-		Host:        os.Getenv("MAIL_SMTP_HOST"),
-		Port:        os.Getenv("MAIL_SMTP_PORT"),
-		Username:    os.Getenv("MAIL_SMTP_USERNAME"),
-		Password:    os.Getenv("MAIL_SMTP_PASSWORD"),
-		SenderEmail: os.Getenv("MAIL_AUTH_EMAIL"),
-	})
-
-	emailData := struct {
-		Name            string
-		VerificationURL string
-		Year            int
-	}{
-		Name:            name,
-		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
-		Year:            time.Now().Year(),
-	}
-
-	err = emailClient.SendMail(
-		[]string{email},
-		"Verify Your Email",
-		"template/verification_email.html",
-		emailData,
-	)
-	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email")
 	}
 
 	return nil
@@ -214,6 +162,55 @@ func (r *Repository) SuspendUsers(ctx context.Context, tx *sqlx.Tx, ids []int64)
 	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to suspend users")
+	}
+
+	return nil
+}
+
+func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
+) (*int8, error) {
+	filterDate := queryDate.Format("2006-01-02")
+
+	query := `SELECT trial FROM email_verifications WHERE email = ? AND DATE(created_at) = ?`
+	var trial int8 = 0
+	err := r.GetConnDb().QueryRowContext(ctx, query, email, filterDate).Scan(&trial)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
+		}
+	}
+
+	return &trial, nil
+}
+
+func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
+	token string, expiredAt time.Time,
+) error {
+	insertQuery := `
+			INSERT INTO email_verifications (email, verification_token, expired_at, trial)
+			VALUES (?, ?, ?, 1)
+		`
+	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to insert verification record")
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
+	targetDate string, token string, expiredAt time.Time,
+) error {
+	updateQuery := `
+			UPDATE email_verifications
+			SET verification_token = ?, expired_at = ?, trial = trial + 1, updated_at = NOW()
+			WHERE email = ? AND DATE(created_at) = ?
+		`
+	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, email, targetDate)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to update verification record")
 	}
 
 	return nil

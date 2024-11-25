@@ -7,10 +7,11 @@ import (
 )
 
 type serviceAuthInterface interface {
-	Login(context context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
-	SignUp(context context.Context, body *auth.SignUpDTO) (err error)
+	Login(ctx context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
+	SignUp(ctx context.Context, body *auth.SignUpDTO) (err error)
+	SendEmailVerification(context context.Context, email string) (err error)
 }
 
 type serviceUserInterface interface {
-	Create(context context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+	Create(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
 }

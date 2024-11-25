@@ -17,6 +17,10 @@ type RegistrationDTO struct {
 	Email           string `json:"email" validate:"required"`
 }
 
+type EmailVerificationDTO struct {
+	Email string `json:"email" validate:"required"`
+}
+
 type RegisterResponse struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`

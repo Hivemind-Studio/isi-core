@@ -2,20 +2,18 @@ package main
 
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
+	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
+	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
+	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	serviceauth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
 	servicecoach "github.com/Hivemind-Studio/isi-core/internal/service/coach"
 	servicecoachee "github.com/Hivemind-Studio/isi-core/internal/service/coachee"
-	serviceuser "github.com/Hivemind-Studio/isi-core/internal/service/user"
-
-	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
-	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	servicerole "github.com/Hivemind-Studio/isi-core/internal/service/role"
-
-	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
-	serviceauth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
+	serviceuser "github.com/Hivemind-Studio/isi-core/internal/service/user"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -44,13 +42,14 @@ func routerList(app *AppApi) []Router {
 
 func initApp(cfg *configs.Config) (*AppApi, error) {
 	dbConn := dbInitConnection(cfg)
+	emailClient := initEmailClient(cfg)
 
 	userRepo := repouser.NewUserRepo(dbConn)
 	roleRepo := reporole.NewRoleRepo(dbConn)
 
 	roleService := servicerole.NewRoleService(roleRepo)
 	userService := serviceuser.NewUserService(userRepo)
-	authService := serviceauth.NewAuthService(userRepo)
+	authService := serviceauth.NewAuthService(userRepo, emailClient)
 	coachService := servicecoach.NewCoachService(userRepo)
 	coacheeService := servicecoachee.NewCoacheeService(userRepo)
 

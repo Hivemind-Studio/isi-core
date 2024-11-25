@@ -1,13 +1,16 @@
 -- +goose up
-
-CREATE TABLE user_verified_account (
+CREATE TABLE email_verifications (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT,
-    verification_token varchar(255),
-    expires_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    email VARCHAR(255) NOT NULL,
+    verification_token VARCHAR(255) UNIQUE,
+    trial TINYINT,
+    expired_at DATETIME NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_email_date (email, created_at),
+    INDEX idx_expired_at (expired_at)
 );
 
 -- +goose Down
-DROP TABLE user_verified_account;
+DROP TABLE email_verifications;
