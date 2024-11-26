@@ -65,7 +65,7 @@ func (s *Service) SendEmailVerification(ctx context.Context, email string) error
 		return err
 	}
 
-	if err := s.emailVerification(email, token, nil, email); err != nil {
+	if err := s.emailVerification(email, token, email); err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
 	}
 
@@ -123,7 +123,7 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 	return token, nil
 }
 
-func (s *Service) emailVerification(name string, token string, err error, email string) error {
+func (s *Service) emailVerification(name string, token string, email string) error {
 	emailData := struct {
 		Name            string
 		VerificationURL string
@@ -134,7 +134,7 @@ func (s *Service) emailVerification(name string, token string, err error, email 
 		Year:            time.Now().Year(),
 	}
 
-	err = s.emailClient.SendMail(
+	err := s.emailClient.SendMail(
 		[]string{email},
 		"Verify Your Email",
 		"template/verification_email.html",
