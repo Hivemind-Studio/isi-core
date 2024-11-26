@@ -26,7 +26,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
 	v1.Get("/users/:id", h.GetUserById)
-	v1.Patch("/users/:id/status", h.SuspendUsers) // Update user status (e.g., suspend/activate)
+	v1.Patch("/users/:id/status", h.SuspendUsers)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
