@@ -71,17 +71,18 @@ func (s *Service) GetUserByID(ctx context.Context, id int64) (*dto.UserDTO, erro
 	return &userDto, nil
 }
 
-func (s *Service) SuspendUsers(ctx context.Context, dto *dto.SuspendDTO) error {
-	tx, err := s.repoUser.StartTx(ctx) // Pass ctx here
+func (s *Service) UpdateUserStatus(ctx context.Context, ids []int64, updatedStatus string) error {
+	tx, err := s.repoUser.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = s.repoUser.SuspendUsers(ctx, tx, dto)
+	err = s.repoUser.UpdateUserStatus(ctx, tx, ids, updatedStatus)
+
 	if err != nil {
 		dbtx.HandleRollback(tx)
-		return err
+		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 
 	err = tx.Commit()

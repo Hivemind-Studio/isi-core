@@ -12,5 +12,5 @@ type serviceUserInterface interface {
 	GetUsers(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
 	GetUserByID(ctx context.Context, id int64) (result *user.UserDTO, err error)
-	SuspendUsers(ctx context.Context, payload *user.SuspendDTO) (err error)
+	UpdateUserStatus(ctx context.Context, ids []int64, status string) (err error)
 }
