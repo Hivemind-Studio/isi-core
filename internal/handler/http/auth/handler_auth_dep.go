@@ -8,7 +8,6 @@ import (
 
 type serviceAuthInterface interface {
 	Login(ctx context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
-	SignUp(ctx context.Context, body *auth.SignUpDTO) (err error)
 	SendEmailVerification(context context.Context, email string) (err error)
 }
 

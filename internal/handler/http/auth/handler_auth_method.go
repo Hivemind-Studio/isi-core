@@ -48,25 +48,6 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) SignUp(c *fiber.Ctx) error {
-	var signUp authdto.SignUpDTO
-	if err := c.BodyParser(&signUp); err != nil {
-		return httperror.New(fiber.StatusBadRequest, "Invalid input")
-	}
-
-	err := h.authService.SignUp(c.Context(), &signUp)
-
-	if err != nil {
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(
-		response.WebResponse{
-			Status:  fiber.StatusOK,
-			Message: "Registration successful! Please check your email to verify your account.",
-		})
-}
-
 func (h *Handler) Create(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "Create"

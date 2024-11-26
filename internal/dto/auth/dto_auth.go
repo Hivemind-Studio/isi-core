@@ -5,10 +5,6 @@ type LoginDTO struct {
 	Password string `json:"password"`
 }
 
-type SignUpDTO struct {
-	Email string `json:"email"`
-}
-
 type RegistrationDTO struct {
 	Name            string `json:"name" validate:"required"`
 	Password        string `json:"password" validate:"required,min=4"`

@@ -38,15 +38,6 @@ func (s *Service) Login(ctx context.Context, body *auth.LoginDTO) (user dto.User
 	}, nil
 }
 
-func (s *Service) SignUp(ctx context.Context, body *auth.SignUpDTO) (err error) {
-	_, err = s.repoUser.FindByEmail(ctx, body.Email)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (s *Service) SendEmailVerification(ctx context.Context, email string) error {
 	if err := s.validateEmail(ctx, email); err != nil {
 		return err
