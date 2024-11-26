@@ -60,17 +60,15 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 	if err := c.BodyParser(&newUser); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := validator.ValidatePassword(&newUser)
-
-	if err != nil {
+	if err := validator.ValidatePassword(&newUser); err != nil {
 		return err
 	}
 
 	if err := validatorhelper.ValidateStruct(newUser); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return httperror.New(fiber.StatusBadRequest, err.Error())
 	}
 
 	result, err := h.userService.Create(c.Context(), &newUser)
@@ -98,11 +96,10 @@ func (h *Handler) SendEmailVerification(c *fiber.Ctx) error {
 	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.authService.SendEmailVerification(c.Context(), requestBody.Email)
-	if err != nil {
+	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
@@ -125,11 +122,10 @@ func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
 	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.authService.SendEmailVerification(c.Context(), requestBody.Email)
-	if err != nil {
+	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
