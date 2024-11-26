@@ -48,28 +48,9 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) SignUp(c *fiber.Ctx) error {
-	var signUp authdto.SignUpDTO
-	if err := c.BodyParser(&signUp); err != nil {
-		return httperror.New(fiber.StatusBadRequest, "Invalid input")
-	}
-
-	err := h.authService.SignUp(c.Context(), &signUp)
-
-	if err != nil {
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(
-		response.WebResponse{
-			Status:  fiber.StatusOK,
-			Message: "Registration successful! Please check your email to verify your account.",
-		})
-}
-
-func (h *Handler) Create(c *fiber.Ctx) error {
+func (h *Handler) CreateUser(c *fiber.Ctx) error {
 	module := "Auth Handler"
-	functionName := "Create"
+	functionName := "CreateUser"
 
 	var newUser authdto.RegistrationDTO
 	requestId := c.Locals("request_id").(string)
@@ -110,6 +91,33 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 func (h *Handler) SendEmailVerification(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "SendEmailVerification"
+
+	var requestBody authdto.EmailVerificationDTO
+	requestId := c.Locals("request_id").(string)
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Invalid input", string(c.Body()))
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	err := h.authService.SendEmailVerification(c.Context(), requestBody.Email)
+	if err != nil {
+		logger.Print("error", requestId, module, functionName,
+			err.Error(), requestBody)
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Email verification sent",
+		})
+}
+
+func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "VerifyEmailToken"
 
 	var requestBody authdto.EmailVerificationDTO
 	requestId := c.Locals("request_id").(string)
