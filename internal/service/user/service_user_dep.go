@@ -14,5 +14,5 @@ type repoUserInterface interface {
 	Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password string, roleId int64, phoneNumber string) (err error)
 	GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error)
 	GetUserByID(ctx context.Context, id int64) (user.User, error)
-	SuspendUsers(ctx context.Context, tx *sqlx.Tx, ids []int64) error
+	SuspendUsers(ctx context.Context, tx *sqlx.Tx, payload *dto.SuspendDTO) error
 }

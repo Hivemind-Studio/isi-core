@@ -147,19 +147,20 @@ func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return result, nil
 }
 
-func (r *Repository) SuspendUsers(ctx context.Context, tx *sqlx.Tx, ids []int64) error {
-	if len(ids) == 0 {
+func (r *Repository) SuspendUsers(ctx context.Context, tx *sqlx.Tx, dto *dto.SuspendDTO) error {
+	if len(dto.Ids) == 0 {
 		return httperror.New(fiber.StatusBadRequest, "no user IDs provided")
 	}
 
-	placeholders := make([]string, len(ids))
-	for i := range ids {
+	placeholders := make([]string, len(dto.Ids))
+	for i := range dto.Ids {
 		placeholders[i] = "?"
 	}
 
-	query := fmt.Sprintf("UPDATE users SET status = 1 WHERE id IN (%s)", strings.Join(placeholders, ","))
+	query := fmt.Sprintf("UPDATE users SET status = %d WHERE id IN (%s)", userstatus.GetStatusFromString(dto.UpdatedStatus), strings.Join(placeholders, ","))
 
-	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
+	fmt.Println("Query", query)
+	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(dto.Ids)...)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to suspend users")
 	}

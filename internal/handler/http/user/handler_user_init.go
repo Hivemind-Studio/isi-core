@@ -23,7 +23,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 		"coachee": {
 			Role: "Coachee",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE"},
+				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
 	}
@@ -33,5 +33,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
 	v1.Get("/users/:id", h.GetUserById)
-	v1.Patch("/users/suspend", h.SuspendUsers)
+	v1.Patch("/users/status", h.SuspendUsers)
 }

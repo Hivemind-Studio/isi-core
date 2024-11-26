@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
@@ -114,15 +115,12 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
-	var input struct {
-		IDs []int64 `json:"ids"`
-	}
-
-	if err := c.BodyParser(&input); err != nil {
+	var suspect *user.SuspendDTO
+	if err := c.BodyParser(&suspect); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.userService.SuspendUsers(c.Context(), input.IDs)
+	err := h.userService.SuspendUsers(c.Context(), suspect)
 
 	if err != nil {
 		return err
