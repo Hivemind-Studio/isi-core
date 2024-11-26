@@ -114,7 +114,7 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 	})
 }
 
-func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
+func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
 	var payload user.SuspendDTO
 	if err := c.BodyParser(&payload); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
