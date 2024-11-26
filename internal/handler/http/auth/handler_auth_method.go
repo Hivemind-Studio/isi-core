@@ -52,29 +52,34 @@ func (h *Handler) CreateUser(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "CreateUser"
 
-	var newUser authdto.RegistrationDTO
+	var requestBody authdto.RegistrationDTO
 	requestId := c.Locals("request_id").(string)
 	logger.Print("info", requestId, module, functionName,
 		"", string(c.Body()))
 
-	if err := c.BodyParser(&newUser); err != nil {
+	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := validator.ValidatePassword(&newUser); err != nil {
+	if err := h.authService.VerifyRegistrationToken(c.Context(),
+		requestBody.Email, requestBody.Token); err != nil {
 		return err
 	}
 
-	if err := validatorhelper.ValidateStruct(newUser); err != nil {
+	if err := validator.ValidatePassword(&requestBody); err != nil {
+		return err
+	}
+
+	if err := validatorhelper.ValidateStruct(requestBody); err != nil {
 		return httperror.New(fiber.StatusBadRequest, err.Error())
 	}
 
-	result, err := h.userService.Create(c.Context(), &newUser)
+	result, err := h.userService.CreateUser(c.Context(), &requestBody)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
-			err.Error(), newUser)
+			err.Error(), requestBody)
 		return err
 	}
 

@@ -21,6 +21,6 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 	v1.Post("/sessions", h.Login)
 	v1.Post("/users", h.CreateUser)
-	v1.Post("/users/email-verifications", h.SendEmailVerification)
+	v1.Post("/email-verifications", h.SendEmailVerification)
 
 }

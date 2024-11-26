@@ -25,6 +25,16 @@ type User struct {
 	UpdatedAt    time.Time    `db:"updated_at"`
 }
 
+type EmailVerification struct {
+	Id                int64     `db:"id"`
+	Email             string    `db:"email"`
+	VerificationToken string    `db:"verification_token"`
+	Trial             int8      `db:"trial"`
+	ExpiredAt         time.Time `db:"expired_at"`
+	CreatedAt         time.Time `db:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at"`
+}
+
 func ConvertUserToDTO(user User) userdto.UserDTO {
 	return userdto.UserDTO{
 		Name:        user.Name,
