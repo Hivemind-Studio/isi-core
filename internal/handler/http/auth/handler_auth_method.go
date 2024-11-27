@@ -48,7 +48,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) CreateUser(c *fiber.Ctx) error {
+func (h *Handler) Create(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "CreateUser"
 

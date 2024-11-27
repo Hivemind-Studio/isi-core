@@ -26,7 +26,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
 	v1.Get("/users/:id", h.GetUserById)
-	v1.Patch("/users/:id/status", h.SuspendUsers)
+	v1.Patch("/users/:id/status", h.UpdateStatusUser)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
@@ -34,7 +34,7 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"coachee": {
 			Role: "Coachee",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE"},
+				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
 	}

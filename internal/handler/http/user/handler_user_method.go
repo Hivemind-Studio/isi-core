@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
@@ -14,7 +15,7 @@ import (
 func (h *Handler) Create(c *fiber.Ctx) error {
 	var newUser auth.RegistrationDTO
 	if err := c.BodyParser(&newUser); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
 	err := validator.ValidatePassword(&newUser)
@@ -24,7 +25,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	}
 
 	if err := validatorhelper.ValidateStruct(newUser); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
 	result, err := h.userService.CreateUser(c.Context(), &newUser)
@@ -52,14 +53,14 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	if startDate != "" {
 		parsedStart, err := time.Parse("2006-01-02", startDate)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "Invalid start date format")
+			return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid end date format")
 		}
 		start = &parsedStart
 	}
 	if endDate != "" {
 		parsedEnd, err := time.Parse("2006-01-02", endDate)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "Invalid end date format")
+			return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid end date format")
 		}
 		end = &parsedEnd
 	}
@@ -100,7 +101,7 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
 	}
 
-	user, err := h.userService.GetUserByID(c.Context(), id)
+	res, err := h.userService.GetUserByID(c.Context(), id)
 
 	if err != nil {
 		return err
@@ -109,23 +110,20 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
 		Message: "Users retrieved successfully",
-		Data:    user,
+		Data:    res,
 	})
 }
 
-func (h *Handler) SuspendUsers(c *fiber.Ctx) error {
-	var input struct {
-		IDs []int64 `json:"ids"`
+func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
+	var payload user.SuspendDTO
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	if err := c.BodyParser(&input); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
-	}
-
-	err := h.userService.SuspendUsers(c.Context(), input.IDs)
+	err := h.userService.UpdateUserStatus(c.Context(), payload.Ids, payload.UpdatedStatus)
 
 	if err != nil {
-		return err
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update status users")
 	}
 
 	return c.Status(fiber.StatusOK).JSON(

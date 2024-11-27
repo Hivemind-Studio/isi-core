@@ -26,3 +26,8 @@ type GetUsersDTO struct {
 	StartDate *time.Time `json:"start_date"`
 	EndDate   *time.Time `json:"end_date"`
 }
+
+type SuspendDTO struct {
+	Ids           []int64 `json:"ids"`
+	UpdatedStatus string  `json:"updated_status"`
+}

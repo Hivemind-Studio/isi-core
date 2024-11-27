@@ -147,7 +147,7 @@ func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return result, nil
 }
 
-func (r *Repository) SuspendUsers(ctx context.Context, tx *sqlx.Tx, ids []int64) error {
+func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string) error {
 	if len(ids) == 0 {
 		return httperror.New(fiber.StatusBadRequest, "no user IDs provided")
 	}
@@ -157,7 +157,8 @@ func (r *Repository) SuspendUsers(ctx context.Context, tx *sqlx.Tx, ids []int64)
 		placeholders[i] = "?"
 	}
 
-	query := fmt.Sprintf("UPDATE users SET status = 1 WHERE id IN (%s)", strings.Join(placeholders, ","))
+	query := fmt.Sprintf("UPDATE users SET status = %d WHERE id IN (%s)",
+		userstatus.GetStatusFromString(updatedStatus), strings.Join(placeholders, ","))
 
 	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
 	if err != nil {
