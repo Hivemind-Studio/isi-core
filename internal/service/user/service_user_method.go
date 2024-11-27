@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-func (s *Service) Create(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
+func (s *Service) CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
 	tx, err := s.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
-	logger.Print("info", requestId, "User service", "Create", "function start", body)
+	logger.Print("info", requestId, "User service", "CreateUser", "function start", body)
 
 	if err != nil {
 		return nil, httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
@@ -26,7 +26,7 @@ func (s *Service) Create(ctx context.Context, body *auth.RegistrationDTO) (resul
 
 	err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId, body.PhoneNumber)
 	if err != nil {
-		logger.Print("error", requestId, "User service", "Create", err.Error(), body)
+		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)
 		return nil, err
 	}

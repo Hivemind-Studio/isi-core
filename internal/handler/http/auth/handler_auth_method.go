@@ -50,33 +50,36 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 
 func (h *Handler) Create(c *fiber.Ctx) error {
 	module := "Auth Handler"
-	functionName := "Create"
+	functionName := "CreateUser"
 
-	var newUser authdto.RegistrationDTO
+	var requestBody authdto.RegistrationDTO
 	requestId := c.Locals("request_id").(string)
 	logger.Print("info", requestId, module, functionName,
 		"", string(c.Body()))
 
-	if err := c.BodyParser(&newUser); err != nil {
+	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := validator.ValidatePassword(&newUser)
-
-	if err != nil {
+	if err := h.authService.VerifyRegistrationToken(c.Context(),
+		requestBody.Email, requestBody.Token); err != nil {
 		return err
 	}
 
-	if err := validatorhelper.ValidateStruct(newUser); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	if err := validator.ValidatePassword(&requestBody); err != nil {
+		return err
 	}
 
-	result, err := h.userService.Create(c.Context(), &newUser)
+	if err := validatorhelper.ValidateStruct(requestBody); err != nil {
+		return httperror.New(fiber.StatusBadRequest, err.Error())
+	}
+
+	result, err := h.userService.CreateUser(c.Context(), &requestBody)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
-			err.Error(), newUser)
+			err.Error(), requestBody)
 		return err
 	}
 
@@ -98,11 +101,36 @@ func (h *Handler) SendEmailVerification(c *fiber.Ctx) error {
 	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid input")
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.authService.SendEmailVerification(c.Context(), requestBody.Email)
-	if err != nil {
+	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			err.Error(), requestBody)
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Email verification sent",
+		})
+}
+
+func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "VerifyEmailToken"
+
+	var requestBody authdto.EmailVerificationDTO
+	requestId := c.Locals("request_id").(string)
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Invalid input", string(c.Body()))
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err

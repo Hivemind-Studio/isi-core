@@ -28,7 +28,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	result, err := h.userService.Create(c.Context(), &newUser)
+	result, err := h.userService.CreateUser(c.Context(), &newUser)
 	if err != nil {
 		return err
 	}

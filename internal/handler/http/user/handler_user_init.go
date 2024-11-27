@@ -19,6 +19,17 @@ func NewUserHandler(userService serviceUserInterface) *Handler {
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
+	accessControlRules := h.manageAccessControl()
+
+	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+
+	v1.Post("/users", h.Create)
+	v1.Get("/users", h.GetUsers)
+	v1.Get("/users/:id", h.GetUserById)
+	v1.Patch("/users/:id/status", h.UpdateStatusUser)
+}
+
+func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
 	accessControlRules := map[string]middleware.AccessControlRule{
 		"coachee": {
 			Role: "Coachee",
@@ -27,11 +38,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 			},
 		},
 	}
-
-	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
-
-	v1.Post("/users", h.Create)
-	v1.Get("/users", h.GetUsers)
-	v1.Get("/users/:id", h.GetUserById)
-	v1.Patch("/users/status", h.UpdateStatusUser)
+	return accessControlRules
 }

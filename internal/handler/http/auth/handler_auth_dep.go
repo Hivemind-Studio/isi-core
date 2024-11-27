@@ -8,9 +8,10 @@ import (
 
 type serviceAuthInterface interface {
 	Login(ctx context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
-	SendEmailVerification(context context.Context, email string) (err error)
+	SendEmailVerification(ctx context.Context, email string) error
+	VerifyRegistrationToken(ctx context.Context, email string, token string) (err error)
 }
 
 type serviceUserInterface interface {
-	Create(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+	CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
 }

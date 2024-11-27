@@ -8,6 +8,7 @@ CREATE TABLE email_verifications (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    INDEX idx_email_verification_token_email (verification_token, email),
     INDEX idx_email_date (email, created_at),
     INDEX idx_expired_at (expired_at)
 );

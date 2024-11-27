@@ -216,3 +216,23 @@ func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.
 
 	return nil
 }
+
+func (r *Repository) GetByVerificationTokenAndEmail(ctx context.Context,
+	verificationToken, email string,
+) (*EmailVerification, error) {
+	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at
+			  FROM email_verifications 
+			  WHERE verification_token = ? AND email = ?`
+
+	var emailVerification EmailVerification
+	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken, email).StructScan(&emailVerification)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to fetch verification record")
+	}
+
+	return &emailVerification, nil
+}

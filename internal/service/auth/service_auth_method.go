@@ -38,9 +38,24 @@ func (s *Service) Login(ctx context.Context, body *auth.LoginDTO) (user dto.User
 	}, nil
 }
 
-func (s *Service) SendEmailVerification(ctx context.Context, email string) error {
-	if err := s.validateEmail(ctx, email); err != nil {
+func (s *Service) VerifyRegistrationToken(ctx context.Context, email string, token string) (err error) {
+	emailVerification, err := s.repoUser.GetByVerificationTokenAndEmail(ctx, token, email)
+	if err != nil {
 		return err
+	}
+	if emailVerification == nil {
+		return httperror.New(fiber.StatusBadRequest, "invalid token")
+	}
+	if time.Now().After(emailVerification.ExpiredAt) {
+		return httperror.New(fiber.StatusBadRequest, "verification token has expired")
+	}
+
+	return nil
+}
+
+func (s *Service) SendEmailVerification(ctx context.Context, email string) error {
+	if valid := s.validateEmail(ctx, email); !valid {
+		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	}
 
 	trial, err := s.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
@@ -56,25 +71,26 @@ func (s *Service) SendEmailVerification(ctx context.Context, email string) error
 		return err
 	}
 
-	if err := s.emailVerification(email, token, nil, email); err != nil {
+	if err := s.emailVerification(email, token, email); err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
 	}
 
 	return nil
 }
 
-func (s *Service) validateEmail(ctx context.Context, email string) error {
+func (s *Service) validateEmail(ctx context.Context, email string) bool {
 	_, err := s.repoUser.FindByEmail(ctx, email)
 	if err != nil {
 		var customErr *httperror.CustomError
 		if !errors.As(err, &customErr) {
-			return err
+			return false
 		}
-		if customErr.Code != fiber.StatusNotFound {
-			return err
+		if customErr.Code == fiber.StatusNotFound {
+			return true
 		}
 	}
-	return nil
+
+	return false
 }
 
 func (s *Service) handleTokenGeneration(ctx context.Context, email string, trial int8) (string, error) {
@@ -114,7 +130,7 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 	return token, nil
 }
 
-func (s *Service) emailVerification(name string, token string, err error, email string) error {
+func (s *Service) emailVerification(name string, token string, email string) error {
 	emailData := struct {
 		Name            string
 		VerificationURL string
@@ -125,7 +141,7 @@ func (s *Service) emailVerification(name string, token string, err error, email 
 		Year:            time.Now().Year(),
 	}
 
-	err = s.emailClient.SendMail(
+	err := s.emailClient.SendMail(
 		[]string{email},
 		"Verify Your Email",
 		"template/verification_email.html",
