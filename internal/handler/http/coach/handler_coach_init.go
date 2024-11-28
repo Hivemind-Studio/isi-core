@@ -30,5 +30,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
-	v1.Post("/coaches", h.GetCoaches)
+	v1.Get("/coaches", h.GetCoaches)
 }
