@@ -1,0 +1,107 @@
+package coach
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	userstatus "github.com/Hivemind-Studio/isi-core/internal/constant"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	"github.com/Hivemind-Studio/isi-core/pkg/hash"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
+)
+
+func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
+) ([]user.User, error) {
+	var users []user.User
+	query := "SELECT * FROM users WHERE 1=1"
+	var args []interface{}
+
+	if params.Name != "" {
+		query += " AND name LIKE ?"
+		args = append(args, "%"+params.Name+"%")
+	}
+	if params.Email != "" {
+		query += " AND email LIKE ?"
+		args = append(args, "%"+params.Email+"%")
+	}
+	if params.Role != nil {
+		query += " AND role_id = ?"
+		args = append(args, params.Role)
+	}
+	if params.StartDate != nil {
+		query += " AND created_at >= ?"
+		args = append(args, *params.StartDate)
+	}
+	if params.EndDate != nil {
+		query += " AND created_at <= ?"
+		args = append(args, *params.EndDate)
+	}
+
+	query += " LIMIT ? OFFSET ?"
+	args = append(args, perPage, (page-1)*perPage)
+
+	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+	}
+
+	return users, nil
+}
+
+func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx,
+	name string, email string, phoneNumber string, gender string, address string) (err error) {
+	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
+		return err
+	}
+
+	hashedPassword, hashErr := hash.HashPassword("password")
+	if hashErr != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+	}
+
+	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, gender) 
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, userstatus.RoleIDCoach, phoneNumber,
+		userstatus.PENDING, 0, gender)
+
+	userID, err := result.LastInsertId()
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to retrieve last inserted user ID")
+	}
+
+	insertCoachQuery := `INSERT INTO coaches (user_id) VALUES (?)`
+	_, err = tx.ExecContext(ctx, insertCoachQuery, userID)
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to insert coach")
+	}
+
+	return nil
+}
+
+func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string) error {
+	var exists string
+	query := `SELECT 1 FROM users WHERE ` + column + ` = ?`
+	err := tx.QueryRowContext(ctx, query, value).Scan(&exists)
+
+	if err == nil {
+		return httperror.New(fiber.StatusBadRequest, column+" already exists")
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
+	}
+	return nil
+}
+
+func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string) error {
+	if err := r.checkForDuplicate(ctx, tx, "email", email); err != nil {
+		return err
+	}
+
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
+		return err
+	}
+
+	return nil
+}

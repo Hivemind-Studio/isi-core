@@ -1,11 +1,11 @@
 package coach
 
 type Service struct {
-	repoUser repoUserInterface
+	repoCoach repoCoachInterface
 }
 
-func NewCoachService(repoUser repoUserInterface) *Service {
+func NewCoachService(repoCoach repoCoachInterface) *Service {
 	return &Service{
-		repoUser: repoUser,
+		repoCoach,
 	}
 }

@@ -9,13 +9,13 @@ import (
 type Gender int
 
 const (
-	Man   Gender = 1
-	Woman Gender = 2
+	Male   Gender = 1
+	Female Gender = 2
 )
 
 func (g Gender) IsValid() bool {
 	switch g {
-	case Man, Woman:
+	case Male, Female:
 		return true
 	}
 	return false
