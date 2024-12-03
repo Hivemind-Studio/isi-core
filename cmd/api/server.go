@@ -52,7 +52,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleService := servicerole.NewRoleService(roleRepo)
 	userService := serviceuser.NewUserService(userRepo)
 	authService := serviceauth.NewAuthService(userRepo, emailClient)
-	coachService := servicecoach.NewCoachService(coachRepo)
+	coachService := servicecoach.NewCoachService(coachRepo, emailClient)
 	coacheeService := servicecoachee.NewCoacheeService(userRepo)
 
 	roleHandler := handlerole.NewRoleHandler(roleService)

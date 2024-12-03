@@ -11,6 +11,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
@@ -62,10 +63,10 @@ func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx,
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, gender) 
-						VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, gender, address) 
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, userstatus.RoleIDCoach, phoneNumber,
-		userstatus.PENDING, 0, gender)
+		userstatus.PENDING, 0, gender, address)
 
 	userID, err := result.LastInsertId()
 	if err != nil {
@@ -104,4 +105,85 @@ func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email s
 	}
 
 	return nil
+}
+
+func (r *Repository) FindByEmail(ctx context.Context, email string) (user.User, error) {
+	var result user.User
+
+	query := `
+		SELECT 
+			users.id, 
+			users.name, 
+			users.email, 
+			users.password, 
+			users.role_id, 
+			roles.name AS role_name 
+		FROM 
+			users 
+		LEFT JOIN 
+			roles 
+		ON 
+			users.role_id = roles.id 
+		WHERE 
+			users.email = ?
+	`
+
+	err := r.GetConnDb().QueryRowxContext(ctx, query, email).StructScan(&result)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user.User{}, httperror.New(fiber.StatusNotFound, "user not found")
+		}
+		return user.User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return result, nil
+}
+
+func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
+	token string, expiredAt time.Time,
+) error {
+	insertQuery := `
+			INSERT INTO email_verifications (email, verification_token, expired_at, trial)
+			VALUES (?, ?, ?, 1)
+		`
+	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to insert verification record")
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
+	targetDate string, token string, expiredAt time.Time,
+) error {
+	updateQuery := `
+			UPDATE email_verifications
+			SET verification_token = ?, expired_at = ?, trial = trial + 1, updated_at = NOW()
+			WHERE email = ? AND DATE(created_at) = ?
+		`
+	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, email, targetDate)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to update verification record")
+	}
+
+	return nil
+}
+
+func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
+) (*int8, error) {
+	filterDate := queryDate.Format("2006-01-02")
+
+	query := `SELECT trial FROM email_verifications WHERE email = ? AND DATE(created_at) = ?`
+	var trial int8 = 0
+	err := r.GetConnDb().QueryRowContext(ctx, query, email, filterDate).Scan(&trial)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
+		}
+	}
+
+	return &trial, nil
 }
