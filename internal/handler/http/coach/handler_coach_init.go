@@ -17,7 +17,7 @@ func NewCoachHandler(coachService serviceCoachInterface) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
-	v1 := app.Group("/api/v1")
+	v1 := app.Group("/api/v1/coach")
 
 	accessControlRules := map[string]middleware.AccessControlRule{
 		"Admin": {
@@ -30,6 +30,6 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
-	v1.Get("/coach", h.GetCoaches)
-	v1.Post("/coach", h.CreateCoach)
+	v1.Get("/", h.GetCoaches)
+	v1.Post("/", h.CreateCoach)
 }
