@@ -15,3 +15,7 @@ type serviceAuthInterface interface {
 type serviceUserInterface interface {
 	CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
 }
+
+type serviceCoachInterface interface {
+	UpdateCoachPassword(ctx context.Context, password string, confirmPassword string, token string) (err error)
+}

@@ -47,7 +47,17 @@ func (s *Service) CreateCoach(ctx context.Context, payload coach.CreateCoachDTO)
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = s.repoCoach.CreateCoach(ctx, tx, payload.Name, payload.Email, payload.PhoneNumber, payload.Gender, payload.Address)
+	generatePassword := time.Now().String()
+	userId, err := s.repoUser.Create(ctx, tx, payload.Name, payload.Email, generatePassword, constant.RoleIDCoach,
+		payload.PhoneNumber, int(constant.PENDING))
+
+	if err != nil {
+		logger.Print("error", requestId, "Coach service", "CreateCoach", err.Error(), payload)
+		dbtx.HandleRollback(tx)
+		return err
+	}
+
+	err = s.repoCoach.CreateCoach(ctx, tx, userId)
 	if err != nil {
 		logger.Print("error", requestId, "Coach service", "CreateCoach", err.Error(), payload)
 		dbtx.HandleRollback(tx)
@@ -59,7 +69,7 @@ func (s *Service) CreateCoach(ctx context.Context, payload coach.CreateCoachDTO)
 		return httperror.New(fiber.StatusInternalServerError, "Failed to create coach")
 	}
 
-	err = s.SendEmailVerification(ctx, payload.Email)
+	err = s.SendEmailVerification(ctx, payload.Name, payload.Email)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
 	}
@@ -67,11 +77,7 @@ func (s *Service) CreateCoach(ctx context.Context, payload coach.CreateCoachDTO)
 	return nil
 }
 
-func (s *Service) SendEmailVerification(ctx context.Context, email string) error {
-	//if valid := s.validateEmail(ctx, email); !valid {
-	//	return httperror.New(fiber.StatusBadRequest, "email already exists")
-	//}
-
+func (s *Service) SendEmailVerification(ctx context.Context, name string, email string) error {
 	trial, err := s.repoCoach.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
 	if err != nil {
 		return err
@@ -85,7 +91,7 @@ func (s *Service) SendEmailVerification(ctx context.Context, email string) error
 		return err
 	}
 
-	if err := s.emailVerification(email, token, email); err != nil {
+	if err := s.emailVerification(name, token, email); err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
 	}
 
@@ -93,7 +99,7 @@ func (s *Service) SendEmailVerification(ctx context.Context, email string) error
 }
 
 func (s *Service) validateEmail(ctx context.Context, email string) bool {
-	_, err := s.repoCoach.FindByEmail(ctx, email)
+	_, err := s.repoUser.FindByEmail(ctx, email)
 	if err != nil {
 		var customErr *httperror.CustomError
 		if !errors.As(err, &customErr) {
@@ -144,6 +150,50 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 	return token, nil
 }
 
+func (s *Service) UpdateCoachPassword(ctx context.Context, password string, confirmPassword string, token string) (err error) {
+	tx, err := s.repoCoach.StartTx(ctx)
+	requestId := ctx.Value("request_id").(string)
+	logger.Print("info", requestId, "Coach service", "UpdateCoachPassword", "function start", token)
+
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
+	}
+	defer dbtx.HandleRollback(tx)
+
+	if password != confirmPassword {
+		return httperror.New(fiber.StatusBadRequest, "password mismatch")
+	}
+
+	email, err := s.repoCoach.GetTokenEmailVerification(token)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.repoUser.FindByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	err = s.repoCoach.UpdateCoachPassword(ctx, tx, password, email)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.repoUser.DeleteEmailTokenVerification(ctx, tx, email)
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "Failed to create coach")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "Failed to create coach")
+	}
+
+	return nil
+
+}
+
 func (s *Service) emailVerification(name string, token string, email string) error {
 	emailData := struct {
 		Name            string
@@ -157,7 +207,7 @@ func (s *Service) emailVerification(name string, token string, email string) err
 
 	err := s.emailClient.SendMail(
 		[]string{email},
-		"Verify Your Email",
+		"Inspirasi Satu - Email Verification",
 		"template/verification_email.html",
 		emailData,
 	)

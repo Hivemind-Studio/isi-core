@@ -33,8 +33,8 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
-		app.coachHandle,
 		app.authHandle,
+		app.coachHandle,
 		app.userHandle,
 		app.roleHandle,
 		app.coacheeHandle,
@@ -52,11 +52,11 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleService := servicerole.NewRoleService(roleRepo)
 	userService := serviceuser.NewUserService(userRepo)
 	authService := serviceauth.NewAuthService(userRepo, emailClient)
-	coachService := servicecoach.NewCoachService(coachRepo, emailClient)
+	coachService := servicecoach.NewCoachService(coachRepo, userRepo, emailClient)
 	coacheeService := servicecoachee.NewCoacheeService(userRepo)
 
 	roleHandler := handlerole.NewRoleHandler(roleService)
-	authHandler := handleauth.NewAuthHandler(authService, userService)
+	authHandler := handleauth.NewAuthHandler(authService, userService, coachService)
 	userHandler := handleuser.NewUserHandler(userService)
 	coachHandler := handlecoach.NewCoachHandler(coachService)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(coacheeService)

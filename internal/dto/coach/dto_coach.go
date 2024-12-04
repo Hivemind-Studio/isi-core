@@ -7,3 +7,9 @@ type CreateCoachDTO struct {
 	Gender      string `json:"gender" validate:"required"`
 	Address     string `json:"address" validate:"required"`
 }
+
+type PatchPasswordCoach struct {
+	Password          string `json:"password"`
+	ConfirmPassword   string `json:"confirm_password"`
+	VerificationToken string `db:"verification_token"`
+}

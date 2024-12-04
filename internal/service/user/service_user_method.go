@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/internal/enum"
@@ -24,7 +25,7 @@ func (s *Service) CreateUser(ctx context.Context, body *auth.RegistrationDTO) (r
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId, body.PhoneNumber)
+	_, err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId, body.PhoneNumber, int(constant.ACTIVE))
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)

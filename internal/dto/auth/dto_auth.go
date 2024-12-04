@@ -18,6 +18,12 @@ type EmailVerificationDTO struct {
 	Email string `json:"email" validate:"required"`
 }
 
+type CoachRegistrationDTO struct {
+	Password        string `json:"password" validate:"required,min=4"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=4"`
+	Token           string `json:"token" validate:"required"`
+}
+
 type RegisterResponse struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`

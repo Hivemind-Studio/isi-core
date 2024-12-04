@@ -17,23 +17,28 @@ import (
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
-	password string, roleId int64, phoneNumber string) (err error) {
+	password string, roleId int64, phoneNumber string, status int) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
-		return err
+		return 0, err
 	}
 
 	hashedPassword, hashErr := hash.HashPassword(password)
 	if hashErr != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	_, err = tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, userstatus.ACTIVE, 0)
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status, 0)
 	if err != nil {
-		return httperror.New(fiber.StatusConflict, "failed to insert user")
+		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
 	}
 
-	return nil
+	userId, err := result.LastInsertId()
+	if err != nil {
+		return 0, httperror.New(fiber.StatusInternalServerError, "failed to retrieve last inserted user ID")
+	}
+
+	return userId, nil
 }
 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error) {
@@ -235,4 +240,15 @@ func (r *Repository) GetByVerificationTokenAndEmail(ctx context.Context,
 	}
 
 	return &emailVerification, nil
+}
+
+func (r *Repository) DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.Tx, email string) error {
+	query := `DELETE FROM email_verifications WHERE email = ?`
+
+	_, err := tx.ExecContext(ctx, query, email)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
 }

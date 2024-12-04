@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	userstatus "github.com/Hivemind-Studio/isi-core/internal/constant"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
@@ -52,29 +51,9 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	return users, nil
 }
 
-func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx,
-	name string, email string, phoneNumber string, gender string, address string) (err error) {
-	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
-		return err
-	}
-
-	hashedPassword, hashErr := hash.HashPassword("password")
-	if hashErr != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
-	}
-
-	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, gender, address) 
-						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, userstatus.RoleIDCoach, phoneNumber,
-		userstatus.PENDING, 0, gender, address)
-
-	userID, err := result.LastInsertId()
-	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "failed to retrieve last inserted user ID")
-	}
-
+func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx, id int64) (err error) {
 	insertCoachQuery := `INSERT INTO coaches (user_id) VALUES (?)`
-	_, err = tx.ExecContext(ctx, insertCoachQuery, userID)
+	_, err = tx.ExecContext(ctx, insertCoachQuery, id)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "failed to insert coach")
 	}
@@ -105,38 +84,6 @@ func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email s
 	}
 
 	return nil
-}
-
-func (r *Repository) FindByEmail(ctx context.Context, email string) (user.User, error) {
-	var result user.User
-
-	query := `
-		SELECT 
-			users.id, 
-			users.name, 
-			users.email, 
-			users.password, 
-			users.role_id, 
-			roles.name AS role_name 
-		FROM 
-			users 
-		LEFT JOIN 
-			roles 
-		ON 
-			users.role_id = roles.id 
-		WHERE 
-			users.email = ?
-	`
-
-	err := r.GetConnDb().QueryRowxContext(ctx, query, email).StructScan(&result)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return user.User{}, httperror.New(fiber.StatusNotFound, "user not found")
-		}
-		return user.User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
-	}
-
-	return result, nil
 }
 
 func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
@@ -186,4 +133,43 @@ func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context,
 	}
 
 	return &trial, nil
+}
+
+func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
+	query := `
+		SELECT email, expired_at 
+		FROM email_verifications 
+		WHERE verification_token = ?
+	`
+	var email string
+	var expiredAt time.Time
+
+	err := r.GetConnDb().QueryRowxContext(context.Background(), query, token).Scan(&email, &expiredAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", httperror.New(fiber.StatusNotFound, "verification token not found")
+		}
+		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
+	}
+
+	if time.Now().After(expiredAt) {
+		return "", httperror.Wrap(fiber.StatusBadRequest, nil, "verification token is expired")
+	}
+
+	return email, nil
+}
+
+func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, password string, email string) error {
+	hashedPassword, hashErr := hash.HashPassword(password)
+	if hashErr != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+	}
+
+	query := `UPDATE users SET password = ? WHERE email = ?`
+	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
 }

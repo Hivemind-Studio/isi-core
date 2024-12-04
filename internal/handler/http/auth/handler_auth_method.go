@@ -142,3 +142,29 @@ func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
 			Message: "Email verification sent",
 		})
 }
+
+func (h *Handler) PatchPassword(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "PatchPassword"
+
+	var requestBody authdto.CoachRegistrationDTO
+	requestId := c.Locals("request_id").(string)
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Invalid input", string(c.Body()))
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	err := h.coachService.UpdateCoachPassword(c.Context(), requestBody.Password, requestBody.ConfirmPassword, requestBody.Token)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Registration successful!",
+		})
+}
