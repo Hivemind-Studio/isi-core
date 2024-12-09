@@ -1,7 +1,10 @@
 package user
 
 import (
+	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 	"time"
@@ -57,4 +60,26 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		Message: "Users retrieved successfully",
 		Data:    users,
 	})
+}
+
+func (h *Handler) CreateCoach(c *fiber.Ctx) error {
+	var newCoach coach.CreateCoachDTO
+	if err := c.BodyParser(&newCoach); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	if err := validatorhelper.ValidateStruct(newCoach); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	err := h.coachService.CreateCoach(c.Context(), newCoach)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusCreated,
+			Message: "Coach created successfully",
+		})
 }

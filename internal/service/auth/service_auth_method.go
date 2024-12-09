@@ -143,8 +143,32 @@ func (s *Service) emailVerification(name string, token string, email string) err
 
 	err := s.emailClient.SendMail(
 		[]string{email},
-		"Verify Your Email",
+		"Inspirasi Satu - Verify Your Email",
 		"template/verification_email.html",
+		emailData,
+	)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email")
+	}
+
+	return nil
+}
+
+func (s *Service) passwordCreatedEmailNotification(name string, email string) error {
+	emailData := struct {
+		Name      string
+		ContactUs string
+		Year      int
+	}{
+		Name:      name,
+		ContactUs: os.Getenv("CALLBACK_VERIFICATION_URL"),
+		Year:      time.Now().Year(),
+	}
+
+	err := s.emailClient.SendMail(
+		[]string{email},
+		"Inspirasi Satu - Password Created Successfully!",
+		"template/password_created_email.html",
 		emailData,
 	)
 	if err != nil {

@@ -7,7 +7,7 @@ CREATE TABLE users (
    address VARCHAR(255),
    phone_number VARCHAR(20) UNIQUE,
    date_of_birth DATE,
-   gender INT,
+   gender varchar(6),
    occupation VARCHAR(255),
    role_id BIGINT,
    photo VARCHAR(200),

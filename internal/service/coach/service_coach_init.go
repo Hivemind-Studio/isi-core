@@ -1,11 +1,19 @@
 package coach
 
+import (
+	"github.com/Hivemind-Studio/isi-core/pkg/mail"
+)
+
 type Service struct {
-	repoUser repoUserInterface
+	repoCoach   repoCoachInterface
+	repoUser    repoUserInterface
+	emailClient *mail.EmailClient
 }
 
-func NewCoachService(repoUser repoUserInterface) *Service {
+func NewCoachService(repoCoach repoCoachInterface, repoUser repoUserInterface, emailClient *mail.EmailClient) *Service {
 	return &Service{
-		repoUser: repoUser,
+		repoCoach,
+		repoUser,
+		emailClient,
 	}
 }

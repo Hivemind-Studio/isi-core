@@ -7,6 +7,7 @@ import (
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
 	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
+	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	serviceauth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
@@ -33,9 +34,9 @@ type Router interface {
 func routerList(app *AppApi) []Router {
 	return []Router{
 		app.authHandle,
+		app.coachHandle,
 		app.userHandle,
 		app.roleHandle,
-		app.coachHandle,
 		app.coacheeHandle,
 	}
 }
@@ -46,15 +47,16 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 
 	userRepo := repouser.NewUserRepo(dbConn)
 	roleRepo := reporole.NewRoleRepo(dbConn)
+	coachRepo := repoCoach.NewCoachRepo(dbConn)
 
 	roleService := servicerole.NewRoleService(roleRepo)
 	userService := serviceuser.NewUserService(userRepo)
 	authService := serviceauth.NewAuthService(userRepo, emailClient)
-	coachService := servicecoach.NewCoachService(userRepo)
+	coachService := servicecoach.NewCoachService(coachRepo, userRepo, emailClient)
 	coacheeService := servicecoachee.NewCoacheeService(userRepo)
 
 	roleHandler := handlerole.NewRoleHandler(roleService)
-	authHandler := handleauth.NewAuthHandler(authService, userService)
+	authHandler := handleauth.NewAuthHandler(authService, userService, coachService)
 	userHandler := handleuser.NewUserHandler(userService)
 	coachHandler := handlecoach.NewCoachHandler(coachService)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(coacheeService)
