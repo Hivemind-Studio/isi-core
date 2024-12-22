@@ -7,12 +7,17 @@ import (
 )
 
 type Handler struct {
-	coachService serviceCoachInterface
+	getCoachUseCase    GetCoachesUseCaseInterface
+	createCoachUseCase CreateCoachUseCaseInterface
 }
 
-func NewCoachHandler(coachService serviceCoachInterface) *Handler {
+func NewCoachHandler(
+	getCoachUseCase GetCoachesUseCaseInterface,
+	createCoachUseCase CreateCoachUseCaseInterface,
+) *Handler {
 	return &Handler{
-		coachService: coachService,
+		getCoachUseCase:    getCoachUseCase,
+		createCoachUseCase: createCoachUseCase,
 	}
 }
 

@@ -47,7 +47,7 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.coacheeService.GetCoachees(c.Context(), name, email, start, end, page, perPage)
+	users, err := h.getCoacheesUseCase.Execute(c.Context(), name, email, start, end, page, perPage)
 	if err != nil {
 		return err
 	}

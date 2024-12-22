@@ -10,11 +10,18 @@ import (
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
-	serviceauth "github.com/Hivemind-Studio/isi-core/internal/service/auth"
-	servicecoach "github.com/Hivemind-Studio/isi-core/internal/service/coach"
-	servicecoachee "github.com/Hivemind-Studio/isi-core/internal/service/coachee"
-	servicerole "github.com/Hivemind-Studio/isi-core/internal/service/role"
-	serviceuser "github.com/Hivemind-Studio/isi-core/internal/service/user"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachpassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/verifyregistrationtoken"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -49,17 +56,32 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleRepo := reporole.NewRoleRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
 
-	roleService := servicerole.NewRoleService(roleRepo)
-	userService := serviceuser.NewUserService(userRepo)
-	authService := serviceauth.NewAuthService(userRepo, emailClient)
-	coachService := servicecoach.NewCoachService(coachRepo, userRepo, emailClient)
-	coacheeService := servicecoachee.NewCoacheeService(userRepo)
+	createRoleUseCase := createrole.NewCreateRoleUseCase(roleRepo)
+	userLoginUseCase := userlogin.NewLoginUseCase(userRepo)
+	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, emailClient)
+	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
+	createUserUseCase := createuser.NewCreateUserUseCase(userRepo)
+	updateUserStatusUseCase := updateuserstatus.NewUpdateUserStatusUseCase(userRepo)
+	updateCoachPasswordUseCase := updatecoachpassword.NewUpdateCoachPasswordUseCase(coachRepo, userRepo)
+	getUsersUseCase := getusers.NewGetUsersUseCase(userRepo)
+	getUserByIdUseCase := getuserbyid.NewGetUserByIdUseCase(userRepo)
+	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
+	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
+	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
 
-	roleHandler := handlerole.NewRoleHandler(roleService)
-	authHandler := handleauth.NewAuthHandler(authService, userService, coachService)
-	userHandler := handleuser.NewUserHandler(userService)
-	coachHandler := handlecoach.NewCoachHandler(coachService)
-	coacheeHandler := handlecoachee.NewCoacheeHandler(coacheeService)
+	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
+	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
+		sendVerificationUseCase,
+		verificationRegistrationTokenUseCase,
+		createUserUseCase,
+		updateCoachPasswordUseCase)
+	userHandler := handleuser.NewUserHandler(
+		createUserUseCase,
+		getUsersUseCase,
+		getUserByIdUseCase,
+		updateUserStatusUseCase)
+	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase)
+	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase)
 
 	return &AppApi{
 			userHandle:    userHandler,

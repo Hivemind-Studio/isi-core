@@ -7,10 +7,18 @@ import (
 	"time"
 )
 
-type serviceUserInterface interface {
-	CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
-	GetUsers(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
-	) ([]user.UserDTO, error)
-	GetUserByID(ctx context.Context, id int64) (result *user.UserDTO, err error)
-	UpdateUserStatus(ctx context.Context, ids []int64, status string) (err error)
+type CreateUserUseCaseInterface interface {
+	Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+}
+
+type GetUsersUseCaseInterface interface {
+	Execute(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64) ([]user.UserDTO, error)
+}
+
+type GetUserByIDUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) (result *user.UserDTO, err error)
+}
+
+type UpdateUserStatusUseCaseInterface interface {
+	Execute(ctx context.Context, ids []int64, status string) error
 }

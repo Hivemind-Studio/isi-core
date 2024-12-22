@@ -68,6 +68,7 @@ func initEmailClient(cfg *configs.Config) *mail.EmailClient {
 		Username:    mailConfig.Username,
 		Password:    mailConfig.Password,
 		SenderEmail: mailConfig.EmailFrom,
+		SenderName:  mailConfig.NameFrom,
 	})
 
 	return emailClient

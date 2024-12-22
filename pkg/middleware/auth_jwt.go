@@ -22,7 +22,7 @@ type User struct {
 
 func validateUserRoles(accessControlRules map[string]AccessControlRule, apiEndpoint string, method string,
 	user map[string]interface{}) (bool, error) {
-	role, ok := user["role"].(string)
+	role, ok := user["createrole"].(string)
 	if !ok || len(role) == 0 {
 		return false, fmt.Errorf("empty or invalid roles")
 	}
@@ -76,12 +76,12 @@ func JWTAuthMiddleware(accessControlRules map[string]AccessControlRule) fiber.Ha
 
 		name := claims["name"].(string)
 		email := claims["email"].(string)
-		role := claims["role"].(string)
+		role := claims["createrole"].(string)
 
 		user := map[string]interface{}{
-			"name":  name,
-			"email": email,
-			"role":  role,
+			"name":       name,
+			"email":      email,
+			"createrole": role,
 		}
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), user)
@@ -124,10 +124,10 @@ func GenerateToken(user User) (string, error) {
 
 	expirationTime := time.Now().Add(24 * time.Hour).Unix()
 	claims := jwt.MapClaims{
-		"email": user.Email,
-		"name":  user.Name,
-		"role":  user.Role,
-		"exp":   expirationTime,
+		"email":      user.Email,
+		"name":       user.Name,
+		"createrole": user.Role,
+		"exp":        expirationTime,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
