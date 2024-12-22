@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	//"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
