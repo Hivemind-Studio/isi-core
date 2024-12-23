@@ -1,4 +1,4 @@
-package sendverification
+package useremail
 
 import (
 	"context"
@@ -18,12 +18,4 @@ type repoUserInterface interface {
 		expiredAt time.Time) error
 	UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string, targetDate string,
 		token string, expiredAt time.Time) error
-}
-
-type userEmailService interface {
-	ValidateEmail(ctx context.Context, email string) bool
-	HandleTokenGeneration(ctx context.Context, email string, trial int8) (string, error)
-	GenerateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error)
-	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
-	) (*int8, error)
 }

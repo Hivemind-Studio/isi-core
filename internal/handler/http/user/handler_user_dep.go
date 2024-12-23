@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-type CreateUserUseCaseInterface interface {
-	Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+type CreateUserStaffUseCaseInterface interface {
+	Execute(ctx context.Context, body auth.RegistrationStaffDTO) (err error)
 }
 
 type GetUsersUseCaseInterface interface {

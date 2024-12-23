@@ -8,11 +8,11 @@ import (
 
 // ErrorMessages is a map that holds the user-friendly messages for validation errors
 var ErrorMessages = map[string]string{
-	"required": "{field} is required.",
-	"min":      "{field} must be at least {param} characters long.",
-	"max":      "{field} must be no more than {param} characters long.",
-	"email":    "{field} must be a valid email address.",
-	"eqfield":  "{field} must match {param}.",
+	"required":  "{field} is required.",
+	"min":       "{field} must be at least {param} characters long.",
+	"max":       "{field} must be no more than {param} characters long.",
+	"useremail": "{field} must be a valid useremail address.",
+	"eqfield":   "{field} must match {param}.",
 }
 
 // Validator is the instance of the validator

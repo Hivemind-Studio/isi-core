@@ -49,7 +49,7 @@ func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (e
 
 	err = uc.sendEmailVerification(ctx, payload.Name, payload.Email)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send useremail verification")
 	}
 
 	return nil
@@ -61,7 +61,7 @@ func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email
 		return err
 	}
 	if *trial >= 2 {
-		return httperror.New(fiber.StatusTooManyRequests, "email verification limit reached for today")
+		return httperror.New(fiber.StatusTooManyRequests, "useremail verification limit reached for today")
 	}
 
 	token, err := uc.handleTokenGeneration(ctx, email, *trial)
@@ -70,7 +70,7 @@ func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email
 	}
 
 	if err := uc.emailVerification(name, token, email); err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email verification")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send useremail verification")
 	}
 
 	return nil
@@ -131,7 +131,7 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		emailData,
 	)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification email")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification useremail")
 	}
 
 	return nil

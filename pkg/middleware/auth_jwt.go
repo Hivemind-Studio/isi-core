@@ -75,12 +75,12 @@ func JWTAuthMiddleware(accessControlRules map[string]AccessControlRule) fiber.Ha
 		}
 
 		name := claims["name"].(string)
-		email := claims["email"].(string)
+		email := claims["useremail"].(string)
 		role := claims["createrole"].(string)
 
 		user := map[string]interface{}{
 			"name":       name,
-			"email":      email,
+			"useremail":  email,
 			"createrole": role,
 		}
 
@@ -124,7 +124,7 @@ func GenerateToken(user User) (string, error) {
 
 	expirationTime := time.Now().Add(24 * time.Hour).Unix()
 	claims := jwt.MapClaims{
-		"email":      user.Email,
+		"useremail":  user.Email,
 		"name":       user.Name,
 		"createrole": user.Role,
 		"exp":        expirationTime,

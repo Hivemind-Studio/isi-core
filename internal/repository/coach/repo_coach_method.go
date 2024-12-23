@@ -24,7 +24,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		query += " AND email LIKE ?"
+		query += " AND useremail LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.Role != nil {
@@ -75,7 +75,7 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 }
 
 func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string) error {
-	if err := r.checkForDuplicate(ctx, tx, "email", email); err != nil {
+	if err := r.checkForDuplicate(ctx, tx, "useremail", email); err != nil {
 		return err
 	}
 
@@ -90,7 +90,7 @@ func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.
 	token string, expiredAt time.Time,
 ) error {
 	insertQuery := `
-			INSERT INTO email_verifications (email, verification_token, expired_at, trial)
+			INSERT INTO email_verifications (useremail, verification_token, expired_at, trial)
 			VALUES (?, ?, ?, 1)
 		`
 	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt)
@@ -108,7 +108,7 @@ func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.
 	updateQuery := `
 			UPDATE email_verifications
 			SET verification_token = ?, expired_at = ?, trial = trial + 1, updated_at = NOW()
-			WHERE email = ? AND DATE(created_at) = ?
+			WHERE useremail = ? AND DATE(created_at) = ?
 		`
 	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, email, targetDate)
 	if err != nil {
@@ -123,7 +123,7 @@ func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context,
 ) (*int8, error) {
 	filterDate := queryDate.Format("2006-01-02")
 
-	query := `SELECT trial FROM email_verifications WHERE email = ? AND DATE(created_at) = ?`
+	query := `SELECT trial FROM email_verifications WHERE useremail = ? AND DATE(created_at) = ?`
 	var trial int8 = 0
 	err := r.GetConnDb().QueryRowContext(ctx, query, email, filterDate).Scan(&trial)
 	if err != nil {
@@ -137,7 +137,7 @@ func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context,
 
 func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 	query := `
-		SELECT email, expired_at 
+		SELECT useremail, expired_at 
 		FROM email_verifications 
 		WHERE verification_token = ?
 	`
@@ -165,7 +165,7 @@ func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, passw
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	query := `UPDATE users SET password = ? WHERE email = ?`
+	query := `UPDATE users SET password = ? WHERE useremail = ?`
 	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")

@@ -1,4 +1,4 @@
-package sendverification
+package createstaff
 
 import "github.com/Hivemind-Studio/isi-core/pkg/mail"
 
@@ -8,7 +8,7 @@ type UseCase struct {
 	emailClient      *mail.EmailClient
 }
 
-func NewSendVerificationUseCase(repoUser repoUserInterface, userEmailService userEmailService, emailClient *mail.EmailClient) *UseCase {
+func NewCreateUserStaffUseCase(repoUser repoUserInterface, userEmailService userEmailService, emailClient *mail.EmailClient) *UseCase {
 	return &UseCase{
 		repoUser,
 		userEmailService,

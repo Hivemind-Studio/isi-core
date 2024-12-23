@@ -12,6 +12,7 @@ import (
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
@@ -40,9 +41,9 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
+		app.userHandle,
 		app.authHandle,
 		app.coachHandle,
-		app.userHandle,
 		app.roleHandle,
 		app.coacheeHandle,
 	}
@@ -68,6 +69,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
 	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
 	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
+	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, emailClient)
 
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
@@ -76,7 +78,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		createUserUseCase,
 		updateCoachPasswordUseCase)
 	userHandler := handleuser.NewUserHandler(
-		createUserUseCase,
+		createUserStaffUseCase,
 		getUsersUseCase,
 		getUserByIdUseCase,
 		updateUserStatusUseCase)

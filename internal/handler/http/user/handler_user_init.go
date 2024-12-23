@@ -7,20 +7,20 @@ import (
 )
 
 type Handler struct {
-	createUserUsecase       CreateUserUseCaseInterface
+	createUserStaffUseCase  CreateUserStaffUseCaseInterface
 	getUsersUseCase         GetUsersUseCaseInterface
 	getUserByIDUseCase      GetUserByIDUseCaseInterface
 	updateUserStatusUseCase UpdateUserStatusUseCaseInterface
 }
 
 func NewUserHandler(
-	createUserUsecase CreateUserUseCaseInterface,
+	createUserStaffUseCase CreateUserStaffUseCaseInterface,
 	getUsersUseCase GetUsersUseCaseInterface,
 	getUserByIDUseCase GetUserByIDUseCaseInterface,
 	updateUserStatusUseCase UpdateUserStatusUseCaseInterface,
 ) *Handler {
 	return &Handler{
-		createUserUsecase:       createUserUsecase,
+		createUserStaffUseCase:  createUserStaffUseCase,
 		getUsersUseCase:         getUsersUseCase,
 		getUserByIDUseCase:      getUserByIDUseCase,
 		updateUserStatusUseCase: updateUserStatusUseCase,
@@ -30,9 +30,9 @@ func NewUserHandler(
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
-	accessControlRules := h.manageAccessControl()
-
-	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	//accessControlRules := h.manageAccessControl()
+	//
+	//v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
@@ -42,8 +42,8 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
 	accessControlRules := map[string]middleware.AccessControlRule{
-		"coachee": {
-			Role: "Coachee",
+		"Staff": {
+			Role: "Staff",
 			AllowedMethod: map[string][]string{
 				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
 			},

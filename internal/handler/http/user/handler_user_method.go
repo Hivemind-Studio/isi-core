@@ -6,29 +6,22 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
-	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 	"time"
 )
 
 func (h *Handler) Create(c *fiber.Ctx) error {
-	var newUser auth.RegistrationDTO
+	var newUser auth.RegistrationStaffDTO
 	if err := c.BodyParser(&newUser); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
-	}
-
-	err := validator.ValidatePassword(&newUser)
-
-	if err != nil {
-		return err
 	}
 
 	if err := validatorhelper.ValidateStruct(newUser); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	result, err := h.createUserUsecase.Execute(c.Context(), &newUser)
+	err := h.createUserStaffUseCase.Execute(c.Context(), newUser)
 	if err != nil {
 		return err
 	}
@@ -37,13 +30,12 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		response.WebResponse{
 			Status:  fiber.StatusCreated,
 			Message: "User created successfully",
-			Data:    result,
 		})
 }
 
 func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	name := c.Query("name")
-	email := c.Query("email")
+	email := c.Query("useremail")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	pageParam := c.Query("page")
