@@ -50,7 +50,7 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.coachService.GetCoaches(c.Context(), name, email, start, end, page, perPage)
+	users, err := h.getCoachUseCase.Execute(c.Context(), name, email, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (h *Handler) CreateCoach(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.coachService.CreateCoach(c.Context(), newCoach)
+	err := h.createCoachUseCase.Execute(c.Context(), newCoach)
 	if err != nil {
 		return err
 	}

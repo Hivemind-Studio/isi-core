@@ -5,16 +5,25 @@ import (
 )
 
 type Handler struct {
-	authService  serviceAuthInterface
-	userService  serviceUserInterface
-	coachService serviceCoachInterface
+	loginUseCase                   LoginUseCaseInterface
+	sendEmailVerificationUseCase   SendVerificationUseCaseInterface
+	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface
+	createUserUseCase              CreateUserUseCaseInterface
+	updateCoachPasswordUseCase     UpdateCoachPasswordInterface
 }
 
-func NewAuthHandler(authService serviceAuthInterface, userService serviceUserInterface, coachService serviceCoachInterface) *Handler {
+func NewAuthHandler(
+	loginUseCase LoginUseCaseInterface,
+	sendVerificationUseCase SendVerificationUseCaseInterface,
+	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface,
+	createUserUseCase CreateUserUseCaseInterface,
+	updateCoachPasswordUseCase UpdateCoachPasswordInterface) *Handler {
 	return &Handler{
-		authService,
-		userService,
-		coachService,
+		loginUseCase,
+		sendVerificationUseCase,
+		verifyRegistrationTokenUseCase,
+		createUserUseCase,
+		updateCoachPasswordUseCase,
 	}
 }
 

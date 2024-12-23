@@ -18,7 +18,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	result, err := h.authService.Login(c.Context(), &loginDTO)
+	result, err := h.loginUseCase.Execute(c.Context(), &loginDTO)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.authService.VerifyRegistrationToken(c.Context(),
+	if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
 		requestBody.Email, requestBody.Token); err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, err.Error())
 	}
 
-	result, err := h.userService.CreateUser(c.Context(), &requestBody)
+	result, err := h.createUserUseCase.Execute(c.Context(), &requestBody)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
@@ -104,7 +104,7 @@ func (h *Handler) SendEmailVerification(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
+	if err := h.sendEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
@@ -130,7 +130,7 @@ func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.authService.SendEmailVerification(c.Context(), requestBody.Email); err != nil {
+	if err := h.sendEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
@@ -156,7 +156,8 @@ func (h *Handler) PatchPassword(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.coachService.UpdateCoachPassword(c.Context(), requestBody.Password, requestBody.ConfirmPassword, requestBody.Token)
+	err := h.updateCoachPasswordUseCase.Execute(c.Context(), requestBody.Password,
+		requestBody.ConfirmPassword, requestBody.Token)
 
 	if err != nil {
 		return err

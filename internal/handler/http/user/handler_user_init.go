@@ -7,12 +7,23 @@ import (
 )
 
 type Handler struct {
-	userService serviceUserInterface
+	createUserUsecase       CreateUserUseCaseInterface
+	getUsersUseCase         GetUsersUseCaseInterface
+	getUserByIDUseCase      GetUserByIDUseCaseInterface
+	updateUserStatusUseCase UpdateUserStatusUseCaseInterface
 }
 
-func NewUserHandler(userService serviceUserInterface) *Handler {
+func NewUserHandler(
+	createUserUsecase CreateUserUseCaseInterface,
+	getUsersUseCase GetUsersUseCaseInterface,
+	getUserByIDUseCase GetUserByIDUseCaseInterface,
+	updateUserStatusUseCase UpdateUserStatusUseCaseInterface,
+) *Handler {
 	return &Handler{
-		userService: userService,
+		createUserUsecase:       createUserUsecase,
+		getUsersUseCase:         getUsersUseCase,
+		getUserByIDUseCase:      getUserByIDUseCase,
+		updateUserStatusUseCase: updateUserStatusUseCase,
 	}
 }
 

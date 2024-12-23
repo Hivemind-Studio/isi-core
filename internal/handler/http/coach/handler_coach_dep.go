@@ -7,8 +7,11 @@ import (
 	"time"
 )
 
-type serviceCoachInterface interface {
-	GetCoaches(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
+type GetCoachesUseCaseInterface interface {
+	Execute(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
-	CreateCoach(ctx context.Context, payload coach.CreateCoachDTO) (err error)
+}
+
+type CreateCoachUseCaseInterface interface {
+	Execute(ctx context.Context, payload coach.CreateCoachDTO) (err error)
 }

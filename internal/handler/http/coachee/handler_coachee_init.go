@@ -7,12 +7,12 @@ import (
 )
 
 type Handler struct {
-	coacheeService serviceCoacheeInterface
+	getCoacheesUseCase GetCoacheesUseCaseInterface
 }
 
-func NewCoacheeHandler(coacheeService serviceCoacheeInterface) *Handler {
+func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface) *Handler {
 	return &Handler{
-		coacheeService: coacheeService,
+		getCoacheesUseCase: getCoacheesUseCase,
 	}
 }
 

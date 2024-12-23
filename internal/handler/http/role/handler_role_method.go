@@ -19,7 +19,7 @@ func (h *Handler) CreateRole(c *fiber.Ctx) error {
 			})
 	}
 
-	result, err := h.roleService.CreateRole(c, dto.Name)
+	result, err := h.createRoleUseCase.Execute(c, dto.Name)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(
 			response.WebResponse{

@@ -28,7 +28,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	result, err := h.userService.CreateUser(c.Context(), &newUser)
+	result, err := h.createUserUsecase.Execute(c.Context(), &newUser)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.userService.GetUsers(c.Context(), name, email, start, end, page, perPage)
+	users, err := h.getUsersUseCase.Execute(c.Context(), name, email, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
 	}
 
-	res, err := h.userService.GetUserByID(c.Context(), id)
+	res, err := h.getUserByIDUseCase.Execute(c.Context(), id)
 
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.userService.UpdateUserStatus(c.Context(), payload.Ids, payload.UpdatedStatus)
+	err := h.updateUserStatusUseCase.Execute(c.Context(), payload.Ids, payload.UpdatedStatus)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update status users")

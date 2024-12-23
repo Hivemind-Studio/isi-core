@@ -6,16 +6,26 @@ import (
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 )
 
-type serviceAuthInterface interface {
-	Login(ctx context.Context, body *auth.LoginDTO) (result dto.UserDTO, err error)
-	SendEmailVerification(ctx context.Context, email string) error
-	VerifyRegistrationToken(ctx context.Context, email string, token string) (err error)
+type LoginUseCaseInterface interface {
+	Execute(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error)
 }
 
-type serviceUserInterface interface {
-	CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+type SendVerificationUseCaseInterface interface {
+	Execute(ctx context.Context, email string) error
 }
 
-type serviceCoachInterface interface {
-	UpdateCoachPassword(ctx context.Context, password string, confirmPassword string, token string) (err error)
+type VerifyRegistrationTokenUseCaseInterface interface {
+	Execute(ctx context.Context, registrationToken string, token string) (err error)
+}
+
+type CreateUserUseCaseInterface interface {
+	Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+}
+
+type UpdateUserUseCaseInterface interface {
+	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
+}
+
+type UpdateCoachPasswordInterface interface {
+	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
 }

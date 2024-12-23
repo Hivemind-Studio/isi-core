@@ -14,7 +14,7 @@ type UserDTO struct {
 	Gender      *enum.Gender `json:"gender"`
 	Occupation  *string      `json:"occupation"`
 	Status      *bool        `json:"status"`
-	Role        *string      `json:"role"`
+	Role        *string      `json:"createrole"`
 	Photo       *string      `json:"photo"`
 	CreatedAt   *time.Time   `json:"created_at"`
 }
@@ -22,7 +22,7 @@ type UserDTO struct {
 type GetUsersDTO struct {
 	Name      string     `json:"name"`
 	Email     string     `json:"email"`
-	Role      *int64     `json:"role"`
+	Role      *int64     `json:"createrole"`
 	StartDate *time.Time `json:"start_date"`
 	EndDate   *time.Time `json:"end_date"`
 }

@@ -3,17 +3,17 @@ package role
 import "github.com/gofiber/fiber/v2"
 
 type Handler struct {
-	roleService serviceRoleInterface
+	createRoleUseCase CreateRoleUseCaseInterface
 }
 
-func NewRoleHandler(roleService serviceRoleInterface) *Handler {
+func NewRoleHandler(createRoleUseCase CreateRoleUseCaseInterface) *Handler {
 	return &Handler{
-		roleService,
+		createRoleUseCase,
 	}
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
-	v1.Post("/role", h.CreateRole)
+	v1.Post("/createrole", h.CreateRole)
 }

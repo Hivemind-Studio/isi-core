@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-type serviceCoacheeInterface interface {
-	GetCoachees(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
+type GetCoacheesUseCaseInterface interface {
+	Execute(ctx context.Context, name string, email string, startDate,
+		endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
 }
