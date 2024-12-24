@@ -1,17 +1,16 @@
 package sendverification
 
-import "github.com/Hivemind-Studio/isi-core/pkg/mail"
-
 type UseCase struct {
 	repoUser         repoUserInterface
 	userEmailService userEmailService
-	emailClient      *mail.EmailClient
 }
 
-func NewSendVerificationUseCase(repoUser repoUserInterface, userEmailService userEmailService, emailClient *mail.EmailClient) *UseCase {
+func NewSendVerificationUseCase(
+	repoUser repoUserInterface,
+	userEmailService userEmailService,
+) *UseCase {
 	return &UseCase{
 		repoUser,
 		userEmailService,
-		emailClient,
 	}
 }

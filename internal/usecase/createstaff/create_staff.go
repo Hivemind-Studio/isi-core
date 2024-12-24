@@ -44,22 +44,18 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "Transaction commit failed")
 	}
 
-	// sendEmail
 	err = uc.sendEmailVerification(ctx, body.Name, body.Email)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send useremail verification")
+		return err
 	}
 
 	return nil
 }
 
 func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email string) error {
-	trial, err := uc.userEmailService.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
 	if err != nil {
 		return err
-	}
-	if *trial >= 2 {
-		return httperror.New(fiber.StatusTooManyRequests, "useremail verification limit reached for today")
 	}
 
 	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial)
@@ -68,7 +64,7 @@ func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email
 	}
 
 	if err := uc.emailVerification(name, token, email); err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send useremail verification")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send user email verification")
 	}
 
 	return nil
@@ -81,16 +77,16 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		Year            int
 	}{
 		Name:            name,
-		VerificationURL: fmt.Sprintf("%s/register/password/token=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
 		Year:            time.Now().Year(),
 	}
 
-	err := uc.emailClient.SendMail(
-		[]string{email},
+	err := uc.userEmailService.SendEmail([]string{email},
 		"Inspirasi Satu - Verify Your Email",
 		"template/verification_email.html",
 		emailData,
 	)
+
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification user email")
 	}

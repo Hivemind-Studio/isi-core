@@ -10,6 +10,7 @@ import (
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	"github.com/Hivemind-Studio/isi-core/internal/service/useremail"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
@@ -57,9 +58,11 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleRepo := reporole.NewRoleRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
 
+	userEmailService := useremail.NewUserEmailService(userRepo, emailClient)
+
 	createRoleUseCase := createrole.NewCreateRoleUseCase(roleRepo)
 	userLoginUseCase := userlogin.NewLoginUseCase(userRepo)
-	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, emailClient)
+	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, userEmailService)
 	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
 	createUserUseCase := createuser.NewCreateUserUseCase(userRepo)
 	updateUserStatusUseCase := updateuserstatus.NewUpdateUserStatusUseCase(userRepo)
@@ -69,7 +72,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
 	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
 	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
-	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, emailClient)
+	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
 
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,

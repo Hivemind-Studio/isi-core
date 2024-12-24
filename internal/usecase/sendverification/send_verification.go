@@ -14,12 +14,9 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		return httperror.New(fiber.StatusBadRequest, "useremail already exists")
 	}
 
-	trial, err := uc.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
 	if err != nil {
 		return err
-	}
-	if *trial >= 2 {
-		return httperror.New(fiber.StatusTooManyRequests, "useremail verification limit reached for today")
 	}
 
 	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial)
@@ -28,7 +25,7 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	}
 
 	if err := uc.emailVerification(email, token, email); err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send useremail verification")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send user email verification")
 	}
 
 	return nil
@@ -45,12 +42,12 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		Year:            time.Now().Year(),
 	}
 
-	err := uc.emailClient.SendMail(
-		[]string{email},
+	err := uc.userEmailService.SendEmail([]string{email},
 		"Inspirasi Satu - Verify Your Email",
 		"template/verification_email.html",
 		emailData,
 	)
+
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification user email")
 	}

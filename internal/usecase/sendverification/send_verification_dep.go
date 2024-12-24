@@ -23,7 +23,6 @@ type repoUserInterface interface {
 type userEmailService interface {
 	ValidateEmail(ctx context.Context, email string) bool
 	HandleTokenGeneration(ctx context.Context, email string, trial int8) (string, error)
-	GenerateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error)
-	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
-	) (*int8, error)
+	ValidateTrialByDate(ctx context.Context, email string) (*int8, error)
+	SendEmail(recipients []string, subject, templatePath string, emailData interface{}) error
 }

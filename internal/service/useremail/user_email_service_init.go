@@ -2,13 +2,14 @@ package useremail
 
 import "github.com/Hivemind-Studio/isi-core/pkg/mail"
 
-type UseCase struct {
+type Service struct {
 	repoUser    repoUserInterface
 	emailClient *mail.EmailClient
 }
 
-func NewSendVerificationUseCase(repoUser repoUserInterface, emailClient *mail.EmailClient) *UseCase {
-	return &UseCase{
+func NewUserEmailService(repoUser repoUserInterface, emailClient *mail.EmailClient,
+) *Service {
+	return &Service{
 		repoUser,
 		emailClient,
 	}

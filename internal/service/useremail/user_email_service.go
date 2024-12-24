@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-func (uc *UseCase) ValidateEmail(ctx context.Context, email string) bool {
-	_, err := uc.repoUser.FindByEmail(ctx, email)
+func (s *Service) ValidateEmail(ctx context.Context, email string) bool {
+	_, err := s.repoUser.FindByEmail(ctx, email)
 	if err != nil {
 		var customErr *httperror.CustomError
 		if !errors.As(err, &customErr) {
@@ -26,14 +26,26 @@ func (uc *UseCase) ValidateEmail(ctx context.Context, email string) bool {
 	return false
 }
 
-func (uc *UseCase) HandleTokenGeneration(ctx context.Context, email string, trial int8) (string, error) {
-	tx, err := uc.repoUser.StartTx(ctx)
+func (s *Service) ValidateTrialByDate(ctx context.Context, email string) (*int8, error) {
+	trial, err := s.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
+	if err != nil {
+		return trial, err
+	}
+	if *trial >= 2 {
+		return trial, httperror.New(fiber.StatusTooManyRequests, "user email verification limit reached for today")
+	}
+
+	return trial, nil
+}
+
+func (s *Service) HandleTokenGeneration(ctx context.Context, email string, trial int8) (string, error) {
+	tx, err := s.repoUser.StartTx(ctx)
 	if err != nil {
 		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to start transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
-	token, err := uc.GenerateAndSaveToken(ctx, tx, email, trial)
+	token, err := s.generateAndSaveToken(ctx, tx, email, trial)
 	if err != nil {
 		return "", err
 	}
@@ -45,20 +57,28 @@ func (uc *UseCase) HandleTokenGeneration(ctx context.Context, email string, tria
 	return token, nil
 }
 
-func (uc *UseCase) GenerateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error) {
+func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error) {
 	token := utils.GenerateVerificationToken()
 	expiredAt := time.Now().Add(1 * time.Hour)
 	currentDate := time.Now().Format("2006-01-02")
 
 	if trial == 0 {
-		if err := uc.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt); err != nil {
+		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {
-		if err := uc.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, token, expiredAt); err != nil {
+		if err := s.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, token, expiredAt); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update verification record")
 		}
 	}
 
 	return token, nil
+}
+
+func (s *Service) SendEmail(recipients []string, subject, templatePath string, emailData interface{}) error {
+	err := s.emailClient.SendMail(recipients, subject, templatePath, emailData)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email")
+	}
+	return nil
 }

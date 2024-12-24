@@ -30,9 +30,8 @@ func NewUserHandler(
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1")
 
-	//accessControlRules := h.manageAccessControl()
-	//
-	//v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	accessControlRules := h.manageAccessControl()
+	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Post("/users", h.Create)
 	v1.Get("/users", h.GetUsers)
