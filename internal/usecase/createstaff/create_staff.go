@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	user2 "github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	staff "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -16,7 +16,7 @@ import (
 func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
-	logger.Print("info", requestId, "User service", "CreateUser", "function start", body)
+	logger.Print("info", requestId, "User service", "CreateStaff", "function start", body)
 
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
@@ -24,7 +24,7 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 	defer dbtx.HandleRollback(tx)
 
 	generatePassword := time.Now().String()
-	user := user2.User{
+	user := staff.User{
 		Name:     body.Name,
 		Email:    body.Email,
 		Password: generatePassword,
@@ -34,9 +34,9 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 	_, err = uc.repoUser.CreateStaff(ctx, tx, user)
 
 	if err != nil {
-		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
+		logger.Print("error", requestId, "User service", "CreateStaff", err.Error(), body)
 		dbtx.HandleRollback(tx)
-		return nil
+		return err
 	}
 
 	err = tx.Commit()
@@ -46,10 +46,10 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 
 	err = uc.sendEmailVerification(ctx, body.Name, body.Email)
 	if err != nil {
-		return err
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "Sending email verification failed")
 	}
 
-	return nil
+	return err
 }
 
 func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email string) error {
@@ -77,7 +77,7 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		Year            int
 	}{
 		Name:            name,
-		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+		VerificationURL: fmt.Sprintf("%sregister/token=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
 		Year:            time.Now().Year(),
 	}
 
