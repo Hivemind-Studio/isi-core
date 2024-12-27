@@ -19,8 +19,8 @@ CREATE TABLE users (
 );
 --
 -- CREATE INDEX idx_users_name ON users(name);
--- CREATE INDEX idx_users_email ON users(useremail);
--- CREATE INDEX idx_users_name_email ON users(name, useremail);
+-- CREATE INDEX idx_users_email ON users(email);
+-- CREATE INDEX idx_users_name_email ON users(name, email);
 
 
 -- +goose Down

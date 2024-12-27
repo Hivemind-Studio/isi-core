@@ -12,7 +12,7 @@ import (
 
 func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 	name := c.Query("name")
-	email := c.Query("useremail")
+	email := c.Query("email")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	pageParam := c.Query("page")

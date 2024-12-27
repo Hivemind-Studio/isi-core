@@ -75,13 +75,13 @@ func JWTAuthMiddleware(accessControlRules map[string]AccessControlRule) fiber.Ha
 		}
 
 		name := claims["name"].(string)
-		email := claims["useremail"].(string)
-		role := claims["createrole"].(string)
+		email := claims["email"].(string)
+		role := claims["role"].(string)
 
 		user := map[string]interface{}{
-			"name":       name,
-			"useremail":  email,
-			"createrole": role,
+			"name":  name,
+			"email": email,
+			"role":  role,
 		}
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), user)
@@ -124,10 +124,10 @@ func GenerateToken(user User) (string, error) {
 
 	expirationTime := time.Now().Add(24 * time.Hour).Unix()
 	claims := jwt.MapClaims{
-		"useremail":  user.Email,
-		"name":       user.Name,
-		"createrole": user.Role,
-		"exp":        expirationTime,
+		"email": user.Email,
+		"name":  user.Name,
+		"role":  user.Role,
+		"exp":   expirationTime,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

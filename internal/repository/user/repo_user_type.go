@@ -11,7 +11,7 @@ type User struct {
 	RoleName     *string    `db:"role_name"`
 	Password     string     `db:"password"`
 	Name         string     `db:"name"`
-	Email        string     `db:"useremail"`
+	Email        string     `db:"email"`
 	Address      string     `db:"address"`
 	PhoneNumber  string     `db:"phone_number"`
 	DateOfBirth  *time.Time `db:"date_of_birth"`
@@ -26,7 +26,7 @@ type User struct {
 
 type EmailVerification struct {
 	Id                int64     `db:"id"`
-	Email             string    `db:"useremail"`
+	Email             string    `db:"email"`
 	VerificationToken string    `db:"verification_token"`
 	Trial             int8      `db:"trial"`
 	ExpiredAt         time.Time `db:"expired_at"`

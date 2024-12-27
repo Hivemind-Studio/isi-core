@@ -23,7 +23,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	err := h.createUserStaffUseCase.Execute(c.Context(), newUser)
 	if err != nil {
-		return err
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "Failed to create user")
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(
@@ -35,7 +35,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	name := c.Query("name")
-	email := c.Query("useremail")
+	email := c.Query("email")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	pageParam := c.Query("page")

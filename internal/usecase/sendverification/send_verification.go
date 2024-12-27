@@ -3,10 +3,11 @@ package sendverification
 import (
 	"context"
 	"fmt"
-	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/gofiber/fiber/v2"
 	"os"
 	"time"
+
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/gofiber/fiber/v2"
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
