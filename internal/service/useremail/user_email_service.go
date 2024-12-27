@@ -7,9 +7,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
-	"os"
 	"time"
 )
 
@@ -56,8 +54,7 @@ func (s *Service) HandleTokenGeneration(ctx context.Context, email string, trial
 		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to commit transaction")
 	}
 
-	emailTokenJWT, err := GenerateEmailTokenJWT(email, token)
-	return emailTokenJWT, nil
+	return token, nil
 }
 
 func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error) {
@@ -84,23 +81,4 @@ func (s *Service) SendEmail(recipients []string, subject, templatePath string, e
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send email")
 	}
 	return nil
-}
-
-func GenerateEmailTokenJWT(email string, emailToken string) (string, error) {
-	claims := jwt.MapClaims{
-		"token": email,
-		"email": emailToken,
-		"exp":   time.Now().Add(time.Duration(1) * time.Hour).Unix(),
-		"iat":   time.Now().Unix(),
-		"iss":   "inspirasi-satu",
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
