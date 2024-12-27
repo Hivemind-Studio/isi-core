@@ -91,9 +91,9 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) SendEmailVerification(c *fiber.Ctx) error {
+func (h *Handler) EmailVerification(c *fiber.Ctx) error {
 	module := "Auth Handler"
-	functionName := "SendEmailVerification"
+	functionName := "EmailVerification"
 
 	var requestBody authdto.EmailVerificationDTO
 	requestId := c.Locals("request_id").(string)
@@ -143,9 +143,9 @@ func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) PatchPassword(c *fiber.Ctx) error {
+func (h *Handler) UpdatePassword(c *fiber.Ctx) error {
 	module := "Auth Handler"
-	functionName := "PatchPassword"
+	functionName := "UpdatePassword"
 
 	var requestBody authdto.CoachRegistrationDTO
 	requestId := c.Locals("request_id").(string)
@@ -166,6 +166,33 @@ func (h *Handler) PatchPassword(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
-			Message: "Registration successful!",
+			Message: "Update Password successful!",
+		})
+}
+
+func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "ForgotPassword"
+
+	var requestBody authdto.ForgotPasswordDTO
+	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, module, functionName,
+		"", string(c.Body()))
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Invalid input", string(c.Body()))
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	err := h.forgotPasswordUseCase.Execute(c.Context(), requestBody.Email)
+
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusCreated).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusCreated,
+			Message: "Forgot Password successful!",
 		})
 }

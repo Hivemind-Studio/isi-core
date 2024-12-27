@@ -10,6 +10,7 @@ type Handler struct {
 	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface
 	createUserUseCase              CreateUserUseCaseInterface
 	updateCoachPasswordUseCase     UpdateCoachPasswordInterface
+	forgotPasswordUseCase          ForgotPasswordUseCaseInterface
 }
 
 func NewAuthHandler(
@@ -17,13 +18,15 @@ func NewAuthHandler(
 	sendVerificationUseCase SendVerificationUseCaseInterface,
 	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface,
 	createUserUseCase CreateUserUseCaseInterface,
-	updateCoachPasswordUseCase UpdateCoachPasswordInterface) *Handler {
+	updateCoachPasswordUseCase UpdateCoachPasswordInterface,
+	forgotPasswordUseCase ForgotPasswordUseCaseInterface) *Handler {
 	return &Handler{
 		loginUseCase,
 		sendVerificationUseCase,
 		verifyRegistrationTokenUseCase,
 		createUserUseCase,
 		updateCoachPasswordUseCase,
+		forgotPasswordUseCase,
 	}
 }
 
@@ -32,6 +35,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 	v1.Post("/login", h.Login)
 	v1.Post("/register", h.Create)
-	v1.Post("/verify-useremail", h.SendEmailVerification)
-	v1.Patch("/coach/password", h.PatchPassword)
+	v1.Post("/email/verify", h.EmailVerification)
+	v1.Patch("/password", h.UpdatePassword)
+	v1.Post("/password/recover", h.ForgotPassword)
 }

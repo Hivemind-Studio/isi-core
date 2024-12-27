@@ -45,3 +45,7 @@ type LoginResponse struct {
 	Photo string `json:"photo"`
 	Token string `json:"token"`
 }
+
+type ForgotPasswordDTO struct {
+	Email string `json:"email" validate:"required,email"`
+}

@@ -15,6 +15,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
@@ -74,12 +75,15 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
 	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
 
+	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
+
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
 		sendVerificationUseCase,
 		verificationRegistrationTokenUseCase,
 		createUserUseCase,
-		updateCoachPasswordUseCase)
+		updateCoachPasswordUseCase,
+		forgotPasswordUseCase)
 	userHandler := handleuser.NewUserHandler(
 		createUserStaffUseCase,
 		getUsersUseCase,

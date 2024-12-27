@@ -29,3 +29,7 @@ type UpdateUserUseCaseInterface interface {
 type UpdateCoachPasswordInterface interface {
 	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
 }
+
+type ForgotPasswordUseCaseInterface interface {
+	Execute(ctx context.Context, email string) (err error)
+}
