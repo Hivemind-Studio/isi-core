@@ -6,6 +6,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	"os"
 	"strings"
 	"time"
 
@@ -39,7 +40,7 @@ func main() {
 		r.RegisterRoutes(app)
 	}
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 }
 
 func dbInitConnection(cfg *configs.Config) *sqlx.DB {
