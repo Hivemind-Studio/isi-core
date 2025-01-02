@@ -8,7 +8,8 @@ import (
 )
 
 type GetCoachesUseCaseInterface interface {
-	Execute(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64,
+	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
+		endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
 }
 

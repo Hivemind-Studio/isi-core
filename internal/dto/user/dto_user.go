@@ -19,11 +19,14 @@ type UserDTO struct {
 }
 
 type GetUsersDTO struct {
-	Name      string     `json:"name"`
-	Email     string     `json:"email"`
-	Role      *int64     `json:"createrole"`
-	StartDate *time.Time `json:"start_date"`
-	EndDate   *time.Time `json:"end_date"`
+	Name        string     `json:"name"`
+	Email       string     `json:"email"`
+	PhoneNumber string     `json:"phone_number"`
+	Status      string     `json:"status"`
+	Level       string     `json:"level"`
+	Role        *int64     `json:"role"`
+	StartDate   *time.Time `json:"start_date"`
+	EndDate     *time.Time `json:"end_date"`
 }
 
 type SuspendDTO struct {

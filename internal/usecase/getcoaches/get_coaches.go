@@ -10,15 +10,18 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, name string, email string, startDate,
+func (uc *UseCase) Execute(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
 	endDate *time.Time, page int64, perPage int64,
 ) ([]userdto.UserDTO, error) {
 	coachRoleId := constant.RoleIDCoach
 	params := userdto.GetUsersDTO{Name: name,
-		Email:     email,
-		StartDate: startDate,
-		EndDate:   endDate,
-		Role:      &coachRoleId,
+		Email:       email,
+		StartDate:   startDate,
+		PhoneNumber: phoneNumber,
+		Status:      status,
+		Level:       level,
+		EndDate:     endDate,
+		Role:        &coachRoleId,
 	}
 	users, err := uc.repoCoach.GetUsers(ctx, params, page, perPage)
 	if err != nil {

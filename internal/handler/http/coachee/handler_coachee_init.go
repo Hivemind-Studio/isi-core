@@ -17,18 +17,22 @@ func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface) *Handler 
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
-	v1 := app.Group("/api/v1")
+	v1 := app.Group("/api/v1/coachees")
 
+	accessControlRules := h.manageAccessControl()
+	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+
+	v1.Post("/", h.GetCoachees)
+}
+
+func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
 	accessControlRules := map[string]middleware.AccessControlRule{
-		"Admin": {
-			Role: "Admin",
+		"Staff": {
+			Role: "Staff",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/coaches": {"GET", "POST", "DELETE"},
+				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
 	}
-
-	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
-
-	v1.Post("/coaches", h.GetCoaches)
+	return accessControlRules
 }

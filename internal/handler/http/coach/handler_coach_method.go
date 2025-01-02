@@ -13,6 +13,9 @@ import (
 func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 	name := c.Query("name")
 	email := c.Query("email")
+	phoneNumber := c.Query("phone_number")
+	status := c.Query("status")
+	level := c.Query("level")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	pageParam := c.Query("page")
@@ -50,7 +53,7 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.getCoachUseCase.Execute(c.Context(), name, email, start, end, page, perPage)
+	users, err := h.getCoachUseCase.Execute(c.Context(), name, email, phoneNumber, status, level, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
