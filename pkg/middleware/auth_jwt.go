@@ -22,7 +22,7 @@ type User struct {
 
 func validateUserRoles(accessControlRules map[string]AccessControlRule, apiEndpoint string, method string,
 	user map[string]interface{}) (bool, error) {
-	role, ok := user["createrole"].(string)
+	role, ok := user["role"].(string)
 	if !ok || len(role) == 0 {
 		return false, fmt.Errorf("empty or invalid roles")
 	}
@@ -83,6 +83,7 @@ func JWTAuthMiddleware(accessControlRules map[string]AccessControlRule) fiber.Ha
 			"email": email,
 			"role":  role,
 		}
+		fmt.Print(user)
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), user)
 		if err != nil || !validRole {
