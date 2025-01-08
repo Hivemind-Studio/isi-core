@@ -22,7 +22,7 @@ func NewCoachHandler(
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
-	v1 := app.Group("/api/v1/coach")
+	v1 := app.Group("/api/v1/coaches")
 
 	accessControlRules := h.manageAccessControl()
 
@@ -37,7 +37,13 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"Admin": {
 			Role: "Admin",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/coach": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/coaches": {"GET", "POST", "DELETE", "PATCH"},
+			},
+		},
+		"Staff": {
+			Role: "Staff",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/coaches": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
 	}

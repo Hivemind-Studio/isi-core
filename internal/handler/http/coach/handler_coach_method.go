@@ -60,7 +60,7 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
-		Message: "Users retrieved successfully",
+		Message: "Coaches retrieved successfully",
 		Data:    users,
 	})
 }

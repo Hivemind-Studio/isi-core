@@ -13,42 +13,60 @@ import (
 	"time"
 )
 
-func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
-) ([]user.User, error) {
+func (r *Repository) GetCoaches(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error) {
 	var users []user.User
-	query := "SELECT * FROM users WHERE 1=1"
+	query := `
+				SELECT 
+			users.id AS id,
+			users.name AS name,
+			users.email AS email,
+			users.address AS address,
+			users.phone_number AS phone_number,
+			users.date_of_birth AS date_of_birth,
+			users.gender AS gender,
+			users.verification AS verification,
+			users.occupation AS occupation,
+			users.photo AS photo,
+			users.status AS status,
+			users.created_at AS created_at,
+			users.updated_at AS updated_at
+		FROM 
+			users
+		JOIN 
+			coaches ON users.id = coaches.id
+		JOIN 
+			roles ON users.role_id = roles.id
+		WHERE 
+			users.role_id = 3
+	`
 	var args []interface{}
 
 	if params.Name != "" {
-		query += " AND name LIKE ?"
+		query += " AND users.name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		query += " AND email LIKE ?"
+		query += " AND users.email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.PhoneNumber != "" {
-		query += " AND phone_number LIKE ?"
+		query += " AND users.phone_number LIKE ?"
 		args = append(args, "%"+params.PhoneNumber+"%")
 	}
 	if params.Level != "" {
-		query += " AND level LIKE ?"
+		query += " AND coaches.level LIKE ?"
 		args = append(args, "%"+params.Level+"%")
 	}
 	if params.Status != "" {
-		query += " AND status LIKE ?"
+		query += " AND users.status LIKE ?"
 		args = append(args, "%"+params.Status+"%")
 	}
-	if params.Role != nil {
-		query += " AND role_id = ?"
-		args = append(args, params.Role)
-	}
 	if params.StartDate != nil {
-		query += " AND created_at >= ?"
+		query += " AND users.created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		query += " AND created_at <= ?"
+		query += " AND users.created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
@@ -57,7 +75,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 
 	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
 	if err != nil {
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve coaches")
 	}
 
 	return users, nil

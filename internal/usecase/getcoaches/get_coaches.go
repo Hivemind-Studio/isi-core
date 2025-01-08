@@ -23,7 +23,7 @@ func (uc *UseCase) Execute(ctx context.Context, name string, email string, phone
 		EndDate:     endDate,
 		Role:        &coachRoleId,
 	}
-	users, err := uc.repoCoach.GetUsers(ctx, params, page, perPage)
+	users, err := uc.repoCoach.GetCoaches(ctx, params, page, perPage)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
 	}

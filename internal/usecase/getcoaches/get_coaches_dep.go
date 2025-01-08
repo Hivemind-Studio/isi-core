@@ -10,5 +10,5 @@ import (
 type repoCoachInterface interface {
 	dbtx.DBTXInterface
 
-	GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error)
+	GetCoaches(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error)
 }

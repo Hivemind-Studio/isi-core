@@ -3,6 +3,7 @@ INSERT INTO roles
 ( name )
 VALUES
     ('Admin'),
+    ('Staff'),
     ('Coach'),
     ('Coachee');
 
