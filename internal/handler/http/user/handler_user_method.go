@@ -36,8 +36,10 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	name := c.Query("name")
 	email := c.Query("email")
+	phoneNumber := c.Query("phone_number")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
+	status := c.Query("status")
 	pageParam := c.Query("page")
 	perPageParam := c.Query("per_page")
 
@@ -73,7 +75,7 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.getUsersUseCase.Execute(c.Context(), name, email, start, end, page, perPage)
+	users, err := h.getUsersUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end, page, perPage)
 	if err != nil {
 		return err
 	}

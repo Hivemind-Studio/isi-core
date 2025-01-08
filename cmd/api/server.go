@@ -43,8 +43,8 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
-		app.userHandle,
 		app.authHandle,
+		app.userHandle,
 		app.coachHandle,
 		app.roleHandle,
 		app.coacheeHandle,

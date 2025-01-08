@@ -113,9 +113,13 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		query += " AND email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
-	if params.Role != nil {
-		query += " AND role_id = ?"
-		args = append(args, params.Role)
+	if params.Status != "" {
+		query += " AND status LIKE ?"
+		args = append(args, "%"+params.Status+"%")
+	}
+	if params.PhoneNumber != "" {
+		query += " AND phone_number = ?"
+		args = append(args, params.PhoneNumber)
 	}
 	if params.StartDate != nil {
 		query += " AND created_at >= ?"

@@ -47,6 +47,12 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
+		"Admin": {
+			Role: "Admin",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
+			},
+		},
 	}
 	return accessControlRules
 }

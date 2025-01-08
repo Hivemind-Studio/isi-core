@@ -12,7 +12,7 @@ type CreateUserStaffUseCaseInterface interface {
 }
 
 type GetUsersUseCaseInterface interface {
-	Execute(ctx context.Context, name string, email string, startDate, endDate *time.Time, page int64, perPage int64) ([]user.UserDTO, error)
+	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate *time.Time, endDate *time.Time, page int64, perPage int64) ([]user.UserDTO, error)
 }
 
 type GetUserByIDUseCaseInterface interface {
