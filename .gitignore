@@ -39,7 +39,6 @@ go.work
 !README.md
 !LICENSE
 !.env-example
-# !Makefile
 
 # ...even if they are in subdirectories
 !*/
@@ -52,3 +51,4 @@ go.work
 # Optional: Ignore log and temp files
 *.log
 *.tmp
+!Makefile
