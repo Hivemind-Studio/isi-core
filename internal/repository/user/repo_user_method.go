@@ -42,7 +42,7 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 }
 
 func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, user User) (id int64, err error) {
-	if err := r.checkExistingData(ctx, tx, user.Email, user.PhoneNumber); err != nil {
+	if err := r.checkExistingData(ctx, tx, user.Email, *user.PhoneNumber); err != nil {
 		return 0, err
 	}
 
