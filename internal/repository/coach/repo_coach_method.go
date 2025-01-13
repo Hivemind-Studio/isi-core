@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
@@ -37,7 +38,7 @@ func (r *Repository) GetCoaches(ctx context.Context, params dto.GetUsersDTO, pag
 		JOIN 
 			roles ON users.role_id = roles.id
 		WHERE 
-			users.role_id = 3
+			users.role_id = ?
 	`
 	var args []interface{}
 
@@ -71,7 +72,7 @@ func (r *Repository) GetCoaches(ctx context.Context, params dto.GetUsersDTO, pag
 	}
 
 	query += " LIMIT ? OFFSET ?"
-	args = append(args, perPage, (page-1)*perPage)
+	args = append(args, perPage, (page-1)*perPage, constant.RoleIDCoach)
 
 	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
 	if err != nil {
