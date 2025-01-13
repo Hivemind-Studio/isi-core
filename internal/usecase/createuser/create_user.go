@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	"github.com/Hivemind-Studio/isi-core/internal/enum"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -22,7 +21,7 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 	}
 	defer dbtx.HandleRollback(tx)
 
-	_, err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, enum.CoacheeRoleId, body.PhoneNumber, int(constant.ACTIVE))
+	_, err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, constant.RoleIDCoachee, body.PhoneNumber, int(constant.ACTIVE))
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)

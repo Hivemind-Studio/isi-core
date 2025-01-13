@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	userstatus "github.com/Hivemind-Studio/isi-core/internal/constant"
+	constant "github.com/Hivemind-Studio/isi-core/internal/constant"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -54,7 +54,7 @@ func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, user User) (i
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, 
                    address, gender, verification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, user.Name, user.Email, hashedPassword,
-		user.RoleId, user.PhoneNumber, user.Status, user.Gender, user.Address, 0)
+		constant.RoleIDStaff, user.PhoneNumber, user.Status, user.Gender, user.Address, 0)
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
 	}
@@ -193,7 +193,7 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 	}
 
 	query := fmt.Sprintf("UPDATE users SET status = %d WHERE id IN (%s)",
-		userstatus.GetStatusFromString(updatedStatus), strings.Join(placeholders, ","))
+		constant.GetStatusFromString(updatedStatus), strings.Join(placeholders, ","))
 
 	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
 	if err != nil {
