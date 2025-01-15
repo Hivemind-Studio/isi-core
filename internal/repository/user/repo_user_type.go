@@ -36,31 +36,23 @@ type EmailVerification struct {
 
 func ConvertUserToDTO(user User) userdto.UserDTO {
 	return userdto.UserDTO{
+		ID:          user.ID,
 		Name:        user.Name,
 		Email:       user.Email,
 		Address:     user.Address,
 		PhoneNumber: user.PhoneNumber,
 		DateOfBirth: user.DateOfBirth,
-		Gender:      *user.Gender,
+		Gender:      user.Gender,
 		Occupation:  user.Occupation,
 		Status:      user.Status,
+		Photo:       user.Photo,
 	}
 }
 
 func ConvertUsersToDTOs(users []User) []userdto.UserDTO {
 	dtos := make([]userdto.UserDTO, len(users))
 	for i, u := range users {
-		dtos[i] = userdto.UserDTO{
-			Name:        u.Name,
-			Email:       u.Email,
-			Address:     u.Address,
-			PhoneNumber: u.PhoneNumber,
-			DateOfBirth: u.DateOfBirth,
-			Gender:      *u.Gender,
-			Occupation:  u.Occupation,
-			Status:      u.Status,
-			CreatedAt:   &u.CreatedAt,
-		}
+		dtos[i] = ConvertUserToDTO(u)
 	}
 	return dtos
 }

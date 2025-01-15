@@ -5,12 +5,13 @@ import (
 )
 
 type UserDTO struct {
+	ID          int64      `json:"id"`
 	Name        string     `json:"name,omitempty"`
 	Email       string     `json:"email"`
 	Address     *string    `json:"address,omitempty"`
 	PhoneNumber *string    `json:"phone_number,omitempty"`
 	DateOfBirth *time.Time `json:"date_of_birth"`
-	Gender      string     `json:"gender"`
+	Gender      *string    `json:"gender"`
 	Occupation  *string    `json:"occupation"`
 	Status      *bool      `json:"status"`
 	Role        *string    `json:"role"`
