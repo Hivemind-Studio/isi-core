@@ -28,7 +28,7 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 		Name:     body.Name,
 		Email:    body.Email,
 		Password: generatePassword,
-		Gender:   body.Gender,
+		Gender:   &body.Gender,
 		Address:  &body.Address,
 	}
 	_, err = uc.repoUser.CreateStaff(ctx, tx, user)
