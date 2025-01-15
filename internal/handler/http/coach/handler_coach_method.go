@@ -86,3 +86,24 @@ func (h *Handler) CreateCoach(c *fiber.Ctx) error {
 			Message: "Coach created successfully",
 		})
 }
+
+func (h *Handler) GetCoachById(c *fiber.Ctx) error {
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.New(fiber.StatusBadRequest, "Invalid coach id")
+	}
+
+	res, err := h.getCoachByIdUseCase.Execute(c.Context(), id)
+
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "Failed to retrieve coach")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Coaches retrieved successfully",
+		Data:    res,
+	})
+}

@@ -6,15 +6,15 @@ import (
 
 type UserDTO struct {
 	ID          int64      `json:"id"`
-	Name        string     `json:"name,omitempty"`
+	Name        string     `json:"name"`
 	Email       string     `json:"email"`
-	Address     *string    `json:"address,omitempty"`
-	PhoneNumber *string    `json:"phone_number,omitempty"`
+	Address     *string    `json:"address"`
+	PhoneNumber *string    `json:"phone_number"`
 	DateOfBirth *time.Time `json:"date_of_birth"`
 	Gender      *string    `json:"gender"`
 	Occupation  *string    `json:"occupation"`
-	Status      *bool      `json:"status"`
-	Role        *string    `json:"role"`
+	Status      bool       `json:"status"`
+	Role        *string    `json:"role,omitempty"`
 	Photo       *string    `json:"photo"`
 	CreatedAt   *time.Time `json:"created_at"`
 }

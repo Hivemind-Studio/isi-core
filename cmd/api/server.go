@@ -16,6 +16,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
@@ -43,9 +44,10 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
+		app.coachHandle,
 		app.authHandle,
 		app.userHandle,
-		app.coachHandle,
+
 		app.roleHandle,
 		app.coacheeHandle,
 	}
@@ -59,6 +61,9 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	roleRepo := reporole.NewRoleRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
 
+	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
+	getCoachByIdUseCase := getcoachbyid.NewGetCoachByIdUseCase(coachRepo)
+
 	userEmailService := useremail.NewUserEmailService(userRepo, emailClient)
 
 	createRoleUseCase := createrole.NewCreateRoleUseCase(roleRepo)
@@ -71,7 +76,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	getUsersUseCase := getusers.NewGetUsersUseCase(userRepo)
 	getUserByIdUseCase := getuserbyid.NewGetUserByIdUseCase(userRepo)
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
-	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
+
 	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
 	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
 
@@ -89,7 +94,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		getUsersUseCase,
 		getUserByIdUseCase,
 		updateUserStatusUseCase)
-	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase)
+	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase)
 
 	return &AppApi{

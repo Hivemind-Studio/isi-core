@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/Hivemind-Studio/isi-core/internal/constant"
-	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
-	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
@@ -14,66 +12,77 @@ import (
 	"time"
 )
 
-func (r *Repository) GetCoaches(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error) {
-	var users []user.User
+func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO, page int64, perPage int64) ([]Coach, error) {
+	var users []Coach
+
 	query := `
-				SELECT 
-			users.id AS id,
-			users.name AS name,
-			users.email AS email,
-			users.address AS address,
-			users.phone_number AS phone_number,
-			users.date_of_birth AS date_of_birth,
-			users.gender AS gender,
-			users.verification AS verification,
-			users.occupation AS occupation,
-			users.photo AS photo,
-			users.status AS status,
-			users.created_at AS created_at,
-			users.updated_at AS updated_at
-		FROM 
-			users
-		JOIN 
-			coaches ON users.id = coaches.id
-		JOIN 
-			roles ON users.role_id = roles.id
-		WHERE 
-			users.role_id = ?
+		SELECT
+			u.id AS id,
+			u.name AS name,
+			u.email AS email,
+			u.address AS address,
+			u.phone_number AS phone_number,
+			u.date_of_birth AS date_of_birth,
+			u.gender AS gender,
+			u.verification AS verification,
+			u.occupation AS occupation,
+			u.photo AS photo,
+			u.status AS status,
+			u.created_at AS created_at,
+			u.updated_at AS updated_at,
+			c.certifications AS certifications,
+			c.experiences AS experiences,
+			c.education AS educations,
+			c.level AS level,
+			r.id AS role_id,
+			r.name AS role_name
+		FROM
+			users u
+				JOIN
+			coaches c ON u.id = c.user_id
+				JOIN
+			roles r ON u.role_id = r.id
+		WHERE
+			u.role_id = 3
 	`
+
 	var args []interface{}
 
+	// Apply filters dynamically
 	if params.Name != "" {
-		query += " AND users.name LIKE ?"
+		query += " AND u.name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		query += " AND users.email LIKE ?"
+		query += " AND u.email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.PhoneNumber != "" {
-		query += " AND users.phone_number LIKE ?"
+		query += " AND u.phone_number LIKE ?"
 		args = append(args, "%"+params.PhoneNumber+"%")
 	}
 	if params.Level != "" {
-		query += " AND coaches.level LIKE ?"
+		query += " AND c.level LIKE ?"
 		args = append(args, "%"+params.Level+"%")
 	}
 	if params.Status != "" {
-		query += " AND users.status LIKE ?"
-		args = append(args, "%"+params.Status+"%")
+		query += " AND u.status = ?"
+		args = append(args, params.Status == "true")
 	}
 	if params.StartDate != nil {
-		query += " AND users.created_at >= ?"
+		query += " AND u.created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		query += " AND users.created_at <= ?"
+		query += " AND u.created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
+	// Add pagination
 	query += " LIMIT ? OFFSET ?"
-	args = append(args, perPage, (page-1)*perPage, constant.RoleIDCoach)
+	args = append(args, perPage, (page-1)*perPage)
 
+	// Execute query
 	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve coaches")
@@ -203,4 +212,28 @@ func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, passw
 	}
 
 	return nil
+}
+
+func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) {
+	var result Coach
+
+	query := `SELECT * FROM 
+			users
+		JOIN 
+			coaches ON users.id = coaches.id
+		JOIN 
+			roles ON users.role_id = roles.id
+		WHERE 
+			users.role_id = ?`
+
+	err := r.GetConnDb().QueryRowxContext(ctx, query, id).StructScan(&result)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Coach{}, httperror.New(fiber.StatusNotFound, "user not found")
+		}
+		return Coach{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return result, nil
 }

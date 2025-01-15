@@ -19,9 +19,18 @@ type User struct {
 	Verification *bool      `db:"verification"`
 	Occupation   *string    `db:"occupation"`
 	Photo        *string    `db:"photo"`
-	Status       *bool      `db:"status"`
+	Status       bool       `db:"status"`
 	CreatedAt    time.Time  `db:"created_at"`
 	UpdatedAt    time.Time  `db:"updated_at"`
+}
+
+type Coach struct {
+	Id             int64  `db:"id"`
+	UserId         int64  `db:"user_id"`
+	Certifications string `db:"certifications"`
+	Experiences    string `db:"experiences"`
+	Educations     string `db:"educations"`
+	Level          string `db:"level"`
 }
 
 type EmailVerification struct {
