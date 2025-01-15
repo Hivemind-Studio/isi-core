@@ -27,8 +27,8 @@ func NewCoachHandler(
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1/coaches")
 
-	//accessControlRules := h.manageAccessControl()
-	//v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	accessControlRules := h.manageAccessControl()
+	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Get("/", h.GetCoaches)
 	v1.Get("/:id", h.GetCoachById)

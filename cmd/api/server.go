@@ -44,10 +44,9 @@ type Router interface {
 
 func routerList(app *AppApi) []Router {
 	return []Router{
-		app.coachHandle,
 		app.authHandle,
+		app.coachHandle,
 		app.userHandle,
-
 		app.roleHandle,
 		app.coacheeHandle,
 	}
