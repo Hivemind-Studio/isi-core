@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	pagination "github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
@@ -13,8 +16,6 @@ import (
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	"strings"
-	"time"
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
@@ -106,8 +107,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	var totalRecords int64
 	var args []interface{}
 
-	// Base query with role condition
-	baseQuery := "FROM users WHERE"
+	baseQuery := `FROM users LEFT JOIN roles ON users.role_id = roles.id WHERE`
 	if params.Role != nil {
 		baseQuery += " role_id = ?"
 		args = append(args, *params.Role)
@@ -116,7 +116,6 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		baseQuery += " role_id IN (?,?)"
 	}
 
-	// Add other conditions
 	if params.Name != "" {
 		baseQuery += " AND name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
@@ -142,15 +141,13 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		args = append(args, *params.EndDate)
 	}
 
-	// Count total records
 	countQuery := "SELECT COUNT(*) " + baseQuery
 	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count users")
 	}
 
-	// Get paginated data
-	dataQuery := "SELECT * " + baseQuery + " LIMIT ? OFFSET ?"
+	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + " LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 
 	err = r.GetConnDb().SelectContext(ctx, &users, dataQuery, queryArgs...)
