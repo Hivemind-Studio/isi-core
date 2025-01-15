@@ -45,7 +45,7 @@ func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO,
 	}
 	if params.Status != "" {
 		baseQuery += " AND u.status = ?"
-		args = append(args, params.Status == "true")
+		args = append(args, params.Status)
 	}
 	if params.StartDate != nil {
 		baseQuery += " AND u.created_at >= ?"

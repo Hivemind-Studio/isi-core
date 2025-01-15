@@ -126,8 +126,8 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.Status != "" {
-		baseQuery += " AND status LIKE ?"
-		args = append(args, "%"+params.Status+"%")
+		baseQuery += " AND status = ?"
+		args = append(args, params.Status)
 	}
 	if params.PhoneNumber != "" {
 		baseQuery += " AND phone_number = ?"
