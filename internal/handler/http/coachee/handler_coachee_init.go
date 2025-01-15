@@ -22,8 +22,8 @@ func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface,
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1/coachees")
 
-	//accessControlRules := h.manageAccessControl()
-	//v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	accessControlRules := h.manageAccessControl()
+	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Get("/", h.GetCoachees)
 	v1.Get("/:id", h.GetCoacheeById)
