@@ -25,7 +25,7 @@ type DTO struct {
 	DateOfBirth    *time.Time `json:"date_of_birth"`
 	Gender         *string    `json:"gender"`
 	Occupation     *string    `json:"occupation"`
-	Status         bool       `json:"status"`
+	Status         int64      `json:"status"`
 	Role           *string    `json:"role,omitempty"`
 	Photo          *string    `json:"photo"`
 	CreatedAt      *time.Time `json:"created_at"`
