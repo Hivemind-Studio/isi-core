@@ -102,8 +102,17 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
 ) ([]User, error) {
 	var users []User
-	query := "SELECT * FROM users WHERE 1=1"
 	var args []interface{}
+
+	query := "SELECT * FROM users WHERE"
+	if params.Role != nil {
+		query += " role_id = ?"
+		args = append(args, *params.Role)
+	} else {
+		fmt.Print("Masuk sini")
+		args = append(args, constant.RoleIDAdmin, constant.RoleIDStaff)
+		query += " role_id IN (?, ?)"
+	}
 
 	if params.Name != "" {
 		query += " AND name LIKE ?"
