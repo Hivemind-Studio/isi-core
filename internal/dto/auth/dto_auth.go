@@ -7,9 +7,9 @@ type LoginDTO struct {
 
 type RegistrationDTO struct {
 	Name            string `json:"name" validate:"required"`
-	Password        string `json:"password" validate:"required,min=4"`
+	Password        string `json:"password" validate:"required,min=8,max=12"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
 	PhoneNumber     string `json:"phone_number" validate:"required"`
-	ConfirmPassword string `json:"confirm_password" validate:"required,min=4"`
 	Email           string `json:"email" validate:"required"`
 	Token           string `json:"token" validate:"required"`
 }
