@@ -166,12 +166,29 @@ func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email s
 	return nil
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
+func (r *Repository) GetUserByID(ctx context.Context, id int64, role *int64) (User, error) {
 	var result User
 
-	query := "SELECT * FROM users WHERE id = ? LIMIT 1"
+	var query string
+	var args []interface{}
 
-	err := r.GetConnDb().QueryRowxContext(ctx, query, id).StructScan(&result)
+	if role != nil {
+		if *role == constant.RoleIDCoachee {
+			query = `SELECT * 
+						FROM users 
+						WHERE id = ? AND role_id = ? 
+						LIMIT 1;`
+			args = append(args, id, *role)
+		}
+	} else {
+		query = `SELECT * 
+						FROM users 
+						WHERE id = ? AND (role_id = ? OR role_id = ?) 
+						LIMIT 1;`
+		args = append(args, id, constant.RoleIDAdmin, constant.RoleIDStaff)
+	}
+
+	err := r.GetConnDb().QueryRowxContext(ctx, query, args...).StructScan(&result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return User{}, httperror.New(fiber.StatusNotFound, "user not found")

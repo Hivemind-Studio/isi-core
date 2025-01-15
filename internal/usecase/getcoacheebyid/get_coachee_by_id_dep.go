@@ -1,4 +1,4 @@
-package getuserbyid
+package getcoaceehbyid
 
 import (
 	"context"

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
@@ -58,5 +59,26 @@ func (h *Handler) GetCoachees(c *fiber.Ctx) error {
 		Status:  fiber.StatusOK,
 		Message: "Coachees retrieved successfully",
 		Data:    users,
+	})
+}
+
+func (h *Handler) GetCoacheeById(c *fiber.Ctx) error {
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.New(fiber.StatusBadRequest, "Invalid coach id")
+	}
+
+	res, err := h.getCoacheeByIdUseCase.Execute(c.Context(), id)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Coaches retrieved successfully",
+		Data:    res,
 	})
 }

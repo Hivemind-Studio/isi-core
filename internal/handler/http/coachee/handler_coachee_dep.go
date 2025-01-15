@@ -11,3 +11,7 @@ type GetCoacheesUseCaseInterface interface {
 		endDate *time.Time, page int64, perPage int64,
 	) ([]user.UserDTO, error)
 }
+
+type GetCoacheeByIdUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) (result *user.UserDTO, err error)
+}

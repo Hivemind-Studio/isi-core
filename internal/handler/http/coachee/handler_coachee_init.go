@@ -7,30 +7,40 @@ import (
 )
 
 type Handler struct {
-	getCoacheesUseCase GetCoacheesUseCaseInterface
+	getCoacheesUseCase    GetCoacheesUseCaseInterface
+	getCoacheeByIdUseCase GetCoacheeByIdUseCaseInterface
 }
 
-func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface) *Handler {
+func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface,
+	getCoacheeByIdUseCase GetCoacheeByIdUseCaseInterface) *Handler {
 	return &Handler{
-		getCoacheesUseCase: getCoacheesUseCase,
+		getCoacheesUseCase,
+		getCoacheeByIdUseCase,
 	}
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1 := app.Group("/api/v1/coachees")
 
-	accessControlRules := h.manageAccessControl()
-	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	//accessControlRules := h.manageAccessControl()
+	//v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Get("/", h.GetCoachees)
+	v1.Get("/:id", h.GetCoacheeById)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
 	accessControlRules := map[string]middleware.AccessControlRule{
+		"Admin": {
+			Role: "Admin",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/coachees": {"GET", "POST", "DELETE", "PATCH"},
+			},
+		},
 		"Staff": {
 			Role: "Staff",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/coachees": {"GET", "POST", "DELETE", "PATCH"},
 			},
 		},
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachbyid"
+	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
@@ -75,6 +76,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	getUsersUseCase := getusers.NewGetUsersUseCase(userRepo)
 	getUserByIdUseCase := getuserbyid.NewGetUserByIdUseCase(userRepo)
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
+	getCoacheeByIdUseCase := getcoaceehbyid.NewGetCoacheeInterface(userRepo)
 
 	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
 	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
@@ -94,7 +96,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		getUserByIdUseCase,
 		updateUserStatusUseCase)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
-	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase)
+	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 
 	return &AppApi{
 			userHandle:    userHandler,
