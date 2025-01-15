@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
@@ -12,83 +13,95 @@ import (
 	"time"
 )
 
-func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO, page int64, perPage int64) ([]Coach, error) {
+func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO, page int64, perPage int64) ([]Coach, pagination.Pagination, error) {
 	var users []Coach
-
-	query := `
-		SELECT
-			u.id AS id,
-			u.name AS name,
-			u.email AS email,
-			u.address AS address,
-			u.phone_number AS phone_number,
-			u.date_of_birth AS date_of_birth,
-			u.gender AS gender,
-			u.verification AS verification,
-			u.occupation AS occupation,
-			u.photo AS photo,
-			u.status AS status,
-			u.created_at AS created_at,
-			u.updated_at AS updated_at,
-			c.certifications AS certifications,
-			c.experiences AS experiences,
-			c.education AS educations,
-			c.level AS level,
-			r.id AS role_id,
-			r.name AS role_name
-		FROM
-			users u
-				JOIN
-			coaches c ON u.id = c.user_id
-				JOIN
-			roles r ON u.role_id = r.id
-		WHERE
-			u.role_id = 3
-	`
-
+	var totalRecords int64
 	var args []interface{}
 
-	// Apply filters dynamically
+	baseQuery := `
+        FROM
+            users u
+            LEFT JOIN coaches c ON u.id = c.user_id
+            LEFT JOIN roles r ON u.role_id = r.id
+        WHERE
+            u.role_id = 3
+    `
+
 	if params.Name != "" {
-		query += " AND u.name LIKE ?"
+		baseQuery += " AND u.name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		query += " AND u.email LIKE ?"
+		baseQuery += " AND u.email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.PhoneNumber != "" {
-		query += " AND u.phone_number LIKE ?"
+		baseQuery += " AND u.phone_number LIKE ?"
 		args = append(args, "%"+params.PhoneNumber+"%")
 	}
 	if params.Level != "" {
-		query += " AND c.level LIKE ?"
+		baseQuery += " AND c.level LIKE ?"
 		args = append(args, "%"+params.Level+"%")
 	}
 	if params.Status != "" {
-		query += " AND u.status = ?"
+		baseQuery += " AND u.status = ?"
 		args = append(args, params.Status == "true")
 	}
 	if params.StartDate != nil {
-		query += " AND u.created_at >= ?"
+		baseQuery += " AND u.created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		query += " AND u.created_at <= ?"
+		baseQuery += " AND u.created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
-	// Add pagination
-	query += " LIMIT ? OFFSET ?"
-	args = append(args, perPage, (page-1)*perPage)
-
-	// Execute query
-	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
+	countQuery := "SELECT COUNT(DISTINCT u.id) " + baseQuery
+	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve coaches")
+		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count coaches")
 	}
 
-	return users, nil
+	selectQuery := `
+        SELECT
+            u.id AS id,
+            u.name AS name,
+            u.email AS email,
+            u.address AS address,
+            u.phone_number AS phone_number,
+            u.date_of_birth AS date_of_birth,
+            u.gender AS gender,
+            u.verification AS verification,
+            u.occupation AS occupation,
+            u.photo AS photo,
+            u.status AS status,
+            u.created_at AS created_at,
+            u.updated_at AS updated_at,
+            c.certifications AS certifications,
+            c.experiences AS experiences,
+            c.education AS educations,
+            c.level AS level,
+            r.id AS role_id,
+            r.name AS role_name
+        ` + baseQuery + ` LIMIT ? OFFSET ?`
+
+	queryArgs := append(args, perPage, (page-1)*perPage)
+	err = r.GetConnDb().SelectContext(ctx, &users, selectQuery, queryArgs...)
+	if err != nil {
+		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve coaches")
+	}
+
+	// Calculate total pages
+	totalPages := (totalRecords + perPage - 1) / perPage
+
+	paginate := pagination.Pagination{
+		CurrentPage:  page,
+		PerPage:      perPage,
+		TotalPages:   totalPages,
+		TotalRecords: totalRecords,
+	}
+
+	return users, paginate, nil
 }
 
 func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx, id int64) (err error) {

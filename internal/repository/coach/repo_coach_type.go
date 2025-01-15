@@ -19,10 +19,10 @@ type Coach struct {
 	Verification   string     `db:"verification"`
 	CreatedAt      time.Time  `db:"created_at"`
 	UpdatedAt      time.Time  `db:"updated_at"`
-	Certifications string     `db:"certifications"`
-	Experiences    string     `db:"experiences"`
-	Educations     string     `db:"educations"`
-	Level          string     `db:"level"`
+	Certifications *string    `db:"certifications"`
+	Experiences    *string    `db:"experiences"`
+	Educations     *string    `db:"educations"`
+	Level          *string    `db:"level"`
 	RoleID         int64      `db:"role_id"`
 	RoleName       string     `db:"role_name"`
 }

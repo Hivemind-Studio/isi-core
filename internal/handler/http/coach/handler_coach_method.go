@@ -53,15 +53,16 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.getCoachUseCase.Execute(c.Context(), name, email, phoneNumber, status, level, start, end, page, perPage)
+	users, paginate, err := h.getCoachUseCase.Execute(c.Context(), name, email, phoneNumber, status, level, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
-		Status:  fiber.StatusOK,
-		Message: "Coaches retrieved successfully",
-		Data:    users,
+		Status:     fiber.StatusOK,
+		Message:    "Coaches retrieved successfully",
+		Data:       users,
+		Pagination: paginate,
 	})
 }
 

@@ -29,10 +29,10 @@ type DTO struct {
 	Role           *string    `json:"role,omitempty"`
 	Photo          *string    `json:"photo"`
 	CreatedAt      *time.Time `json:"created_at"`
-	Certifications string     `json:"certifications"`
-	Experiences    string     `json:"experiences"`
-	Educations     string     `json:"educations"`
-	Level          string     `json:"level"`
+	Certifications *string    `json:"certifications"`
+	Experiences    *string    `json:"experiences"`
+	Educations     *string    `json:"educations"`
+	Level          *string    `json:"level"`
 }
 
 type QueryCoachDTO struct {
