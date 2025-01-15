@@ -12,7 +12,7 @@ type User struct {
 	Password     string     `db:"password"`
 	Name         string     `db:"name"`
 	Email        string     `db:"email"`
-	Address      string     `db:"address"`
+	Address      *string    `db:"address"`
 	PhoneNumber  *string    `db:"phone_number"`
 	DateOfBirth  *time.Time `db:"date_of_birth"`
 	Gender       string     `db:"gender"`
@@ -38,7 +38,7 @@ func ConvertUserToDTO(user User) userdto.UserDTO {
 	return userdto.UserDTO{
 		Name:        user.Name,
 		Email:       user.Email,
-		Address:     &user.Address,
+		Address:     user.Address,
 		PhoneNumber: user.PhoneNumber,
 		DateOfBirth: user.DateOfBirth,
 		Gender:      user.Gender,
@@ -53,7 +53,7 @@ func ConvertUsersToDTOs(users []User) []userdto.UserDTO {
 		dtos[i] = userdto.UserDTO{
 			Name:        u.Name,
 			Email:       u.Email,
-			Address:     &u.Address,
+			Address:     u.Address,
 			PhoneNumber: u.PhoneNumber,
 			DateOfBirth: u.DateOfBirth,
 			Gender:      u.Gender,
