@@ -22,7 +22,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	accessControlRules := h.manageAccessControl()
 	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
-	v1.Post("/", h.GetCoachees)
+	v1.Get("/", h.GetCoachees)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
