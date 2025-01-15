@@ -217,14 +217,36 @@ func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, passw
 func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) {
 	var result Coach
 
-	query := `SELECT * FROM 
-			users
-		JOIN 
-			coaches ON users.id = coaches.id
-		JOIN 
-			roles ON users.role_id = roles.id
-		WHERE 
-			users.role_id = ?`
+	query := `
+		SELECT
+			u.id AS id,
+			u.name AS name,
+			u.email AS email,
+			u.address AS address,
+			u.phone_number AS phone_number,
+			u.date_of_birth AS date_of_birth,
+			u.gender AS gender,
+			u.verification AS verification,
+			u.occupation AS occupation,
+			u.photo AS photo,
+			u.status AS status,
+			u.created_at AS created_at,
+			u.updated_at AS updated_at,
+			c.certifications AS certifications,
+			c.experiences AS experiences,
+			c.education AS educations,
+			c.level AS level,
+			r.id AS role_id,
+			r.name AS role_name
+		FROM
+			users u
+				JOIN
+			coaches c ON u.id = c.user_id
+				JOIN
+			roles r ON u.role_id = r.id
+		WHERE
+			u.role_id = 3 AND u.id = ?
+		`
 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, id).StructScan(&result)
 
