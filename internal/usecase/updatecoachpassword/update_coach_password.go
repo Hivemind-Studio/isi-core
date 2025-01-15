@@ -2,6 +2,7 @@ package updatecoachpassword
 
 import (
 	"context"
+	"fmt"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -9,6 +10,7 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword string, token string) (err error) {
+	fmt.Print("Masuk sini crot")
 	tx, err := uc.repoCoach.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "Coach service", "UpdateCoachPassword", "function start", token)

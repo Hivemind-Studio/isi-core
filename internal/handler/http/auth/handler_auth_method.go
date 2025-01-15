@@ -68,7 +68,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := validator.ValidatePassword(&requestBody); err != nil {
+	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {
 		return err
 	}
 
@@ -154,6 +154,10 @@ func (h *Handler) UpdatePassword(c *fiber.Ctx) error {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {
+		return err
 	}
 
 	err := h.updateCoachPasswordUseCase.Execute(c.Context(), requestBody.Password,

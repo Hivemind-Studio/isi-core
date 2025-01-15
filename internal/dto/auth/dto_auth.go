@@ -28,8 +28,8 @@ type RegistrationStaffDTO struct {
 }
 
 type CoachRegistrationDTO struct {
-	Password        string `json:"password" validate:"required,min=4"`
-	ConfirmPassword string `json:"confirm_password" validate:"required,min=4"`
+	Password        string `json:"password" validate:"required,min=8,max=12"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
 	Token           string `json:"token" validate:"required"`
 }
 
