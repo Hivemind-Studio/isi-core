@@ -99,7 +99,7 @@ func (h *Handler) GetCoachById(c *fiber.Ctx) error {
 	res, err := h.getCoachByIdUseCase.Execute(c.Context(), id)
 
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "Failed to retrieve coach")
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
