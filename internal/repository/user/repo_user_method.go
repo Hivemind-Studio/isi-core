@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	constant "github.com/Hivemind-Studio/isi-core/internal/constant"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
+	pagination "github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -100,54 +101,74 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 }
 
 func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64,
-) ([]User, error) {
+) ([]User, pagination.Pagination, error) {
 	var users []User
+	var totalRecords int64
 	var args []interface{}
 
-	query := "SELECT * FROM users WHERE"
+	// Base query with role condition
+	baseQuery := "FROM users WHERE"
 	if params.Role != nil {
-		query += " role_id = ?"
+		baseQuery += " role_id = ?"
 		args = append(args, *params.Role)
 	} else {
-		fmt.Print("Masuk sini")
 		args = append(args, constant.RoleIDAdmin, constant.RoleIDStaff)
-		query += " role_id IN (?, ?)"
+		baseQuery += " role_id IN (?,?)"
 	}
 
+	// Add other conditions
 	if params.Name != "" {
-		query += " AND name LIKE ?"
+		baseQuery += " AND name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		query += " AND email LIKE ?"
+		baseQuery += " AND email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.Status != "" {
-		query += " AND status LIKE ?"
+		baseQuery += " AND status LIKE ?"
 		args = append(args, "%"+params.Status+"%")
 	}
 	if params.PhoneNumber != "" {
-		query += " AND phone_number = ?"
+		baseQuery += " AND phone_number = ?"
 		args = append(args, params.PhoneNumber)
 	}
 	if params.StartDate != nil {
-		query += " AND created_at >= ?"
+		baseQuery += " AND created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		query += " AND created_at <= ?"
+		baseQuery += " AND created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
-	query += " LIMIT ? OFFSET ?"
-	args = append(args, perPage, (page-1)*perPage)
-
-	err := r.GetConnDb().SelectContext(ctx, &users, query, args...)
+	// Count total records
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
-		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count users")
 	}
 
-	return users, nil
+	// Get paginated data
+	dataQuery := "SELECT * " + baseQuery + " LIMIT ? OFFSET ?"
+	queryArgs := append(args, perPage, (page-1)*perPage)
+
+	err = r.GetConnDb().SelectContext(ctx, &users, dataQuery, queryArgs...)
+	if err != nil {
+		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
+	}
+
+	// Calculate total pages
+	totalPages := (totalRecords + perPage - 1) / perPage
+
+	paginate := pagination.Pagination{
+		CurrentPage:  page,
+		PerPage:      perPage,
+		TotalPages:   totalPages,
+		TotalRecords: totalRecords,
+	}
+
+	return users, paginate, nil
 }
 
 func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string) error {

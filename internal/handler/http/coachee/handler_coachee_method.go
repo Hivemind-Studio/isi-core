@@ -50,15 +50,16 @@ func (h *Handler) GetCoachees(c *fiber.Ctx) error {
 		}
 	}
 
-	users, err := h.getCoacheesUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end, page, perPage)
+	users, paginate, err := h.getCoacheesUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
-		Status:  fiber.StatusOK,
-		Message: "Coachees retrieved successfully",
-		Data:    users,
+		Status:     fiber.StatusOK,
+		Message:    "Coachees retrieved successfully",
+		Data:       users,
+		Pagination: paginate,
 	})
 }
 

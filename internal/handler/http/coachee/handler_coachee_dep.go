@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"time"
 )
@@ -9,7 +10,7 @@ import (
 type GetCoacheesUseCaseInterface interface {
 	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate,
 		endDate *time.Time, page int64, perPage int64,
-	) ([]user.UserDTO, error)
+	) ([]user.UserDTO, pagination.Pagination, error)
 }
 
 type GetCoacheeByIdUseCaseInterface interface {
