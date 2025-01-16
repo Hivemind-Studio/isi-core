@@ -109,11 +109,11 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 
 	baseQuery := `FROM users as users LEFT JOIN roles ON users.role_id = roles.id WHERE`
 	if params.Role != nil {
-		baseQuery += " u.role_id = ?"
+		baseQuery += " users.role_id = ?"
 		args = append(args, *params.Role)
 	} else {
 		args = append(args, constant.RoleIDAdmin, constant.RoleIDStaff)
-		baseQuery += " role_id IN (?,?)"
+		baseQuery += " users.role_id IN (?,?)"
 	}
 
 	if params.Name != "" {
