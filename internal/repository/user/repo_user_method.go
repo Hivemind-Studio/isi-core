@@ -107,9 +107,9 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	var totalRecords int64
 	var args []interface{}
 
-	baseQuery := `FROM users LEFT JOIN roles ON users.role_id = roles.id WHERE`
+	baseQuery := `FROM users as users LEFT JOIN roles ON users.role_id = roles.id WHERE`
 	if params.Role != nil {
-		baseQuery += " role_id = ?"
+		baseQuery += " u.role_id = ?"
 		args = append(args, *params.Role)
 	} else {
 		args = append(args, constant.RoleIDAdmin, constant.RoleIDStaff)
@@ -117,27 +117,27 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	}
 
 	if params.Name != "" {
-		baseQuery += " AND name LIKE ?"
+		baseQuery += " AND users.name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		baseQuery += " AND email LIKE ?"
+		baseQuery += " AND users.email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.Status != "" {
-		baseQuery += " AND status = ?"
+		baseQuery += " AND users.status = ?"
 		args = append(args, params.Status)
 	}
 	if params.PhoneNumber != "" {
-		baseQuery += " AND phone_number = ?"
+		baseQuery += " AND users.phone_number = ?"
 		args = append(args, params.PhoneNumber)
 	}
 	if params.StartDate != nil {
-		baseQuery += " AND created_at >= ?"
+		baseQuery += " AND users.created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		baseQuery += " AND created_at <= ?"
+		baseQuery += " AND users.created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
