@@ -34,3 +34,8 @@ type SuspendDTO struct {
 	Ids           []int64 `json:"ids"`
 	UpdatedStatus string  `json:"updated_status"`
 }
+
+type UserRole struct {
+	Id   int64 `json:"id"`
+	Role int64 `json:"role"`
+}

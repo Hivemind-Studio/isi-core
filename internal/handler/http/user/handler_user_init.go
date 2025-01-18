@@ -11,6 +11,7 @@ type Handler struct {
 	getUsersUseCase         GetUsersUseCaseInterface
 	getUserByIDUseCase      GetUserByIDUseCaseInterface
 	updateUserStatusUseCase UpdateUserStatusUseCaseInterface
+	updateUserRoleCase      UpdateUserRoleUseCaseInterface
 }
 
 func NewUserHandler(
@@ -18,12 +19,14 @@ func NewUserHandler(
 	getUsersUseCase GetUsersUseCaseInterface,
 	getUserByIDUseCase GetUserByIDUseCaseInterface,
 	updateUserStatusUseCase UpdateUserStatusUseCaseInterface,
+	updateUserRoleCase UpdateUserRoleUseCaseInterface,
 ) *Handler {
 	return &Handler{
 		createUserStaffUseCase:  createUserStaffUseCase,
 		getUsersUseCase:         getUsersUseCase,
 		getUserByIDUseCase:      getUserByIDUseCase,
 		updateUserStatusUseCase: updateUserStatusUseCase,
+		updateUserRoleCase:      updateUserRoleCase,
 	}
 }
 
@@ -37,20 +40,21 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Get("/users", h.GetUsers)
 	v1.Get("/users/:id", h.GetUserById)
 	v1.Patch("/users/:id/status", h.UpdateStatusUser)
+	v1.Patch("/users/:id/role", h.UpdateUserRole)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
 	accessControlRules := map[string]middleware.AccessControlRule{
-		"Staff": {
-			Role: "Staff",
-			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
-			},
-		},
 		"Admin": {
 			Role: "Admin",
 			AllowedMethod: map[string][]string{
 				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
+			},
+		},
+		"Staff": {
+			Role: "Staff",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/users": {"GET"},
 			},
 		},
 	}

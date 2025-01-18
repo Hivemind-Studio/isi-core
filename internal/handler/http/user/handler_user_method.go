@@ -127,3 +127,22 @@ func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
 			Message: "Suspend users successfully",
 		})
 }
+
+func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
+	var payload user.UserRole
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	err := h.updateUserRoleCase.Execute(c.Context(), payload.Id, payload.Role)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Change role users successfully",
+		})
+}

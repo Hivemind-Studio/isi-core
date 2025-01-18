@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
-	pagination "github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -54,7 +54,7 @@ func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, user User) (i
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, 
-                   address, gender, verification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                  address, gender, verification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, user.Name, user.Email, hashedPassword,
 		constant.RoleIDStaff, user.PhoneNumber, user.Status, user.Gender, user.Address, 0)
 	if err != nil {
@@ -322,6 +322,26 @@ func (r *Repository) DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.
 	_, err := tx.ExecContext(ctx, query, email)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, role int64) error {
+	query := `UPDATE users SET role_id = ? WHERE id = ?`
+
+	result, err := tx.ExecContext(ctx, query, role, id)
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+	}
+
+	if rowsAffected == 0 {
+		return httperror.New(fiber.StatusNotFound, "user not found")
 	}
 
 	return nil

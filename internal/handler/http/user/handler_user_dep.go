@@ -23,3 +23,7 @@ type GetUserByIDUseCaseInterface interface {
 type UpdateUserStatusUseCaseInterface interface {
 	Execute(ctx context.Context, ids []int64, status string) error
 }
+
+type UpdateUserRoleUseCaseInterface interface {
+	Execute(ctx context.Context, id int64, role int64) error
+}
