@@ -105,7 +105,7 @@ func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO,
 }
 
 func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx, id int64) (err error) {
-	insertCoachQuery := `INSERT INTO coaches (user_id) VALUES (?)`
+	insertCoachQuery := `INSERT INTO coaches (user_id, level) VALUES (?, 1)`
 	_, err = tx.ExecContext(ctx, insertCoachQuery, id)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "failed to insert coach")
