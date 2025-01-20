@@ -36,6 +36,6 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Post("/login", h.Login)
 	v1.Post("/register", h.Create)
 	v1.Post("/email/verify", h.EmailVerification)
-	v1.Patch("/password", h.UpdatePassword)
+	v1.Patch("/password", h.PatchPassword)
 	v1.Post("/password/recover", h.ForgotPassword)
 }

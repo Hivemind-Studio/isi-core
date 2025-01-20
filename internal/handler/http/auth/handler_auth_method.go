@@ -143,7 +143,7 @@ func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) UpdatePassword(c *fiber.Ctx) error {
+func (h *Handler) PatchPassword(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "UpdatePassword"
 
