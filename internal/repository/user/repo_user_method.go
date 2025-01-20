@@ -43,22 +43,24 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 	return userId, nil
 }
 
-func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, user User) (id int64, err error) {
-	if err := r.checkExistingData(ctx, tx, user.Email, *user.PhoneNumber); err != nil {
+func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, email string,
+	password string, address string, phoneNumber string, status int, gender string, role string) (id int64, err error) {
+	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
 		return 0, err
 	}
 
-	hashedPassword, hashErr := hash.HashPassword(user.Password)
+	hashedPassword, hashErr := hash.HashPassword(password)
 	if hashErr != nil {
 		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, 
                   address, gender, verification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, user.Name, user.Email, hashedPassword,
-		constant.RoleIDStaff, user.PhoneNumber, user.Status, user.Gender, user.Address, 0)
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, role, phoneNumber, status,
+		address, gender, 0)
+
 	if err != nil {
-		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
+		return 0, httperror.Wrap(fiber.StatusConflict, err, "failed to insert user")
 	}
 
 	userId, err := result.LastInsertId()
@@ -174,6 +176,7 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 	err := tx.QueryRowContext(ctx, query, value).Scan(&exists)
 
 	if err == nil {
+		fmt.Printf("masok")
 		return httperror.New(fiber.StatusBadRequest, column+" already exists")
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")

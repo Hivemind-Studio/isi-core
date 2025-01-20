@@ -2,7 +2,6 @@ package createstaff
 
 import (
 	"context"
-	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -11,7 +10,8 @@ import (
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	CreateStaff(ctx context.Context, tx *sqlx.Tx, user user.User) (id int64, err error)
+	CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, email string,
+		password string, address string, phoneNumber string, status int, gender string, role string) (id int64, err error)
 	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
 	) (*int8, error)
 }

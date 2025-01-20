@@ -3,13 +3,14 @@ package createstaff
 import (
 	"context"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
-	staff "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -24,14 +25,9 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 	defer dbtx.HandleRollback(tx)
 
 	generatePassword := time.Now().String()
-	user := staff.User{
-		Name:     body.Name,
-		Email:    body.Email,
-		Password: generatePassword,
-		Gender:   &body.Gender,
-		Address:  &body.Address,
-	}
-	_, err = uc.repoUser.CreateStaff(ctx, tx, user)
+	_, err = uc.repoUser.CreateStaff(ctx, tx, body.Name, body.Email, generatePassword, body.Address, body.Phone,
+		int(constant.PENDING), body.Gender,
+		strconv.FormatInt(constant.GetRoleID(body.Role), 10))
 
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateStaff", err.Error(), body)
