@@ -17,7 +17,7 @@ type Coach struct {
 	Photo          *string    `db:"photo"`
 	Status         int64      `db:"status"`
 	Verification   string     `db:"verification"`
-	CreatedAt      time.Time  `db:"created_at"`
+	CreatedAt      *time.Time `db:"created_at"`
 	UpdatedAt      time.Time  `db:"updated_at"`
 	Certifications *string    `db:"certifications"`
 	Experiences    *string    `db:"experiences"`
@@ -43,7 +43,7 @@ func ConvertCoachToDTO(coach Coach) coachDTO.DTO {
 		Experiences:    coach.Experiences,
 		Educations:     coach.Educations,
 		Level:          coach.Level,
-		CreatedAt:      &coach.CreatedAt,
+		CreatedAt:      coach.CreatedAt,
 	}
 }
 

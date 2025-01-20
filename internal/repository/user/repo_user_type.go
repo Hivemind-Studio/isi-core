@@ -20,7 +20,7 @@ type User struct {
 	Occupation   *string    `db:"occupation"`
 	Photo        *string    `db:"photo"`
 	Status       int64      `db:"status"`
-	CreatedAt    time.Time  `db:"created_at"`
+	CreatedAt    *time.Time `db:"created_at"`
 	UpdatedAt    time.Time  `db:"updated_at"`
 }
 
@@ -56,6 +56,7 @@ func ConvertUserToDTO(user User) userdto.UserDTO {
 		Status:      user.Status,
 		Photo:       user.Photo,
 		Role:        user.RoleName,
+		CreatedAt:   user.CreatedAt,
 	}
 }
 

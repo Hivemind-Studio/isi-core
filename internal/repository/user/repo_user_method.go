@@ -152,6 +152,8 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + " LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 
+	fmt.Printf("Query %s", dataQuery)
+
 	err = r.GetConnDb().SelectContext(ctx, &users, dataQuery, queryArgs...)
 	if err != nil {
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
@@ -166,6 +168,8 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		TotalPages:   totalPages,
 		TotalRecords: totalRecords,
 	}
+
+	fmt.Print("users", users)
 
 	return users, paginate, nil
 }
