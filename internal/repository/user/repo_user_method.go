@@ -149,7 +149,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count users")
 	}
 
-	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + " LIMIT ? OFFSET ?"
+	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + " ORDER BY users.name ASC LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 
 	fmt.Printf("Query %s", dataQuery)
@@ -246,9 +246,18 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 	query := fmt.Sprintf("UPDATE users SET status = %d WHERE id IN (%s)",
 		constant.GetStatusFromString(updatedStatus), strings.Join(placeholders, ","))
 
-	_, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
+	result, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to suspend users")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to get rows affected")
+	}
+
+	if rowsAffected == 0 {
+		return httperror.New(fiber.StatusNotFound, "no users found with provided IDs")
 	}
 
 	return nil

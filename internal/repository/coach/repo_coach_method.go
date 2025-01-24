@@ -83,7 +83,7 @@ func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO,
             c.level AS level,
             r.id AS role_id,
             r.name AS role_name
-        ` + baseQuery + ` LIMIT ? OFFSET ?`
+        ` + baseQuery + ` ORDER BY u.name ASC LIMIT ? OFFSET ?`
 
 	queryArgs := append(args, perPage, (page-1)*perPage)
 	err = r.GetConnDb().SelectContext(ctx, &users, selectQuery, queryArgs...)
