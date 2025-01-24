@@ -5,6 +5,7 @@ import (
 	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
+	handleprofile "github.com/Hivemind-Studio/isi-core/internal/handler/http/profile"
 	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
@@ -20,6 +21,7 @@ import (
 	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
+	getprofileuser "github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
@@ -38,6 +40,7 @@ type AppApi struct {
 	roleHandle    *handlerole.Handler
 	coachHandle   *handlecoach.Handler
 	coacheeHandle *handlecoachee.Handler
+	profileHandle *handleprofile.Handler
 }
 
 type Router interface {
@@ -51,6 +54,7 @@ func routerList(app *AppApi) []Router {
 		app.userHandle,
 		app.roleHandle,
 		app.coacheeHandle,
+		app.profileHandle,
 	}
 }
 
@@ -85,6 +89,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
 
 	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
+	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo)
 
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
@@ -101,6 +106,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		updateUserRoleUseCase)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
+	profileHandler := handleprofile.NewProfileHandler(getProfileUser)
 
 	return &AppApi{
 			userHandle:    userHandler,
@@ -108,6 +114,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 			authHandle:    authHandler,
 			coacheeHandle: coacheeHandler,
 			coachHandle:   coachHandler,
+			profileHandle: profileHandler,
 		},
 		nil
 }

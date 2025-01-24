@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type AccessControlRule struct {
@@ -135,4 +136,27 @@ func GenerateToken(user User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secretKey))
+}
+
+func ExtractJWTPayload(tokenStr string) (*User, error) {
+	if tokenStr == "" {
+		return nil, fmt.Errorf("empty token")
+	}
+
+	tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
+
+	claims, err := parseJWTToClaims(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+
+	id, _ := claims["id"].(float64)
+	user := &User{
+		ID:    int64(id),
+		Name:  claims["name"].(string),
+		Email: claims["email"].(string),
+		Role:  claims["role"].(string),
+	}
+
+	return user, nil
 }

@@ -1,0 +1,10 @@
+package profile
+
+import (
+	"context"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
+)
+
+type GetProfileUserUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) (result *user.UserDTO, err error)
+}
