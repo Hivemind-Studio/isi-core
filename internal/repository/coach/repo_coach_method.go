@@ -6,14 +6,14 @@ import (
 	"errors"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
-	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"time"
 )
 
-func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO, page int64, perPage int64) ([]Coach, pagination.Pagination, error) {
+func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO, page int64, perPage int64) ([]Coach,
+	pagination.Pagination, error) {
 	var users []Coach
 	var totalRecords int64
 	var args []interface{}
@@ -59,7 +59,8 @@ func (r *Repository) GetCoaches(ctx context.Context, params coach.QueryCoachDTO,
 	countQuery := "SELECT COUNT(DISTINCT u.id) " + baseQuery
 	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
-		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count coaches")
+		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to count coaches")
 	}
 
 	selectQuery := `
@@ -210,21 +211,6 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 	}
 
 	return email, nil
-}
-
-func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, password string, email string) error {
-	hashedPassword, hashErr := hash.HashPassword(password)
-	if hashErr != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
-	}
-
-	query := `UPDATE users SET password = ?, status = 1 WHERE email = ?`
-	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
-	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
-	}
-
-	return nil
 }
 
 func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) {

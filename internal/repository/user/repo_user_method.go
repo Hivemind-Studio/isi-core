@@ -362,3 +362,42 @@ func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, 
 
 	return nil
 }
+
+func (r *Repository) UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string) error {
+	hashedPassword, hashErr := hash.HashPassword(password)
+	if hashErr != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+	}
+
+	query := `UPDATE users SET password = ?, status = 1 WHERE email = ?`
+	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
+}
+
+func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
+	query := `
+		SELECT email, expired_at 
+		FROM email_verifications 
+		WHERE verification_token = ?
+	`
+	var email string
+	var expiredAt time.Time
+
+	err := r.GetConnDb().QueryRowxContext(context.Background(), query, token).Scan(&email, &expiredAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", httperror.New(fiber.StatusNotFound, "verification token not found")
+		}
+		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
+	}
+
+	if time.Now().After(expiredAt) {
+		return "", httperror.Wrap(fiber.StatusBadRequest, nil, "verification token is expired")
+	}
+
+	return email, nil
+}

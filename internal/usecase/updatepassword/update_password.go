@@ -1,4 +1,4 @@
-package updatecoachpassword
+package updatepassword
 
 import (
 	"context"
@@ -9,9 +9,9 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword string, token string) (err error) {
-	tx, err := uc.repoCoach.StartTx(ctx)
+	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
-	logger.Print("info", requestId, "Coach service", "UpdateCoachPassword", "function start", token)
+	logger.Print("info", requestId, "User service", "UpdatePassword", "function start", token)
 
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
@@ -22,7 +22,7 @@ func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword
 		return httperror.New(fiber.StatusBadRequest, "password mismatch")
 	}
 
-	email, err := uc.repoCoach.GetTokenEmailVerification(token)
+	email, err := uc.repoUser.GetTokenEmailVerification(token)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword
 		return err
 	}
 
-	err = uc.repoCoach.UpdateCoachPassword(ctx, tx, password, email)
+	err = uc.repoUser.UpdatePassword(ctx, tx, password, email)
 
 	if err != nil {
 		return err
@@ -40,12 +40,12 @@ func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword
 
 	err = uc.repoUser.DeleteEmailTokenVerification(ctx, tx, email)
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "Failed to create coach")
+		return httperror.New(fiber.StatusInternalServerError, "Failed to create user")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "Failed to create coach")
+		return httperror.New(fiber.StatusInternalServerError, "Failed to create user")
 	}
 
 	return nil

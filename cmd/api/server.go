@@ -25,7 +25,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachpassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
 	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
@@ -77,7 +77,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
 	createUserUseCase := createuser.NewCreateUserUseCase(userRepo)
 	updateUserStatusUseCase := updateuserstatus.NewUpdateUserStatusUseCase(userRepo)
-	updateCoachPasswordUseCase := updatecoachpassword.NewUpdateCoachPasswordUseCase(coachRepo, userRepo)
+	updateCoachPasswordUseCase := updatepassword.NewUpdatePasswordUseCase(userRepo)
 	getUsersUseCase := getusers.NewGetUsersUseCase(userRepo)
 	getUserByIdUseCase := getuserbyid.NewGetUserByIdUseCase(userRepo)
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)

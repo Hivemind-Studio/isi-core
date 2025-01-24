@@ -1,4 +1,4 @@
-package updatecoachpassword
+package updatepassword
 
 import (
 	"context"
@@ -7,17 +7,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type repoCoachInterface interface {
-	dbtx.DBTXInterface
-
-	CreateCoach(ctx context.Context, tx *sqlx.Tx, userId int64) (err error)
-	UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, password string, token string) (err error)
-	GetTokenEmailVerification(token string) (string, error)
-}
-
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	FindByEmail(ctx context.Context, email string) (user.User, error)
+	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, token string) (err error)
 	DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.Tx, email string) error
+	GetTokenEmailVerification(token string) (string, error)
 }

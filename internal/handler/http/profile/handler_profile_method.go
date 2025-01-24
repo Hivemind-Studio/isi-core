@@ -26,7 +26,24 @@ func (h *Handler) GetProfileUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
-		Message: "Users retrieved successfully",
+		Message: "Profile retrieved successfully",
 		Data:    res,
+	})
+}
+
+func (h *Handler) changePassword(c *fiber.Ctx) error {
+	jwtToken := c.Get("Authorization")
+	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+		return fiber.ErrUnauthorized
+	}
+
+	_, err := middleware.ExtractJWTPayload(jwtToken)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "change password successfully",
 	})
 }
