@@ -9,12 +9,17 @@ import (
 type Handler struct {
 	getProfileUser        GetProfileUserUseCaseInterface
 	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface
+	updateProfile         UpdateProfileUserUseCaseInterface
 }
 
-func NewProfileHandler(getProfileUser GetProfileUserUseCaseInterface, updateProfilePassword UpdateProfileUserPasswordUseCaseInterface) *Handler {
+func NewProfileHandler(
+	getProfileUser GetProfileUserUseCaseInterface,
+	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface,
+	updateProfile UpdateProfileUserUseCaseInterface) *Handler {
 	return &Handler{
 		getProfileUser,
 		updateProfilePassword,
+		updateProfile,
 	}
 }
 
@@ -25,6 +30,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
 	v1.Get("/profile", h.GetProfile)
+	v1.Put("/profile", h.UpdateProfile)
 	v1.Patch("/profile", h.UpdateProfilePassword)
 }
 

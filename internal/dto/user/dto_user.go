@@ -38,3 +38,10 @@ type SuspendDTO struct {
 type UserRole struct {
 	Role string `json:"role"`
 }
+
+type UpdateUserDTO struct {
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone_number"`
+	Address     string `json:"address"`
+	Gender      string `json:"gender"`
+}

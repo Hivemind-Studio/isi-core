@@ -2,6 +2,7 @@ package profile
 
 import (
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -71,5 +72,37 @@ func (h *Handler) UpdateProfilePassword(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
 		Message: "change password successfully",
+	})
+}
+
+func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
+	module := "Profile Handler"
+	functionName := "UpdateProfilePassword"
+	requestId := c.Locals("request_id").(string)
+
+	var requestBody dto.UpdateUserDTO
+
+	if err := c.BodyParser(&requestBody); err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Invalid input", string(c.Body()))
+		return httperror.New(fiber.StatusBadRequest, "Invalid input")
+	}
+
+	jwtToken := c.Get("Authorization")
+	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+		return fiber.ErrUnauthorized
+	}
+
+	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	err = h.updateProfile.Execute(c.Context(), claims.ID, requestBody.Name, requestBody.Address, requestBody.Gender, requestBody.PhoneNumber)
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Profile update successfully",
+		Data:    nil,
 	})
 }

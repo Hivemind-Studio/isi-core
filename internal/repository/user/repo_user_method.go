@@ -387,3 +387,17 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 
 	return email, nil
 }
+
+func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name string, address string,
+	gender string, phoneNumber string) (err error) {
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
+		return err
+	}
+
+	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ? WHERE id = ?`
+	_, err = tx.ExecContext(ctx, query, name, phoneNumber, address, gender, id)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
+	}
+	return nil
+}

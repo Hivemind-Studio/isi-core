@@ -21,11 +21,12 @@ import (
 	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
-	getprofileuser "github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofile"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofilepassword"
 	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
@@ -92,6 +93,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
 	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo)
 	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
+	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo)
 
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
@@ -108,7 +110,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		updateUserRoleUseCase)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
-	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword)
+	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile)
 
 	return &AppApi{
 			userHandle:    userHandler,
