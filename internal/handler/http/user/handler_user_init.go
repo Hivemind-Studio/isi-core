@@ -54,7 +54,7 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"Staff": {
 			Role: "Staff",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "PATCH"},
+				constant.V1 + "/users": {"GET"},
 			},
 		},
 	}
