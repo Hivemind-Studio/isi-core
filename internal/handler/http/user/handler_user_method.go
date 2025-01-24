@@ -130,11 +130,18 @@ func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
 
 func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 	var payload user.UserRole
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
+	}
+
 	if err := c.BodyParser(&payload); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.updateUserRoleCase.Execute(c.Context(), payload.Id, payload.Role)
+	err = h.updateUserRoleCase.Execute(c.Context(), id, payload.Role)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
