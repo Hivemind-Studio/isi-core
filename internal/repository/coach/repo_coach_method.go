@@ -218,7 +218,7 @@ func (r *Repository) UpdateCoachPassword(ctx context.Context, tx *sqlx.Tx, passw
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	query := `UPDATE users SET password = ?, SET status = 1 WHERE email = ?`
+	query := `UPDATE users SET password = ?,~ status = 1 WHERE email = ?`
 	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
