@@ -36,5 +36,5 @@ type SuspendDTO struct {
 }
 
 type UserRole struct {
-	Role int64 `json:"role"`
+	Role string `json:"role"`
 }

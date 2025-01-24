@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -141,7 +142,7 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err = h.updateUserRoleCase.Execute(c.Context(), id, payload.Role)
+	err = h.updateUserRoleCase.Execute(c.Context(), id, constant.GetRoleID(payload.Role))
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
