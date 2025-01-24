@@ -25,6 +25,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 
 	token, err := middleware.GenerateToken(
 		middleware.User{
+			ID:    result.ID,
 			Name:  result.Name,
 			Email: result.Email,
 			Role:  *result.Role,
@@ -39,6 +40,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 			Status:  fiber.StatusOK,
 			Message: "login successful",
 			Data: authdto.LoginResponse{
+				ID:    result.ID,
 				Name:  result.Name,
 				Email: result.Email,
 				Role:  *result.Role,

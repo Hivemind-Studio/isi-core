@@ -21,6 +21,7 @@ func (uc *UseCase) Execute(ctx context.Context, body *auth.LoginDTO) (user dto.U
 	}
 
 	return dto.UserDTO{
+		ID:    savedUser.ID,
 		Name:  savedUser.Name,
 		Role:  savedUser.RoleName,
 		Email: savedUser.Email,

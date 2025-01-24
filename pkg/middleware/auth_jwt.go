@@ -15,6 +15,7 @@ type AccessControlRule struct {
 }
 
 type User struct {
+	ID    int64
 	Name  string
 	Email string
 	Role  string
@@ -125,6 +126,7 @@ func GenerateToken(user User) (string, error) {
 
 	expirationTime := time.Now().Add(24 * time.Hour).Unix()
 	claims := jwt.MapClaims{
+		"id":    user.ID,
 		"email": user.Email,
 		"name":  user.Name,
 		"role":  user.Role,
