@@ -7,12 +7,14 @@ import (
 )
 
 type Handler struct {
-	getProfileUser GetProfileUserUseCaseInterface
+	getProfileUser        GetProfileUserUseCaseInterface
+	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface
 }
 
-func NewProfileHandler(getProfileUser GetProfileUserUseCaseInterface) *Handler {
+func NewProfileHandler(getProfileUser GetProfileUserUseCaseInterface, updateProfilePassword UpdateProfileUserPasswordUseCaseInterface) *Handler {
 	return &Handler{
 		getProfileUser,
+		updateProfilePassword,
 	}
 }
 
@@ -22,7 +24,8 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	accessControlRules := h.manageAccessControl()
 	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
 
-	v1.Get("/profile", h.GetProfileUser)
+	v1.Get("/profile", h.GetProfile)
+	v1.Patch("/profile", h.UpdateProfilePassword)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
@@ -30,13 +33,25 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"Admin": {
 			Role: "Admin",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
 			},
 		},
 		"Staff": {
 			Role: "Staff",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/users": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+			},
+		},
+		"Coach": {
+			Role: "Coach",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+			},
+		},
+		"Coachee": {
+			Role: "Coachee",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
 			},
 		},
 	}

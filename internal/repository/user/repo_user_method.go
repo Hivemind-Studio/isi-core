@@ -180,7 +180,6 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 	err := tx.QueryRowContext(ctx, query, value).Scan(&exists)
 
 	if err == nil {
-		fmt.Printf("masok")
 		return httperror.New(fiber.StatusBadRequest, column+" already exists")
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to check duplicate")
@@ -200,27 +199,14 @@ func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email s
 	return nil
 }
 
-func (r *Repository) GetUserByID(ctx context.Context, id int64, role *int64) (User, error) {
+func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
 	var result User
 
 	var query string
 	var args []interface{}
 
-	if role != nil {
-		if *role == constant.RoleIDCoachee {
-			query = `SELECT * 
-						FROM users 
-						WHERE id = ? AND role_id = ? 
-						LIMIT 1;`
-			args = append(args, id, *role)
-		}
-	} else {
-		query = `SELECT * 
-						FROM users 
-						WHERE id = ? AND (role_id = ? OR role_id = ?) 
-						LIMIT 1;`
-		args = append(args, id, constant.RoleIDAdmin, constant.RoleIDStaff)
-	}
+	query = `SELECT * FROM users WHERE id = ? LIMIT 1;`
+	args = append(args, id)
 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, args...).StructScan(&result)
 	if err != nil {

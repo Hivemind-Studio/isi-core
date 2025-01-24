@@ -27,7 +27,7 @@ type RegistrationStaffDTO struct {
 	Role    string `json:"role" validate:"required"`
 }
 
-type CoachRegistrationDTO struct {
+type UpdatePasswordRegistration struct {
 	Password        string `json:"password" validate:"required,min=8,max=12"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
 	Token           string `json:"token" validate:"required"`
@@ -49,4 +49,10 @@ type LoginResponse struct {
 
 type ForgotPasswordDTO struct {
 	Email string `json:"email" validate:"required,email"`
+}
+
+type UpdatePassword struct {
+	CurrentPassword string `json:"current" validate:"required,min=8,max=12"`
+	Password        string `json:"password" validate:"required,min=8,max=12"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
 }

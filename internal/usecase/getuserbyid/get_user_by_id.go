@@ -9,7 +9,7 @@ import (
 )
 
 func (s *UseCase) Execute(ctx context.Context, id int64) (*dto.UserDTO, error) {
-	res, err := s.repoUser.GetUserByID(ctx, id, nil)
+	res, err := s.repoUser.GetUserByID(ctx, id)
 	if err != nil {
 		return nil, httperror.New(fiber.StatusNotFound, "user not found")
 	}

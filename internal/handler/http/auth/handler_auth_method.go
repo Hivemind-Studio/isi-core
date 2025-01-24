@@ -149,7 +149,7 @@ func (h *Handler) PatchPassword(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "UpdatePassword"
 
-	var requestBody authdto.CoachRegistrationDTO
+	var requestBody authdto.UpdatePasswordRegistration
 	requestId := c.Locals("request_id").(string)
 
 	if err := c.BodyParser(&requestBody); err != nil {
