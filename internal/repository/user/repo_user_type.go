@@ -20,6 +20,7 @@ type User struct {
 	Occupation   *string    `db:"occupation"`
 	Photo        *string    `db:"photo"`
 	Status       int64      `db:"status"`
+	Version      int64      `db:"version"`
 	CreatedAt    *time.Time `db:"created_at"`
 	UpdatedAt    time.Time  `db:"updated_at"`
 }
@@ -38,6 +39,7 @@ type EmailVerification struct {
 	Email             string    `db:"email"`
 	VerificationToken string    `db:"verification_token"`
 	Trial             int8      `db:"trial"`
+	Version           int64     `db:"version"`
 	ExpiredAt         time.Time `db:"expired_at"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`

@@ -11,7 +11,7 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	FindByEmail(ctx context.Context, email string) (user.User, error)
-	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, token string) (err error)
+	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string, version int64) (err error)
 	DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.Tx, email string) error
 	GetTokenEmailVerification(token string) (string, error)
 }

@@ -12,7 +12,12 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, role int64) error {
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = uc.repoUser.UpdateUserRole(ctx, tx, id, role)
+	existingUser, err := uc.repoUser.GetUserByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = uc.repoUser.UpdateUserRole(ctx, tx, id, role, existingUser.Version)
 
 	if err != nil {
 		dbtx.HandleRollback(tx)

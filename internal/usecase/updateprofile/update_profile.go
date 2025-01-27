@@ -18,7 +18,12 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, name string, address s
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = uc.repoUser.UpdateUser(ctx, tx, id, name, address, gender, phoneNumber)
+	user, err := uc.repoUser.GetUserByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = uc.repoUser.UpdateUser(ctx, tx, id, name, address, gender, phoneNumber, user.Version)
 	if err != nil {
 		return err
 	}

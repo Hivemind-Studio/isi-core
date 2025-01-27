@@ -8,13 +8,18 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, ids []int64, updatedStatus string) error {
+	versions, err := uc.repoUser.GetUserVersions(ctx, ids)
+	if err != nil {
+		return err
+	}
+
 	tx, err := uc.repoUser.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = uc.repoUser.UpdateUserStatus(ctx, tx, ids, updatedStatus)
+	err = uc.repoUser.UpdateUserStatus(ctx, tx, ids, updatedStatus, versions)
 
 	if err != nil {
 		dbtx.HandleRollback(tx)

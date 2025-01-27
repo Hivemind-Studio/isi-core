@@ -2,6 +2,7 @@ package updateuserstatus
 
 import (
 	"context"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/jmoiron/sqlx"
 )
@@ -9,5 +10,7 @@ import (
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string) error
+	GetUserByID(ctx context.Context, id int64) (user.User, error)
+	UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string, versions []int64) error
+	GetUserVersions(ctx context.Context, ids []int64) ([]int64, error)
 }

@@ -27,12 +27,12 @@ func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword
 		return err
 	}
 
-	_, err = uc.repoUser.FindByEmail(ctx, email)
+	user, err := uc.repoUser.FindByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
-	err = uc.repoUser.UpdatePassword(ctx, tx, password, email)
+	err = uc.repoUser.UpdatePassword(ctx, tx, password, email, user.Version)
 
 	if err != nil {
 		return err

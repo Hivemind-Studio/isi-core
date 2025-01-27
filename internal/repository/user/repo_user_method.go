@@ -13,7 +13,6 @@ import (
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
-	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,8 +28,8 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status, 0)
+	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status, 0, 0)
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
 	}
@@ -55,9 +54,9 @@ func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, 
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, 
-                  address, gender, verification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                  address, gender, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, role, phoneNumber, status,
-		address, gender, 0)
+		address, gender, 0, 0)
 
 	if err != nil {
 		return 0, httperror.Wrap(fiber.StatusConflict, err, "failed to insert user")
@@ -81,7 +80,8 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 			users.email, 
 			users.password, 
 			users.role_id, 
-			roles.name AS role_name 
+			roles.name AS role_name,
+			users.version
 		FROM 
 			users 
 		LEFT JOIN 
@@ -219,22 +219,31 @@ func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return result, nil
 }
 
-func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string) error {
+func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string, versions []int64) error {
 	if len(ids) == 0 {
 		return httperror.New(fiber.StatusBadRequest, "no user IDs provided")
 	}
 
-	placeholders := make([]string, len(ids))
-	for i := range ids {
-		placeholders[i] = "?"
+	versionConditions := make([]string, len(ids))
+	args := make([]interface{}, 0)
+
+	for i, id := range ids {
+		versionConditions[i] = "(id = ? AND version = ?)"
+		args = append(args, id, versions[i])
 	}
 
-	query := fmt.Sprintf("UPDATE users SET status = %d WHERE id IN (%s)",
-		constant.GetStatusFromString(updatedStatus), strings.Join(placeholders, ","))
+	query := fmt.Sprintf(`
+		UPDATE users 
+		SET status = ?, version = version + 1 
+		WHERE %s`,
+		strings.Join(versionConditions, " OR "),
+	)
 
-	result, err := tx.ExecContext(ctx, query, utils.ToInterfaceSlice(ids)...)
+	args = append([]interface{}{constant.GetStatusFromString(updatedStatus)}, args...)
+
+	result, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to suspend users")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update users")
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -243,7 +252,7 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 	}
 
 	if rowsAffected == 0 {
-		return httperror.New(fiber.StatusNotFound, "no users found with provided IDs")
+		return httperror.New(fiber.StatusConflict, "update conflict: users may have been updated by another transaction")
 	}
 
 	return nil
@@ -269,8 +278,8 @@ func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.
 	token string, expiredAt time.Time,
 ) error {
 	insertQuery := `
-			INSERT INTO email_verifications (email, verification_token, expired_at, trial)
-			VALUES (?, ?, ?, 1)
+			INSERT INTO email_verifications (email, verification_token, expired_at, trial, version)
+			VALUES (?, ?, ?, 1, 0)
 		`
 	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt)
 	if err != nil {
@@ -282,14 +291,19 @@ func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.
 }
 
 func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
-	targetDate string, token string, expiredAt time.Time,
+	targetDate string, token string, expiredAt time.Time, version int64,
 ) error {
 	updateQuery := `
 			UPDATE email_verifications
-			SET verification_token = ?, expired_at = ?, trial = trial + 1, updated_at = NOW()
+			SET verification_token = ?, 
+			    expired_at = ?, 
+			    trial = trial + 1, 
+			    updated_at = NOW(),
+			    version = ?
 			WHERE email = ? AND DATE(created_at) = ?
+			AND version = ?
 		`
-	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, email, targetDate)
+	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, version+1, email, targetDate, version)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err,
 			"failed to update verification record")
@@ -301,7 +315,7 @@ func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.
 func (r *Repository) GetByVerificationTokenAndEmail(ctx context.Context,
 	verificationToken, email string,
 ) (*EmailVerification, error) {
-	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at
+	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at, version
 			  FROM email_verifications 
 			  WHERE verification_token = ? AND email = ?`
 
@@ -329,7 +343,7 @@ func (r *Repository) DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.
 	return nil
 }
 
-func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, role int64) error {
+func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, role int64, version int64) error {
 	query := `UPDATE users SET role_id = ? WHERE id = ?`
 
 	result, err := tx.ExecContext(ctx, query, role, id)
@@ -349,14 +363,18 @@ func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, 
 	return nil
 }
 
-func (r *Repository) UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string) error {
+func (r *Repository) UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string, version int64) error {
 	hashedPassword, hashErr := hash.HashPassword(password)
 	if hashErr != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	query := `UPDATE users SET password = ?, status = 1 WHERE email = ?`
-	_, err := tx.ExecContext(ctx, query, hashedPassword, email)
+	query := `UPDATE users SET password = ?, 
+                 status = 1,
+                 version = ?
+                 WHERE email = ?
+                 AND version = ?`
+	_, err := tx.ExecContext(ctx, query, hashedPassword, (version + 1), email, version)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
 	}
@@ -388,16 +406,55 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 	return email, nil
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name string, address string,
-	gender string, phoneNumber string) (err error) {
+func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber string, version int64) (err error) {
 	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
 		return err
 	}
 
-	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ? WHERE id = ?`
-	_, err = tx.ExecContext(ctx, query, name, phoneNumber, address, gender, id)
+	query := `UPDATE users SET name = ?,
+                 phone_number = ?,
+                 address = ?,
+                 gender = ?,
+                 version = ?
+             WHERE id = ?
+             AND version = ?`
+	_, err = tx.ExecContext(ctx, query, name, phoneNumber, address, gender, (version + 1), id, version)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
 	}
 	return nil
+}
+
+func (r *Repository) GetUserVersions(ctx context.Context, ids []int64) ([]int64, error) {
+	placeholders := make([]string, len(ids))
+	args := make([]interface{}, len(ids))
+
+	for i, id := range ids {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	query := fmt.Sprintf("SELECT version FROM users WHERE id IN (%s)",
+		strings.Join(placeholders, ","))
+
+	rows, err := r.GetConnDb().QueryxContext(ctx, query, args...)
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to get user versions")
+	}
+	defer rows.Close()
+
+	var versions []int64
+	for rows.Next() {
+		var version int64
+		if err := rows.Scan(&version); err != nil {
+			return nil, err
+		}
+		versions = append(versions, version)
+	}
+
+	if len(versions) != len(ids) {
+		return nil, httperror.New(fiber.StatusNotFound, "some users not found")
+	}
+
+	return versions, nil
 }

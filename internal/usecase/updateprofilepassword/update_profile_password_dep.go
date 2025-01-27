@@ -11,5 +11,5 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	GetUserByID(ctx context.Context, id int64) (user.User, error)
-	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string) (err error)
+	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string, version int64) (err error)
 }

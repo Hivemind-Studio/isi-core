@@ -61,13 +61,17 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 	token := utils.GenerateVerificationToken()
 	expiredAt := time.Now().Add(1 * time.Hour)
 	currentDate := time.Now().Format("2006-01-02")
-
 	if trial == 0 {
 		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {
-		if err := s.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, token, expiredAt); err != nil {
+		existingEmailVerification, err := s.repoUser.GetByVerificationTokenAndEmail(ctx, token, email)
+		if err != nil {
+			return "", err
+		}
+		if err := s.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, token,
+			expiredAt, existingEmailVerification.Version); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update verification record")
 		}
 	}
