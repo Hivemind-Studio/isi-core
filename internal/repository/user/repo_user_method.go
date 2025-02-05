@@ -19,7 +19,7 @@ import (
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
 	password string, roleId int64, phoneNumber string, status int) (id int64, err error) {
-	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
+	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
 
@@ -44,7 +44,7 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 
 func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, email string,
 	password string, address string, phoneNumber string, status int, gender string, role string) (id int64, err error) {
-	if err := r.checkExistingData(ctx, tx, email, phoneNumber); err != nil {
+	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
 
@@ -174,10 +174,17 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	return users, paginate, nil
 }
 
-func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string) error {
+func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string, id *int64) error {
 	var exists string
 	query := `SELECT 1 FROM users WHERE ` + column + ` = ?`
-	err := tx.QueryRowContext(ctx, query, value).Scan(&exists)
+	args := []interface{}{value}
+
+	if id != nil {
+		query += ` AND id != ?`
+		args = append(args, *id)
+	}
+
+	err := tx.QueryRowContext(ctx, query, args...).Scan(&exists)
 
 	if err == nil {
 		return httperror.New(fiber.StatusBadRequest, column+" already exists")
@@ -187,15 +194,13 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 	return nil
 }
 
-func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string) error {
-	if err := r.checkForDuplicate(ctx, tx, "email", email); err != nil {
+func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string, id *int64) error {
+	if err := r.checkForDuplicate(ctx, tx, "email", email, id); err != nil {
 		return err
 	}
-
-	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, id); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -406,23 +411,35 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 	return email, nil
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber string, version int64) (err error) {
-	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
-		return err
+func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber string,
+	occupation string, version int64) (*User, error) {
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, &id); err != nil {
+		return nil, err
 	}
 
-	query := `UPDATE users SET name = ?,
-                 phone_number = ?,
-                 address = ?,
-                 gender = ?,
-                 version = ?
-             WHERE id = ?
-             AND version = ?`
-	_, err = tx.ExecContext(ctx, query, name, phoneNumber, address, gender, (version + 1), id, version)
+	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?,occupation = ?, version = ?
+              WHERE id = ? AND version = ?`
+	result, err := tx.ExecContext(ctx, query, name, phoneNumber, address, gender, occupation, version+1, id, version)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
 	}
-	return nil
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve affected rows")
+	}
+	if rowsAffected == 0 {
+		return nil, httperror.New(fiber.StatusConflict, "user was modified by another transaction")
+	}
+
+	var user User
+	query = `SELECT * FROM users WHERE id = ?`
+	err = tx.GetContext(ctx, &user, query, id)
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve updated user")
+	}
+
+	return &user, nil
 }
 
 func (r *Repository) GetUserVersions(ctx context.Context, ids []int64) ([]int64, error) {

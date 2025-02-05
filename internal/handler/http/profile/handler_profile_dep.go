@@ -14,5 +14,6 @@ type UpdateProfileUserPasswordUseCaseInterface interface {
 }
 
 type UpdateProfileUserUseCaseInterface interface {
-	Execute(ctx context.Context, id int64, name string, address string, gender string, phoneNumber string) (err error)
+	Execute(ctx context.Context, id int64, name string, address string, gender string,
+		phoneNumber string, occupation string) (result *user.UserDTO, err error)
 }

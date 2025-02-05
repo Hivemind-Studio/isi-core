@@ -44,4 +44,5 @@ type UpdateUserDTO struct {
 	PhoneNumber string `json:"phone_number"`
 	Address     string `json:"address"`
 	Gender      string `json:"gender"`
+	Occupation  string `json:"occupation"`
 }

@@ -77,7 +77,7 @@ func (h *Handler) UpdateProfilePassword(c *fiber.Ctx) error {
 
 func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 	module := "Profile Handler"
-	functionName := "UpdateProfilePassword"
+	functionName := "UpdateProfile"
 	requestId := c.Locals("request_id").(string)
 
 	var requestBody dto.UpdateUserDTO
@@ -98,11 +98,16 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	err = h.updateProfile.Execute(c.Context(), claims.ID, requestBody.Name, requestBody.Address, requestBody.Gender, requestBody.PhoneNumber)
+	res, err := h.updateProfile.Execute(c.Context(), claims.ID, requestBody.Name, requestBody.Address,
+		requestBody.Gender, requestBody.PhoneNumber, requestBody.Occupation)
+
+	if err != nil {
+		return err
+	}
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
 		Message: "Profile update successfully",
-		Data:    nil,
+		Data:    res,
 	})
 }
