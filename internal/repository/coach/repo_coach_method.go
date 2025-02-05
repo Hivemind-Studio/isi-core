@@ -239,16 +239,15 @@ func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) 
 			r.name AS role_name
 		FROM
 			users u
-				JOIN
+				LEFT JOIN
 			coaches c ON u.id = c.user_id
-				JOIN
+				LEFT JOIN
 			roles r ON u.role_id = r.id
 		WHERE
 			u.role_id = 3 AND u.id = ?
 		`
 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, id).StructScan(&result)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Coach{}, httperror.New(fiber.StatusNotFound, "user not found")
