@@ -1,19 +1,18 @@
-package sendverification
+package sendchangeemailverification
 
 import (
 	"context"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
-	"os"
-	"time"
-
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
+	"os"
+	"time"
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
-		return httperror.New(fiber.StatusBadRequest, "useremail already exists")
+		return httperror.New(fiber.StatusBadRequest, "user email already exists")
 	}
 
 	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
@@ -21,7 +20,7 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		return err
 	}
 
-	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.REGISTER)
+	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.EMAIL_UPDATE)
 	if err != nil {
 		return err
 	}
@@ -45,7 +44,8 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 	}
 
 	err := uc.userEmailService.SendEmail([]string{email},
-		"Inspirasi Satu - Verify Your Email",
+		//TODO CHANGE EMAIL TEMPLATE
+		"Inspirasi Satu - Change Email Verification",
 		"template/verification_email.html",
 		emailData,
 	)

@@ -3,6 +3,7 @@ package forgotpassword
 import (
 	"context"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -40,7 +41,7 @@ func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email
 		return err
 	}
 
-	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial)
+	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.FORGOT_PASSWORD)
 	if err != nil {
 		return err
 	}

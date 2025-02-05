@@ -41,5 +41,4 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, currentPassword string
 	}
 
 	return nil
-
 }

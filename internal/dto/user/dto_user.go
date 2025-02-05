@@ -39,6 +39,15 @@ type UserRole struct {
 	Role string `json:"role"`
 }
 
+type ChangeEmailDTO struct {
+	Token    string `json:"token"`
+	NewEmail string `json:"new_email"`
+}
+
+type ChangeEmailEmailVerificationDTO struct {
+	Email string `json:"email" validate:"required"`
+}
+
 type UpdateUserDTO struct {
 	Name        string `json:"name"`
 	PhoneNumber string `json:"phone_number"`

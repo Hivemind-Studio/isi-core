@@ -13,7 +13,9 @@ type CreateUserStaffUseCaseInterface interface {
 }
 
 type GetUsersUseCaseInterface interface {
-	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate *time.Time, endDate *time.Time, page int64, perPage int64) ([]user.UserDTO, pagination.Pagination, error)
+	Execute(ctx context.Context, name string, email string, phoneNumber string, status string,
+		startDate *time.Time, endDate *time.Time, page int64, perPage int64,
+	) ([]user.UserDTO, pagination.Pagination, error)
 }
 
 type GetUserByIDUseCaseInterface interface {
@@ -26,4 +28,12 @@ type UpdateUserStatusUseCaseInterface interface {
 
 type UpdateUserRoleUseCaseInterface interface {
 	Execute(ctx context.Context, id int64, role int64) error
+}
+
+type UpdateUserEmailInterface interface {
+	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
+}
+
+type SendChangeEmailVerificationInterface interface {
+	Execute(ctx context.Context, email string) error
 }

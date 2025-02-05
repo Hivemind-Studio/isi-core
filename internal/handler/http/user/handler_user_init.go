@@ -7,11 +7,13 @@ import (
 )
 
 type Handler struct {
-	createUserStaffUseCase  CreateUserStaffUseCaseInterface
-	getUsersUseCase         GetUsersUseCaseInterface
-	getUserByIDUseCase      GetUserByIDUseCaseInterface
-	updateUserStatusUseCase UpdateUserStatusUseCaseInterface
-	updateUserRoleCase      UpdateUserRoleUseCaseInterface
+	createUserStaffUseCase             CreateUserStaffUseCaseInterface
+	getUsersUseCase                    GetUsersUseCaseInterface
+	getUserByIDUseCase                 GetUserByIDUseCaseInterface
+	updateUserStatusUseCase            UpdateUserStatusUseCaseInterface
+	updateUserRoleCase                 UpdateUserRoleUseCaseInterface
+	updateUserEmailUseCase             UpdateUserEmailInterface
+	sendChangeEmailVerificationUseCase SendChangeEmailVerificationInterface
 }
 
 func NewUserHandler(
@@ -20,13 +22,17 @@ func NewUserHandler(
 	getUserByIDUseCase GetUserByIDUseCaseInterface,
 	updateUserStatusUseCase UpdateUserStatusUseCaseInterface,
 	updateUserRoleCase UpdateUserRoleUseCaseInterface,
+	updateUserEmailUseCase UpdateUserEmailInterface,
+	sendChangeEmailVerificationUseCase SendChangeEmailVerificationInterface,
 ) *Handler {
 	return &Handler{
-		createUserStaffUseCase:  createUserStaffUseCase,
-		getUsersUseCase:         getUsersUseCase,
-		getUserByIDUseCase:      getUserByIDUseCase,
-		updateUserStatusUseCase: updateUserStatusUseCase,
-		updateUserRoleCase:      updateUserRoleCase,
+		createUserStaffUseCase:             createUserStaffUseCase,
+		getUsersUseCase:                    getUsersUseCase,
+		getUserByIDUseCase:                 getUserByIDUseCase,
+		updateUserStatusUseCase:            updateUserStatusUseCase,
+		updateUserRoleCase:                 updateUserRoleCase,
+		updateUserEmailUseCase:             updateUserEmailUseCase,
+		sendChangeEmailVerificationUseCase: sendChangeEmailVerificationUseCase,
 	}
 }
 

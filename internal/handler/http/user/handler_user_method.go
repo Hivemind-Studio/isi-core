@@ -154,3 +154,54 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 			Message: "Change role users successfully",
 		})
 }
+
+func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
+	var payload user.ChangeEmailEmailVerificationDTO
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), payload.Email)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Change role users successfully",
+		})
+}
+
+func (h *Handler) UpdatePassword(c *fiber.Ctx) error {
+	var payload user.ChangeEmailDTO
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+	userInfo := c.Locals("user_info")
+
+	if userInfo == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	// Convert userInfo back to map[string]interface{}
+	user, ok := userInfo.(map[string]interface{})
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid user data"})
+	}
+
+	email := user["email"].(string)
+
+	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Change role users successfully",
+		})
+}

@@ -54,7 +54,7 @@ func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email
 		return err
 	}
 
-	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial)
+	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.STAFF_REGISTRATION)
 	if err != nil {
 		return err
 	}

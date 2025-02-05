@@ -38,14 +38,14 @@ func (s *Service) ValidateTrialByDate(ctx context.Context, email string) (*int8,
 	return trial, nil
 }
 
-func (s *Service) HandleTokenGeneration(ctx context.Context, email string, trial int8) (string, error) {
+func (s *Service) HandleTokenGeneration(ctx context.Context, email string, trial int8, tokenType string) (string, error) {
 	tx, err := s.repoUser.StartTx(ctx)
 	if err != nil {
 		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to start transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
-	token, err := s.generateAndSaveToken(ctx, tx, email, trial)
+	token, err := s.generateAndSaveToken(ctx, tx, email, trial, tokenType)
 	if err != nil {
 		return "", err
 	}
@@ -57,12 +57,12 @@ func (s *Service) HandleTokenGeneration(ctx context.Context, email string, trial
 	return token, nil
 }
 
-func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8) (string, error) {
+func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email string, trial int8, tokenType string) (string, error) {
 	token := utils.GenerateVerificationToken()
 	expiredAt := time.Now().Add(1 * time.Hour)
 	currentDate := time.Now().Format("2006-01-02")
 	if trial == 0 {
-		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt); err != nil {
+		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt, ""); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {

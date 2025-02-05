@@ -279,14 +279,12 @@ func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context,
 	return &trial, nil
 }
 
-func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
-	token string, expiredAt time.Time,
-) error {
+func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string, token string, expiredAt time.Time, tokenType string) error {
 	insertQuery := `
-			INSERT INTO email_verifications (email, verification_token, expired_at, trial, version)
-			VALUES (?, ?, ?, 1, 0)
+			INSERT INTO email_verifications (email, verification_token, expired_at, type, trial, version)
+			VALUES (?, ?, ?, ?, 1, 0)
 		`
-	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt)
+	_, err := tx.ExecContext(ctx, insertQuery, email, token, expiredAt, tokenType)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err,
 			"failed to insert verification record")
@@ -474,4 +472,61 @@ func (r *Repository) GetUserVersions(ctx context.Context, ids []int64) ([]int64,
 	}
 
 	return versions, nil
+}
+
+func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, token string, tokenType string,
+) (string, error) {
+	query := `
+		SELECT email, expired_at 
+		FROM email_verifications 
+		WHERE verification_token = ?
+		AND token_type = ?
+	`
+	var email string
+	var expiredAt time.Time
+
+	err := r.GetConnDb().QueryRowxContext(ctx, query, token, tokenType).Scan(&email, &expiredAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", httperror.New(fiber.StatusNotFound, "verification token not found")
+		}
+		return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
+	}
+
+	if time.Now().After(expiredAt) {
+		return "", httperror.Wrap(fiber.StatusBadRequest, nil, "verification token is expired")
+	}
+
+	return email, nil
+}
+
+func (r *Repository) DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error {
+	query := `DELETE FROM email_verifications WHERE token = ? AND token_type = ?`
+
+	_, err := tx.ExecContext(ctx, query, token, tokenType)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail string, oldEmail string) error {
+	query := `UPDATE users SET email = ? WHERE email = ?`
+
+	result, err := tx.ExecContext(ctx, query, newEmail, oldEmail)
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+	}
+
+	if rowsAffected == 0 {
+		return httperror.New(fiber.StatusNotFound, "user not found")
+	}
+
+	return nil
 }
