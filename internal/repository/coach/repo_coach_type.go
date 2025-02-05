@@ -25,6 +25,10 @@ type Coach struct {
 	Level          *string    `db:"level"`
 	RoleID         int64      `db:"role_id"`
 	RoleName       string     `db:"role_name"`
+	Version        int64      `db:"version"`
+	Title          *string    `db:"title"`
+	Bio            *string    `db:"bio"`
+	Expertise      *string    `db:"expertise"`
 }
 
 func ConvertCoachToDTO(coach Coach) coachDTO.DTO {
@@ -44,6 +48,9 @@ func ConvertCoachToDTO(coach Coach) coachDTO.DTO {
 		Educations:     coach.Educations,
 		Level:          coach.Level,
 		CreatedAt:      coach.CreatedAt,
+		Title:          coach.Title,
+		Bio:            coach.Bio,
+		Expertise:      coach.Expertise,
 	}
 }
 

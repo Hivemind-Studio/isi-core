@@ -24,15 +24,18 @@ type DTO struct {
 	PhoneNumber    *string    `json:"phone_number"`
 	DateOfBirth    *time.Time `json:"date_of_birth"`
 	Gender         *string    `json:"gender"`
-	Occupation     *string    `json:"occupation"`
+	Occupation     *string    `json:"occupation,omitempty"`
 	Status         int64      `json:"status"`
 	Role           *string    `json:"role,omitempty"`
 	Photo          *string    `json:"photo"`
 	CreatedAt      *time.Time `json:"created_at"`
-	Certifications *string    `json:"certifications"`
-	Experiences    *string    `json:"experiences"`
-	Educations     *string    `json:"educations"`
+	Certifications *string    `json:"certifications,omitempty"`
+	Experiences    *string    `json:"experiences,omitempty"`
+	Educations     *string    `json:"educations,omitempty"`
 	Level          *string    `json:"level"`
+	Title          *string    `json:"title"`
+	Bio            *string    `json:"bio"`
+	Expertise      *string    `json:"expertise"`
 }
 
 type QueryCoachDTO struct {

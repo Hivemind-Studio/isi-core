@@ -46,3 +46,14 @@ type UpdateUserDTO struct {
 	Gender      string `json:"gender"`
 	Occupation  string `json:"occupation"`
 }
+
+type UpdateCoachDTO struct {
+	Name        string `json:"name"`
+	DateOfBirth string `json:"date_of_birth"`
+	PhoneNumber string `json:"phone_number"`
+	Address     string `json:"address"`
+	Gender      string `json:"gender"`
+	Title       string `json:"title"`
+	Bio         string `json:"bio"`
+	Expertise   string `json:"expertise"`
+}

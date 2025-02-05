@@ -9,6 +9,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"log"
 	"time"
 )
 
@@ -115,10 +116,17 @@ func (r *Repository) CreateCoach(ctx context.Context, tx *sqlx.Tx, id int64) (er
 	return nil
 }
 
-func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string) error {
+func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column, value string, id *int64) error {
 	var exists string
 	query := `SELECT 1 FROM users WHERE ` + column + ` = ?`
-	err := tx.QueryRowContext(ctx, query, value).Scan(&exists)
+	args := []interface{}{value}
+
+	if id != nil {
+		query += ` AND id != ?`
+		args = append(args, *id)
+	}
+
+	err := tx.QueryRowContext(ctx, query, args...).Scan(&exists)
 
 	if err == nil {
 		return httperror.New(fiber.StatusBadRequest, column+" already exists")
@@ -128,15 +136,13 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 	return nil
 }
 
-func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string) error {
-	if err := r.checkForDuplicate(ctx, tx, "email", email); err != nil {
+func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string, id *int64) error {
+	if err := r.checkForDuplicate(ctx, tx, "email", email, id); err != nil {
 		return err
 	}
-
-	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber); err != nil {
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, id); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -231,9 +237,13 @@ func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) 
 			u.status AS status,
 			u.created_at AS created_at,
 			u.updated_at AS updated_at,
+			u.version as version,
 			c.certifications AS certifications,
 			c.experiences AS experiences,
 			c.education AS educations,
+			c.title AS title,
+			c.bio AS bio,
+			c.expertise AS expertise,
 			c.level AS level,
 			r.id AS role_id,
 			r.name AS role_name
@@ -256,4 +266,63 @@ func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) 
 	}
 
 	return result, nil
+}
+
+func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber,
+	dateOfBirth, title, bio, expertise string, version int64) (*Coach, error) {
+	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, &id); err != nil {
+		return nil, err
+	}
+
+	var dob *time.Time
+	if dateOfBirth != "" {
+		parsedDOB, err := time.Parse("2006-01-02", dateOfBirth)
+		if err != nil {
+			return nil, httperror.Wrap(fiber.StatusBadRequest, err, "invalid date_of_birth format")
+		}
+		dob = &parsedDOB
+	}
+
+	userQuery := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?, date_of_birth = ?, version = ? 
+                  WHERE id = ? AND version = ?`
+	result, err := tx.ExecContext(ctx, userQuery, name, phoneNumber, address, gender, dob, version+1, id, version)
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return nil, httperror.New(fiber.StatusConflict, "user was modified by another transaction")
+	}
+
+	coachQuery := `INSERT INTO coaches (user_id, title, bio, expertise, updated_at) 
+                   VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                   ON DUPLICATE KEY UPDATE title = VALUES(title), bio = VALUES(bio), expertise = VALUES(expertise), updated_at = CURRENT_TIMESTAMP`
+
+	result, err = tx.ExecContext(ctx, coachQuery, id, title, bio, expertise)
+	if err != nil {
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update coach")
+	}
+
+	coachRowsAffected, _ := result.RowsAffected()
+	if coachRowsAffected == 0 {
+		log.Printf("No rows affected for coach update, user_id: %d", id)
+	}
+
+	var c Coach
+	query := `
+		SELECT
+			u.id, u.name, u.email, u.address, u.phone_number, u.date_of_birth,
+			u.gender, u.verification, u.photo, u.status, u.created_at, u.updated_at,
+			c.title, c.bio, c.expertise
+		FROM users u
+		LEFT JOIN coaches c ON u.id = c.user_id
+		WHERE u.id = ?`
+	err = tx.GetContext(ctx, &c, query, id)
+	if err != nil {
+		log.Printf("Failed to retrieve updated coach: %v", err)
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve updated coach")
+	}
+
+	return &c, nil
 }
