@@ -11,9 +11,9 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
-	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
-		return httperror.New(fiber.StatusBadRequest, "user email already exists")
-	}
+	//if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
+	//	return httperror.New(fiber.StatusBadRequest, "user email already exists")
+	//}
 
 	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
 	if err != nil {
