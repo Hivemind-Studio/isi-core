@@ -212,3 +212,26 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 		Data:    fileURL,
 	})
 }
+
+func (h *Handler) DeletePhoto(c *fiber.Ctx) error {
+	jwtToken := c.Get("Authorization")
+	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+		return fiber.ErrUnauthorized
+	}
+
+	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	err = h.deletePhoto.Execute(c.Context(), claims.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Profile photo updated successfully",
+	})
+}

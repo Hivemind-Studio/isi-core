@@ -12,6 +12,7 @@ type Handler struct {
 	updateProfile         UpdateProfileUserUseCaseInterface
 	updateProfileCoach    UpdateProfileCoachUseCaseInterface
 	updatePhoto           UpdatePhotoUseCaseInterface
+	deletePhoto           DeletePhotoUseCaseInterface
 }
 
 func NewProfileHandler(
@@ -19,13 +20,15 @@ func NewProfileHandler(
 	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface,
 	updateProfile UpdateProfileUserUseCaseInterface,
 	updateProfileCoach UpdateProfileCoachUseCaseInterface,
-	updatePhoto UpdatePhotoUseCaseInterface) *Handler {
+	updatePhoto UpdatePhotoUseCaseInterface,
+	deletePhoto DeletePhotoUseCaseInterface) *Handler {
 	return &Handler{
 		getProfileUser,
 		updateProfilePassword,
 		updateProfile,
 		updateProfileCoach,
 		updatePhoto,
+		deletePhoto,
 	}
 }
 
@@ -40,6 +43,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Put("/profile/coach", h.UpdateProfileCoach)
 	v1.Patch("/profile", h.UpdateProfilePassword)
 	v1.Patch("/profile/photo", h.UploadPhoto)
+	v1.Delete("/profile/photo", h.DeletePhoto)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
@@ -47,25 +51,25 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"Admin": {
 			Role: "Admin",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH", "DELETE"},
 			},
 		},
 		"Staff": {
 			Role: "Staff",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH", "DELETE"},
 			},
 		},
 		"Coach": {
 			Role: "Coach",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH", "DELETE"},
 			},
 		},
 		"Coachee": {
 			Role: "Coachee",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/profile": {"GET", "PUT", "PATCH"},
+				constant.V1 + "/profile": {"GET", "PUT", "PATCH", "DELETE"},
 			},
 		},
 	}

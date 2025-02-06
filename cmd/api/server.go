@@ -14,6 +14,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletephoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachbyid"
 	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
@@ -98,6 +99,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	updateUserEmail := updateuseremail.NewUpdateUserEmailUseCase(userRepo)
 	sendChangeEmailVerification := sendchangeemailverification.NewSendChangeEmailVerificationUseCase(userRepo, userEmailService)
 	uploadPhoto := uploadphoto.NewUpdatePhotoStatusUseCase(userRepo)
+	deletePhoto := deletephoto.NewDeletePhotoStatusUseCase(userRepo)
 
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
 		sendVerificationUseCase,
@@ -115,7 +117,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
-		updateProfileCoach, uploadPhoto)
+		updateProfileCoach, uploadPhoto, deletePhoto)
 
 	return &AppApi{
 			userHandle:    userHandler,
