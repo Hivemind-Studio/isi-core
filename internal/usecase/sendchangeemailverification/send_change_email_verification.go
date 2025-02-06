@@ -38,9 +38,10 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		VerificationURL string
 		Year            int
 	}{
-		Name:            name,
-		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
-		Year:            time.Now().Year(),
+		Name: name,
+		VerificationURL: fmt.Sprintf("%s%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"),
+			"change-email?", token),
+		Year: time.Now().Year(),
 	}
 
 	err := uc.userEmailService.SendEmail([]string{email},
