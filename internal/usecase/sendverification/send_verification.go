@@ -13,7 +13,7 @@ import (
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
-		return httperror.New(fiber.StatusBadRequest, "useremail already exists")
+		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	}
 
 	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)

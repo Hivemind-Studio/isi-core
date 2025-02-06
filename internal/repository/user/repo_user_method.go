@@ -80,6 +80,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 			users.email, 
 			users.password, 
 			users.role_id, 
+			users.photo, 
 			roles.name AS role_name,
 			users.version
 		FROM 
@@ -92,10 +93,11 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 			users.email = ?
 	`
 
-	err := r.GetConnDb().QueryRowxContext(ctx, query, email).StructScan(&result)
+	err := r.GetConnDb().QueryRowxContext(ctx, query, &email).StructScan(&result)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
+			return User{}, nil
 		}
 		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
@@ -168,8 +170,6 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		TotalPages:   totalPages,
 		TotalRecords: totalRecords,
 	}
-
-	fmt.Print("users", users)
 
 	return users, paginate, nil
 }
