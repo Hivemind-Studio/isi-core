@@ -7,20 +7,23 @@ import (
 )
 
 type Handler struct {
-	getCoachUseCase     GetCoachesUseCaseInterface
-	createCoachUseCase  CreateCoachUseCaseInterface
-	getCoachByIdUseCase GetCoachByIdUseCaseInterface
+	getCoachUseCase         GetCoachesUseCaseInterface
+	createCoachUseCase      CreateCoachUseCaseInterface
+	getCoachByIdUseCase     GetCoachByIdUseCaseInterface
+	updateCoachLevelUseCase UpdateCoachLevelUseCaseInterface
 }
 
 func NewCoachHandler(
 	getCoachUseCase GetCoachesUseCaseInterface,
 	createCoachUseCase CreateCoachUseCaseInterface,
 	getCoachByIdUseCase GetCoachByIdUseCaseInterface,
+	updateCoachLevelUseCase UpdateCoachLevelUseCaseInterface,
 ) *Handler {
 	return &Handler{
-		getCoachUseCase:     getCoachUseCase,
-		createCoachUseCase:  createCoachUseCase,
-		getCoachByIdUseCase: getCoachByIdUseCase,
+		getCoachUseCase:         getCoachUseCase,
+		createCoachUseCase:      createCoachUseCase,
+		getCoachByIdUseCase:     getCoachByIdUseCase,
+		updateCoachLevelUseCase: updateCoachLevelUseCase,
 	}
 }
 
@@ -33,6 +36,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Get("/", h.GetCoaches)
 	v1.Get("/:id", h.GetCoachById)
 	v1.Post("/", h.CreateCoach)
+	v1.Patch("/:id/level", h.UpdateCoachLevel)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {

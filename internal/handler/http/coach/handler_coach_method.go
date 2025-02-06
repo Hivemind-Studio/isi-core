@@ -108,3 +108,29 @@ func (h *Handler) GetCoachById(c *fiber.Ctx) error {
 		Data:    res,
 	})
 }
+
+func (h *Handler) UpdateCoachLevel(c *fiber.Ctx) error {
+	var payload coach.UpdateCoachDTO
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
+	}
+
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	err = h.updateCoachLevelUseCase.Execute(c.Context(), id, payload.Level)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Change level coaches successfully",
+		})
+}

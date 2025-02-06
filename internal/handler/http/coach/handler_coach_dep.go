@@ -21,3 +21,7 @@ type CreateCoachUseCaseInterface interface {
 type GetCoachByIdUseCaseInterface interface {
 	Execute(ctx context.Context, id int64) (result *dto.UserDTO, err error)
 }
+
+type UpdateCoachLevelUseCaseInterface interface {
+	Execute(ctx context.Context, id int64, level string) error
+}

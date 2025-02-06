@@ -326,3 +326,15 @@ func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, nam
 
 	return &c, nil
 }
+
+func (r *Repository) UpdateCoachLevel(ctx context.Context, tx *sqlx.Tx, id int64, level string) error {
+	query := `UPDATE coaches SET level = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?`
+
+	_, err := tx.ExecContext(ctx, query, level, id)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to update verification record")
+	}
+
+	return nil
+}
