@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -219,8 +220,8 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 	return email, nil
 }
 
-func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) {
-	var result Coach
+func (r *Repository) GetCoachById(ctx context.Context, id int64) (user.User, error) {
+	var result user.User
 
 	query := `
 		SELECT
@@ -260,9 +261,9 @@ func (r *Repository) GetCoachById(ctx context.Context, id int64) (Coach, error) 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, id).StructScan(&result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Coach{}, httperror.New(fiber.StatusNotFound, "user not found")
+			return user.User{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
-		return Coach{}, httperror.New(fiber.StatusInternalServerError, err.Error())
+		return user.User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return result, nil

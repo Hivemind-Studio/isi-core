@@ -27,7 +27,7 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	res, err := h.getProfileUser.Execute(c.Context(), user.ID)
+	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
 
 	if err != nil {
 		return err
@@ -191,7 +191,12 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 	if err := c.SaveFile(file, tempFilePath); err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "Failed to save file")
 	}
-	defer os.Remove(tempFilePath)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			return
+		}
+	}(tempFilePath)
 
 	username := claims.Name
 	fileURL, err := s3.UploadFile(tempFilePath, file.Filename, username)

@@ -11,3 +11,9 @@ type repoUserInterface interface {
 
 	GetUserByID(ctx context.Context, id int64) (user.User, error)
 }
+
+type repoCoachInterface interface {
+	dbtx.DBTXInterface
+
+	GetCoachById(ctx context.Context, id int64) (user.User, error)
+}

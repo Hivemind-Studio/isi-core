@@ -89,7 +89,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
 
 	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
-	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo)
+	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo, coachRepo)
 	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
 	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo)
 	updateProfileCoach := updateprofilecoach.NewUpdateProfileCoachUseCase(coachRepo)

@@ -6,32 +6,30 @@ import (
 )
 
 type User struct {
-	ID           int64      `db:"id"`
-	RoleId       *int64     `db:"role_id"`
-	RoleName     *string    `db:"role_name"`
-	Password     string     `db:"password"`
-	Name         string     `db:"name"`
-	Email        string     `db:"email"`
-	Address      *string    `db:"address"`
-	PhoneNumber  *string    `db:"phone_number"`
-	DateOfBirth  *time.Time `db:"date_of_birth"`
-	Gender       *string    `db:"gender"`
-	Verification *bool      `db:"verification"`
-	Occupation   *string    `db:"occupation"`
-	Photo        *string    `db:"photo"`
-	Status       int64      `db:"status"`
-	Version      int64      `db:"version"`
-	CreatedAt    *time.Time `db:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"`
-}
-
-type Coach struct {
-	Id             int64  `db:"id"`
-	UserId         int64  `db:"user_id"`
-	Certifications string `db:"certifications"`
-	Experiences    string `db:"experiences"`
-	Educations     string `db:"educations"`
-	Level          string `db:"level"`
+	ID             int64      `db:"id"`
+	RoleId         *int64     `db:"role_id"`
+	RoleName       *string    `db:"role_name"`
+	Password       string     `db:"password"`
+	Name           string     `db:"name"`
+	Email          string     `db:"email"`
+	Address        *string    `db:"address"`
+	PhoneNumber    *string    `db:"phone_number"`
+	DateOfBirth    *time.Time `db:"date_of_birth"`
+	Gender         *string    `db:"gender"`
+	Verification   *bool      `db:"verification"`
+	Occupation     *string    `db:"occupation"`
+	Photo          *string    `db:"photo"`
+	Status         int64      `db:"status"`
+	Version        int64      `db:"version"`
+	CreatedAt      *time.Time `db:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at"`
+	Certifications *string    `db:"certifications"`
+	Experiences    *string    `db:"experiences"`
+	Educations     *string    `db:"educations"`
+	Title          *string    `db:"title"`
+	Bio            *string    `db:"bio"`
+	Expertise      *string    `db:"expertise"`
+	Level          *int64     `db:"level"`
 }
 
 type EmailVerification struct {
@@ -59,6 +57,9 @@ func ConvertUserToDTO(user User) userdto.UserDTO {
 		Photo:       user.Photo,
 		Role:        user.RoleName,
 		CreatedAt:   user.CreatedAt,
+		Title:       user.Title,
+		Bio:         user.Bio,
+		Expertise:   user.Expertise,
 	}
 }
 

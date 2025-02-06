@@ -7,7 +7,7 @@ import (
 )
 
 type GetProfileUserUseCaseInterface interface {
-	Execute(ctx context.Context, id int64) (result *user.UserDTO, err error)
+	Execute(ctx context.Context, id int64, role string) (result *user.UserDTO, err error)
 }
 
 type UpdateProfileUserPasswordUseCaseInterface interface {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
+	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"time"
 )
 
@@ -18,5 +19,5 @@ type CreateCoachUseCaseInterface interface {
 }
 
 type GetCoachByIdUseCaseInterface interface {
-	Execute(ctx context.Context, id int64) (result *coach.DTO, err error)
+	Execute(ctx context.Context, id int64) (result *dto.UserDTO, err error)
 }
