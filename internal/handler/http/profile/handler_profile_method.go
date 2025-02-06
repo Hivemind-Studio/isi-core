@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"fmt"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -17,6 +18,10 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
 		return fiber.ErrUnauthorized
 	}
+
+	requestId := c.Locals("request_id").(string)
+
+	fmt.Println("REQUEST_ID_CROT ", requestId)
 
 	user, err := middleware.ExtractJWTPayload(jwtToken)
 	if err != nil {
