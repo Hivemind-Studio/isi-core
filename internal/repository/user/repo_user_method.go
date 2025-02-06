@@ -239,7 +239,7 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 
 	query := fmt.Sprintf(`
 		UPDATE users 
-		SET status = ?, version = version + 1 
+		SET status = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP
 		WHERE %s`,
 		strings.Join(versionConditions, " OR "),
 	)
@@ -301,7 +301,7 @@ func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.
 			SET verification_token = ?, 
 			    expired_at = ?, 
 			    trial = trial + 1, 
-			    updated_at = NOW(),
+			    updated_at = CURRENT_TIMESTAMP,
 			    version = ?
 			WHERE email = ? AND DATE(created_at) = ?
 			AND version = ?
@@ -367,7 +367,7 @@ func (r *Repository) DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.
 }
 
 func (r *Repository) UpdateUserRole(ctx context.Context, tx *sqlx.Tx, id int64, role int64, version int64) error {
-	query := `UPDATE users SET role_id = ? WHERE id = ?`
+	query := `UPDATE users SET role_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
 
 	result, err := tx.ExecContext(ctx, query, role, id)
 	if err != nil {
@@ -445,7 +445,7 @@ func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name
 	}
 
 	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?,occupation = ?, date_of_birth = ?, 
-                 version = ?
+                 version = ?, updated_at = CURRENT_TIMESTAMP
               WHERE id = ? AND version = ?`
 	result, err := tx.ExecContext(ctx, query, name, phoneNumber, address, gender, occupation, dob, version+1, id, version)
 	if err != nil {
@@ -542,7 +542,7 @@ func (r *Repository) DeleteEmailTokenVerificationByToken(ctx context.Context, tx
 }
 
 func (r *Repository) UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail string, oldEmail string) error {
-	query := `UPDATE users SET email = ? WHERE email = ?`
+	query := `UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE email = ?`
 
 	result, err := tx.ExecContext(ctx, query, newEmail, oldEmail)
 	if err != nil {
@@ -562,7 +562,7 @@ func (r *Repository) UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail 
 }
 
 func (r *Repository) UpdatePhoto(ctx context.Context, tx *sqlx.Tx, id int64, photo string) error {
-	query := `UPDATE users SET photo = ? WHERE id = ?`
+	query := `UPDATE users SET photo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
 	result, err := tx.ExecContext(ctx, query, photo, id)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
@@ -581,7 +581,7 @@ func (r *Repository) UpdatePhoto(ctx context.Context, tx *sqlx.Tx, id int64, pho
 }
 
 func (r *Repository) DeletePhoto(ctx context.Context, tx *sqlx.Tx, id int64) error {
-	query := `UPDATE users SET photo = ? WHERE id = ?`
+	query := `UPDATE users SET photo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
 	result, err := tx.ExecContext(ctx, query, nil, id)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
