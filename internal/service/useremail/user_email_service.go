@@ -8,6 +8,8 @@ import (
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -27,11 +29,13 @@ func (s *Service) ValidateEmail(ctx context.Context, email string) bool {
 }
 
 func (s *Service) ValidateTrialByDate(ctx context.Context, email string) (*int8, error) {
+	emailLimit := os.Getenv("EMAIL_LIMIT_NUM")
+	limit, err := strconv.ParseInt(emailLimit, 10, 64)
 	trial, err := s.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
 	if err != nil {
 		return trial, err
 	}
-	if *trial >= 2 {
+	if *trial >= int8(limit) {
 		return trial, httperror.New(fiber.StatusTooManyRequests, "user email verification limit reached for today")
 	}
 
