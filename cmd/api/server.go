@@ -6,7 +6,6 @@ import (
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
 	handleprofile "github.com/Hivemind-Studio/isi-core/internal/handler/http/profile"
-	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
@@ -42,7 +41,6 @@ import (
 type AppApi struct {
 	authHandle    *handleauth.Handler
 	userHandle    *handleuser.Handler
-	roleHandle    *handlerole.Handler
 	coachHandle   *handlecoach.Handler
 	coacheeHandle *handlecoachee.Handler
 	profileHandle *handleprofile.Handler
@@ -57,7 +55,6 @@ func routerList(app *AppApi) []Router {
 		app.authHandle,
 		app.coachHandle,
 		app.userHandle,
-		app.roleHandle,
 		app.coacheeHandle,
 		app.profileHandle,
 	}
