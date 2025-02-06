@@ -1,6 +1,7 @@
 package user
 
 import (
+	"mime/multipart"
 	"time"
 )
 
@@ -65,4 +66,8 @@ type UpdateCoachDTO struct {
 	Title       string `json:"title"`
 	Bio         string `json:"bio"`
 	Expertise   string `json:"expertise"`
+}
+
+type UpdatePhoto struct {
+	file multipart.File
 }

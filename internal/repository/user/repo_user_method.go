@@ -530,3 +530,41 @@ func (r *Repository) UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail 
 
 	return nil
 }
+
+func (r *Repository) UpdatePhoto(ctx context.Context, tx *sqlx.Tx, id int64, photo string) error {
+	query := `UPDATE users SET photo = ? WHERE id = ?`
+	result, err := tx.ExecContext(ctx, query, photo, id)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
+	}
+
+	if rowsAffected == 0 {
+		return httperror.New(fiber.StatusNotFound, "user photo not found")
+	}
+
+	return nil
+}
+
+func (r *Repository) DeletePhoto(ctx context.Context, tx *sqlx.Tx, id int64) error {
+	query := `UPDATE users SET photo = ? WHERE id = ?`
+	result, err := tx.ExecContext(ctx, query, nil, id)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user photo")
+	}
+
+	if rowsAffected == 0 {
+		return httperror.New(fiber.StatusNotFound, "user photo not found")
+	}
+
+	return nil
+}

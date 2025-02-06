@@ -31,6 +31,7 @@ func main() {
 	app.Use(recover.New())
 	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	app.Use(middleware.RequestIdMiddleware)
+	app.Use(middleware.BodyLimit("3MB"))
 
 	config := configs.Init()
 

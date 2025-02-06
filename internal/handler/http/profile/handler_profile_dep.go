@@ -23,3 +23,11 @@ type UpdateProfileCoachUseCaseInterface interface {
 	Execute(ctx context.Context, id int64, name string, address string, gender string,
 		phoneNumber string, dateOfBirth string, title string, bio string, expertise string) (dto *coachDto.DTO, err error)
 }
+
+type UpdatePhotoUseCaseInterface interface {
+	Execute(ctx context.Context, id int64, photo string) error
+}
+
+type DeletePhotoUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) error
+}

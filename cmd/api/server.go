@@ -9,11 +9,9 @@ import (
 	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
-	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/internal/service/useremail"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
@@ -33,6 +31,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuseremail"
 	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/uploadphoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/verifyregistrationtoken"
 
@@ -68,7 +67,6 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	emailClient := initEmailClient(cfg)
 
 	userRepo := repouser.NewUserRepo(dbConn)
-	roleRepo := reporole.NewRoleRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
 
 	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
@@ -76,7 +74,6 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 
 	userEmailService := useremail.NewUserEmailService(userRepo, emailClient)
 
-	createRoleUseCase := createrole.NewCreateRoleUseCase(roleRepo)
 	userLoginUseCase := userlogin.NewLoginUseCase(userRepo)
 	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, userEmailService)
 	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
@@ -100,8 +97,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	updateProfileCoach := updateprofilecoach.NewUpdateProfileCoachUseCase(coachRepo)
 	updateUserEmail := updateuseremail.NewUpdateUserEmailUseCase(userRepo)
 	sendChangeEmailVerification := sendchangeemailverification.NewSendChangeEmailVerificationUseCase(userRepo, userEmailService)
+	uploadPhoto := uploadphoto.NewUpdatePhotoStatusUseCase(userRepo)
 
-	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
 		sendVerificationUseCase,
 		verificationRegistrationTokenUseCase,
@@ -117,11 +114,11 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		updateUserEmail, sendChangeEmailVerification)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
-	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile, updateProfileCoach)
+	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
+		updateProfileCoach, uploadPhoto)
 
 	return &AppApi{
 			userHandle:    userHandler,
-			roleHandle:    roleHandler,
 			authHandle:    authHandler,
 			coacheeHandle: coacheeHandler,
 			coachHandle:   coachHandler,
