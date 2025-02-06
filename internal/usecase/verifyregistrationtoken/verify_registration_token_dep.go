@@ -9,5 +9,5 @@ import (
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	GetByVerificationTokenAndEmail(ctx context.Context, verificationToken, email string) (*user.EmailVerification, error)
+	GetByVerificationToken(ctx context.Context, verificationToken string) (*user.EmailVerification, error)
 }

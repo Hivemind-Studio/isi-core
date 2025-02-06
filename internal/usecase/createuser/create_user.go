@@ -2,7 +2,6 @@ package createuser
 
 import (
 	"context"
-	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
@@ -21,7 +20,13 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 	}
 	defer dbtx.HandleRollback(tx)
 
-	_, err = s.repoUser.Create(ctx, tx, body.Name, body.Email, body.Password, constant.RoleIDCoachee, body.PhoneNumber, int(constant.ACTIVE))
+	u, err := s.repoUser.GetByVerificationToken(ctx, body.Token)
+
+	if err != nil {
+		return nil, httperror.New(fiber.StatusInternalServerError, "error when fetching email")
+	}
+
+	_, err = s.repoUser.Create(ctx, tx, body.Name, u.Email, body.Password, constant.RoleIDCoachee, body.PhoneNumber, int(constant.ACTIVE))
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)
@@ -30,11 +35,11 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, httperror.New(fiber.StatusInternalServerError, "error when committing transaction")
 	}
 
 	return &auth.RegisterResponse{
 		Name:  body.Name,
-		Email: body.Email,
+		Email: u.Email,
 	}, err
 }

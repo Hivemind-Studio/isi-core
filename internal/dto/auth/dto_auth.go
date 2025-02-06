@@ -10,7 +10,7 @@ type RegistrationDTO struct {
 	Password        string `json:"password" validate:"required,min=8,max=12"`
 	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
 	PhoneNumber     string `json:"phone_number" validate:"required"`
-	Email           string `json:"email" validate:"required"`
+	Email           string `json:"email,omitempty"`
 	Token           string `json:"token" validate:"required"`
 }
 

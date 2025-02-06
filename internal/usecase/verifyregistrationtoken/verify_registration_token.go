@@ -8,7 +8,7 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string, token string) (err error) {
-	emailVerification, err := uc.repoUser.GetByVerificationTokenAndEmail(ctx, token, email)
+	emailVerification, err := uc.repoUser.GetByVerificationToken(ctx, token)
 	if err != nil {
 		return err
 	}

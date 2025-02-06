@@ -598,3 +598,23 @@ func (r *Repository) DeletePhoto(ctx context.Context, tx *sqlx.Tx, id int64) err
 
 	return nil
 }
+
+func (r *Repository) GetByVerificationToken(ctx context.Context,
+	verificationToken string,
+) (*EmailVerification, error) {
+	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at, version
+			  FROM email_verifications 
+			  WHERE verification_token = ?`
+
+	var emailVerification EmailVerification
+	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken).StructScan(&emailVerification)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to fetch verification record")
+	}
+
+	return &emailVerification, nil
+}
