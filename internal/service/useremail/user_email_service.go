@@ -62,7 +62,7 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 	expiredAt := time.Now().Add(1 * time.Hour)
 	currentDate := time.Now().Format("2006-01-02")
 	if trial == 0 {
-		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt, ""); err != nil {
+		if err := s.repoUser.InsertEmailVerificationTrial(ctx, tx, email, token, expiredAt, tokenType); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {

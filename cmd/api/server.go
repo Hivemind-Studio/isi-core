@@ -24,11 +24,13 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofile"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofilecoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofilepassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuseremail"
 	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
@@ -96,6 +98,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
 	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo)
 	updateProfileCoach := updateprofilecoach.NewUpdateProfileCoachUseCase(coachRepo)
+	updateUserEmail := updateuseremail.NewUpdateUserEmailUseCase(userRepo)
+	sendChangeEmailVerification := sendchangeemailverification.NewSendChangeEmailVerificationUseCase(userRepo, userEmailService)
 
 	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
 	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
@@ -109,7 +113,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		getUsersUseCase,
 		getUserByIdUseCase,
 		updateUserStatusUseCase,
-		updateUserRoleUseCase)
+		updateUserRoleUseCase,
+		updateUserEmail, sendChangeEmailVerification)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile, updateProfileCoach)

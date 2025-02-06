@@ -480,7 +480,7 @@ func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, toke
 		SELECT email, expired_at 
 		FROM email_verifications 
 		WHERE verification_token = ?
-		AND token_type = ?
+		AND type = ?
 	`
 	var email string
 	var expiredAt time.Time
@@ -501,7 +501,7 @@ func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, toke
 }
 
 func (r *Repository) DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error {
-	query := `DELETE FROM email_verifications WHERE token = ? AND token_type = ?`
+	query := `DELETE FROM email_verifications WHERE verification_token = ? AND type = ?`
 
 	_, err := tx.ExecContext(ctx, query, token, tokenType)
 	if err != nil {
@@ -516,12 +516,12 @@ func (r *Repository) UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail 
 
 	result, err := tx.ExecContext(ctx, query, newEmail, oldEmail)
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user email")
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return httperror.New(fiber.StatusInternalServerError, "failed to update user role")
+		return httperror.New(fiber.StatusInternalServerError, "failed to update user email")
 	}
 
 	if rowsAffected == 0 {
