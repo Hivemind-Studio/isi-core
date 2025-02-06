@@ -10,12 +10,6 @@ type CreateCoachDTO struct {
 	Address     string `json:"address" validate:"required"`
 }
 
-type PatchPasswordCoach struct {
-	Password          string `json:"password"`
-	ConfirmPassword   string `json:"confirm_password"`
-	VerificationToken string `db:"verification_token"`
-}
-
 type DTO struct {
 	ID             int64      `json:"id"`
 	Name           string     `json:"name"`

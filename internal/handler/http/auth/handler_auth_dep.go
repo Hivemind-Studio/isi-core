@@ -22,10 +22,6 @@ type CreateUserUseCaseInterface interface {
 	Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
 }
 
-type UpdateUserUseCaseInterface interface {
-	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
-}
-
 type UpdateCoachPasswordInterface interface {
 	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
 }
