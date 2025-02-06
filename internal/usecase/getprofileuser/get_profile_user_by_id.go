@@ -12,7 +12,7 @@ import (
 func (s *UseCase) Execute(ctx context.Context, id int64, role string) (*dto.UserDTO, error) {
 	r := constant.GetRoleID(role)
 
-	if r == constant.RoleIDCoach {
+	if r == constant.RoleIDCoach || r == constant.RoleIDCoachee {
 		result, err := s.repoCoach.GetCoachById(ctx, id)
 
 		if err != nil {
