@@ -40,7 +40,7 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		Year            int
 	}{
 		Name:            name,
-		VerificationURL: fmt.Sprintf("%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+		VerificationURL: fmt.Sprintf("registration?%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
 		Year:            time.Now().Year(),
 	}
 
