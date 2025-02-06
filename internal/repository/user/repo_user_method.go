@@ -97,7 +97,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, nil
+			return User{}, httperror.New(fiber.StatusNotFound, "user not found")
 		}
 		return User{}, httperror.New(fiber.StatusInternalServerError, err.Error())
 	}
@@ -324,6 +324,26 @@ func (r *Repository) GetByVerificationTokenAndEmail(ctx context.Context,
 
 	var emailVerification EmailVerification
 	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken, email).StructScan(&emailVerification)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to fetch verification record")
+	}
+
+	return &emailVerification, nil
+}
+
+func (r *Repository) GetByEmail(ctx context.Context, email string,
+) (*EmailVerification, error) {
+	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at, version
+			  FROM email_verifications 
+			  WHERE email = ?
+			  ORDER BY created_at DESC LIMIT 1`
+
+	var emailVerification EmailVerification
+	err := r.GetConnDb().QueryRowxContext(ctx, query, email).StructScan(&emailVerification)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

@@ -18,4 +18,5 @@ type repoUserInterface interface {
 	UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string, targetDate string,
 		token string, expiredAt time.Time, version int64) error
 	GetByVerificationTokenAndEmail(ctx context.Context, verificationToken, email string) (*user.EmailVerification, error)
+	GetByEmail(ctx context.Context, email string) (*user.EmailVerification, error)
 }

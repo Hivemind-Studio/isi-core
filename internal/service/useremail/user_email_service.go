@@ -66,7 +66,7 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {
-		existingEmailVerification, err := s.repoUser.GetByVerificationTokenAndEmail(ctx, token, email)
+		existingEmailVerification, err := s.repoUser.GetByEmail(ctx, email)
 		if err != nil {
 			return "", err
 		}
