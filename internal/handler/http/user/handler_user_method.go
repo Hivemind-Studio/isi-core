@@ -6,9 +6,11 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -156,12 +158,17 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
-	var payload user.ChangeEmailEmailVerificationDTO
-	if err := c.BodyParser(&payload); err != nil {
-		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	jwtToken := c.Get("Authorization")
+	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+		return fiber.ErrUnauthorized
 	}
 
-	err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), payload.Email)
+	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	if err != nil {
+		return fiber.ErrUnauthorized
+	}
+
+	err = h.sendChangeEmailVerificationUseCase.Execute(c.Context(), claims.Email)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")

@@ -44,7 +44,6 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 	}
 
 	err := uc.userEmailService.SendEmail([]string{email},
-		//TODO CHANGE EMAIL TEMPLATE
 		"Inspirasi Satu - Change Email Verification",
 		"template/change_email.html",
 		emailData,
