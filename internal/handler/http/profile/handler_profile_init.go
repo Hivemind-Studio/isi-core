@@ -10,7 +10,6 @@ type Handler struct {
 	getProfileUser        GetProfileUserUseCaseInterface
 	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface
 	updateProfile         UpdateProfileUserUseCaseInterface
-	updateProfileCoach    UpdateProfileCoachUseCaseInterface
 	updatePhoto           UpdatePhotoUseCaseInterface
 	deletePhoto           DeletePhotoUseCaseInterface
 }
@@ -19,14 +18,12 @@ func NewProfileHandler(
 	getProfileUser GetProfileUserUseCaseInterface,
 	updateProfilePassword UpdateProfileUserPasswordUseCaseInterface,
 	updateProfile UpdateProfileUserUseCaseInterface,
-	updateProfileCoach UpdateProfileCoachUseCaseInterface,
 	updatePhoto UpdatePhotoUseCaseInterface,
 	deletePhoto DeletePhotoUseCaseInterface) *Handler {
 	return &Handler{
 		getProfileUser,
 		updateProfilePassword,
 		updateProfile,
-		updateProfileCoach,
 		updatePhoto,
 		deletePhoto,
 	}
@@ -40,7 +37,6 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 
 	v1.Get("/profile", h.GetProfile)
 	v1.Put("/profile", h.UpdateProfile)
-	v1.Put("/profile/coach", h.UpdateProfileCoach)
 	v1.Patch("/profile", h.UpdateProfilePassword)
 	v1.Patch("/profile/photo", h.UploadPhoto)
 	v1.Delete("/profile/photo", h.DeletePhoto)

@@ -102,45 +102,7 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	res, err := h.updateProfile.Execute(c.Context(), claims.ID, requestBody.Name, requestBody.Address,
-		requestBody.Gender, requestBody.PhoneNumber, requestBody.Occupation)
-
-	if err != nil {
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
-		Status:  fiber.StatusOK,
-		Message: "Profile update successfully",
-		Data:    res,
-	})
-}
-
-func (h *Handler) UpdateProfileCoach(c *fiber.Ctx) error {
-	module := "Profile Handler"
-	functionName := "UpdateProfileCoach"
-	requestId := c.Locals("request_id").(string)
-
-	var requestBody dto.UpdateCoachDTO
-
-	if err := c.BodyParser(&requestBody); err != nil {
-		logger.Print("error", requestId, module, functionName,
-			"Invalid input", string(c.Body()))
-		return httperror.New(fiber.StatusBadRequest, "Invalid input")
-	}
-
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
-	}
-
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
-	if err != nil {
-		return fiber.ErrUnauthorized
-	}
-
-	res, err := h.updateProfileCoach.Execute(c.Context(), claims.ID, requestBody.Name, requestBody.Address,
-		requestBody.Gender, requestBody.PhoneNumber, requestBody.DateOfBirth, requestBody.Title, requestBody.Bio, requestBody.Expertise)
+	res, err := h.updateProfile.Execute(c.Context(), claims.ID, claims.Role, requestBody)
 
 	if err != nil {
 		return err

@@ -270,7 +270,7 @@ func (r *Repository) GetCoachById(ctx context.Context, id int64) (user.User, err
 }
 
 func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber,
-	dateOfBirth, title, bio, expertise string, version int64) (*Coach, error) {
+	dateOfBirth, title, bio, expertise string, version int64) (*user.User, error) {
 	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, &id); err != nil {
 		return nil, err
 	}
@@ -296,11 +296,10 @@ func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, nam
 		return nil, httperror.New(fiber.StatusConflict, "user was modified by another transaction")
 	}
 
-	coachQuery := `INSERT INTO coaches (user_id, title, bio, expertise, updated_at) 
-                   VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-                   ON DUPLICATE KEY UPDATE title = VALUES(title), bio = VALUES(bio), expertise = VALUES(expertise), updated_at = CURRENT_TIMESTAMP`
+	coachQuery := `UPDATE coaches set title = ?, bio = ?, expertise = ?, updated_at = CURRENT_TIMESTAMP
+                    where user_id = ?`
 
-	result, err = tx.ExecContext(ctx, coachQuery, id, title, bio, expertise)
+	result, err = tx.ExecContext(ctx, coachQuery, title, bio, expertise, id)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update coach")
 	}
@@ -310,7 +309,7 @@ func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, nam
 		log.Printf("No rows affected for coach update, user_id: %d", id)
 	}
 
-	var c Coach
+	var c user.User
 	query := `
 		SELECT
 			u.id, u.name, u.email, u.address, u.phone_number, u.date_of_birth,

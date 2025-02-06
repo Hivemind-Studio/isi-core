@@ -57,10 +57,14 @@ type ChangeEmailEmailVerificationDTO struct {
 
 type UpdateUserDTO struct {
 	Name        string `json:"name"`
+	DateOfBirth string `json:"date_of_birth"`
 	PhoneNumber string `json:"phone_number"`
 	Address     string `json:"address"`
 	Gender      string `json:"gender"`
-	Occupation  string `json:"occupation"`
+	Occupation  string `json:"occupation,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Bio         string `json:"bio,omitempty"`
+	Expertise   string `json:"expertise,omitempty"`
 }
 
 type UpdateCoachDTO struct {

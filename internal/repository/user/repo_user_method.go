@@ -410,14 +410,24 @@ func (r *Repository) GetTokenEmailVerification(token string) (string, error) {
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name, address, gender, phoneNumber string,
-	occupation string, version int64) (*User, error) {
+	occupation string, dateOfBirth string, version int64) (*User, error) {
 	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, &id); err != nil {
 		return nil, err
 	}
 
-	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?,occupation = ?, version = ?
+	var dob *time.Time
+	if dateOfBirth != "" {
+		parsedDOB, err := time.Parse("2006-01-02", dateOfBirth)
+		if err != nil {
+			return nil, httperror.Wrap(fiber.StatusBadRequest, err, "invalid date_of_birth format")
+		}
+		dob = &parsedDOB
+	}
+
+	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?,occupation = ?, date_of_birth = ?, 
+                 version = ?
               WHERE id = ? AND version = ?`
-	result, err := tx.ExecContext(ctx, query, name, phoneNumber, address, gender, occupation, version+1, id, version)
+	result, err := tx.ExecContext(ctx, query, name, phoneNumber, address, gender, occupation, dob, version+1, id, version)
 	if err != nil {
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user")
 	}
