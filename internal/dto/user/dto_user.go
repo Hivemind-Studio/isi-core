@@ -56,7 +56,7 @@ type ChangeEmailEmailVerificationDTO struct {
 
 type UpdateUserDTO struct {
 	Name        string `json:"name"`
-	DateOfBirth string `json:"date_of_birth"`
+	DateOfBirth string `json:"date_of_birth,omitempty"`
 	PhoneNumber string `json:"phone_number"`
 	Address     string `json:"address"`
 	Gender      string `json:"gender"`

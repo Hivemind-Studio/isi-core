@@ -19,5 +19,5 @@ type repoCoachInterface interface {
 	dbtx.DBTXInterface
 
 	UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, name string, address string, gender string, phoneNumber string,
-		dateOfBirth, title string, bio string, expertise string, version int64) (*user.User, error)
+		dateOfBirth string, title string, bio string, expertise string, version int64) (*user.User, error)
 }

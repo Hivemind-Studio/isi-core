@@ -282,6 +282,8 @@ func (r *Repository) UpdateCoach(ctx context.Context, tx *sqlx.Tx, id int64, nam
 			return nil, httperror.Wrap(fiber.StatusBadRequest, err, "invalid date_of_birth format")
 		}
 		dob = &parsedDOB
+	} else {
+		dob = nil
 	}
 
 	userQuery := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?, date_of_birth = ?, version = ? 
