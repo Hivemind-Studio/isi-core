@@ -435,13 +435,16 @@ func (r *Repository) UpdateUser(ctx context.Context, tx *sqlx.Tx, id int64, name
 		return nil, err
 	}
 
-	var dob *time.Time
-	if dateOfBirth != "" {
+	var dob interface{}
+
+	if dateOfBirth != "" && dateOfBirth != "null" {
 		parsedDOB, err := time.Parse("2006-01-02", dateOfBirth)
 		if err != nil {
 			return nil, httperror.Wrap(fiber.StatusBadRequest, err, "invalid date_of_birth format")
 		}
 		dob = &parsedDOB
+	} else {
+		dob = nil
 	}
 
 	query := `UPDATE users SET name = ?, phone_number = ?, address = ?, gender = ?,occupation = ?, date_of_birth = ?, 
