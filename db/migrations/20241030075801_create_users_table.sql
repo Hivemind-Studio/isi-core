@@ -6,7 +6,7 @@ CREATE TABLE users (
    email VARCHAR(100) NOT NULL UNIQUE,
    address VARCHAR(255),
    phone_number VARCHAR(20) UNIQUE,
-   date_of_birth DATE,
+   date_of_birth DATE NULL,
    gender varchar(6),
    occupation VARCHAR(255),
    role_id BIGINT,

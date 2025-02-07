@@ -6,4 +6,4 @@ VALUES
     (3, 'Coach', 'coach@isi.com', '21f78900fc72b1929a2b12cac3d184c95fad3733621ae370dc1869cc24291057', 3, '+23456789014', null, null, null),
     (4, 'Coachee', 'coachee@isi.com', '21f78900fc72b1929a2b12cac3d184c95fad3733621ae370dc1869cc24291057', 4, '+23456789015', null, null, null);
 
-INSERT INTO coaches (user_id) VALUES (4);
+INSERT INTO coaches (user_id) VALUES (3);
