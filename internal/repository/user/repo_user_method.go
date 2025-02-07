@@ -133,8 +133,8 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		args = append(args, params.Status)
 	}
 	if params.PhoneNumber != "" {
-		baseQuery += " AND users.phone_number = ?"
-		args = append(args, params.PhoneNumber)
+		baseQuery += " AND users.phone_number LIKE ?"
+		args = append(args, "%"+params.PhoneNumber+"%")
 	}
 	if params.StartDate != nil {
 		baseQuery += " AND users.created_at >= ?"
