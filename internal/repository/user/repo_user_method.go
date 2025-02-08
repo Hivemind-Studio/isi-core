@@ -296,7 +296,7 @@ func (r *Repository) InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.
 }
 
 func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
-	targetDate string, token string, expiredAt time.Time, version int64,
+	targetDate string, token string, expiredAt time.Time, version int64, tokenType string,
 ) error {
 	updateQuery := `
 			UPDATE email_verifications
@@ -307,8 +307,9 @@ func (r *Repository) UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.
 			    version = ?
 			WHERE email = ? AND DATE(created_at) = ?
 			AND version = ?
+			AND type = ?
 		`
-	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, version+1, email, targetDate, version)
+	_, err := tx.ExecContext(ctx, updateQuery, token, expiredAt, version+1, email, targetDate, version, tokenType)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err,
 			"failed to update verification record")

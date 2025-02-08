@@ -74,8 +74,8 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 		if err != nil {
 			return "", err
 		}
-		if err := s.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, token,
-			expiredAt, existingEmailVerification.Version); err != nil {
+		if err := s.repoUser.UpdateEmailVerificationTrial(ctx, tx, email, currentDate, existingEmailVerification.VerificationToken,
+			expiredAt, existingEmailVerification.Version, tokenType); err != nil {
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update verification record")
 		}
 	}
