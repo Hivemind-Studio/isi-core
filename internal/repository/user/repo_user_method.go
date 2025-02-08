@@ -397,7 +397,7 @@ func (r *Repository) UpdatePassword(ctx context.Context, tx *sqlx.Tx, password s
                  version = ?
                  WHERE email = ?
                  AND version = ?`
-	_, err := tx.ExecContext(ctx, query, hashedPassword, (version + 1), email, version)
+	_, err := tx.ExecContext(ctx, query, hashedPassword, version+1, email, version)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
 	}

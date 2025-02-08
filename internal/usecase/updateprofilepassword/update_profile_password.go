@@ -30,7 +30,7 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, currentPassword string
 		return httperror.New(fiber.StatusBadRequest, "password mismatch")
 	}
 
-	err = uc.repoUser.UpdatePassword(ctx, tx, password, userProfile.Email, 0)
+	err = uc.repoUser.UpdatePassword(ctx, tx, password, userProfile.Email, userProfile.Version)
 	if err != nil {
 		return err
 	}
