@@ -1,4 +1,4 @@
-package updateuseremail
+package sendconfirmationchangenewemail
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 		return err
 	}
 
-	err = uc.repoUser.DeleteEmailTokenVerificationByToken(ctx, tx, token, constant.EMAIL_UPDATE)
+	err = uc.repoUser.DeleteEmailTokenVerificationByTokenAndType(ctx, tx, token, constant.EMAIL_UPDATE)
 	if err != nil {
 		return err
 	}

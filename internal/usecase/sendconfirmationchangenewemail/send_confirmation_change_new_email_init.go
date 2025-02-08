@@ -1,11 +1,11 @@
-package updateuseremail
+package sendconfirmationchangenewemail
 
 type UseCase struct {
 	repoUser     repoUserInterface
 	emailService userEmailService
 }
 
-func NewUpdateUserEmailUseCase(
+func NewSendConfirmationChangeNewEmail(
 	repoUser repoUserInterface,
 	emailService userEmailService,
 ) *UseCase {

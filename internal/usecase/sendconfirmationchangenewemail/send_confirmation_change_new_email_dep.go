@@ -1,4 +1,4 @@
-package updateuseremail
+package sendconfirmationchangenewemail
 
 import (
 	"context"
@@ -10,7 +10,7 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	GetTokenEmailVerificationWithType(ctx context.Context, token string, tokenType string, oldEmail string) (string, error)
-	DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error
+	DeleteEmailTokenVerificationByTokenAndType(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error
 	UpdateUserEmail(ctx context.Context, tx *sqlx.Tx, newEmail string, oldEmail string) error
 }
 

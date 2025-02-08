@@ -38,7 +38,7 @@ func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword
 		return err
 	}
 
-	err = uc.repoUser.DeleteEmailTokenVerification(ctx, tx, email)
+	err = uc.repoUser.DeleteEmailTokenVerificationByToken(ctx, tx, token)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "Failed to create user")
 	}

@@ -38,6 +38,10 @@ type SendChangeEmailVerificationInterface interface {
 	Execute(ctx context.Context, email string) error
 }
 
+type SendConfirmationChangeNewEmailInterface interface {
+	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
+}
+
 type ConfirmChangeNewEmail interface {
 	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
 }

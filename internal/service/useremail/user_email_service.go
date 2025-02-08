@@ -3,7 +3,6 @@ package useremail
 import (
 	"context"
 	"errors"
-	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
@@ -99,7 +98,7 @@ func (s *Service) GenerateTokenVerification(ctx context.Context, email string, t
 		}
 	}
 
-	trial, err := s.ValidateTrialByDate(ctx, email, constant.REGISTER)
+	trial, err := s.ValidateTrialByDate(ctx, email, tokenType)
 	if err != nil {
 		return "", err
 	}

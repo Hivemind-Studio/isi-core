@@ -193,7 +193,7 @@ func (h *Handler) SendConfirmationNewEmail(c *fiber.Ctx) error {
 
 	email := u["email"].(string)
 
-	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail, email)
+	err := h.sendConfirmationChangeNewEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail, email)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update email users")

@@ -23,6 +23,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendconfirmationchangenewemail"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendregistrationverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachlevel"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
@@ -94,6 +95,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo, coachRepo)
 	updateUserEmail := updateuseremail.NewUpdateUserEmailUseCase(userRepo)
 	sendChangeEmailVerification := sendchangeemailverification.NewSendChangeEmailVerificationUseCase(userRepo, userEmailService)
+	sendConfirmationChangeNewEmail := sendconfirmationchangenewemail.NewSendConfirmationChangeNewEmail(userRepo, userEmailService)
 	uploadPhoto := uploadphoto.NewUpdatePhotoStatusUseCase(userRepo)
 	deletePhoto := deletephoto.NewDeletePhotoStatusUseCase(userRepo)
 	updateCoachLevel := updatecoachlevel.NewUpdateCoachLevelUseCase(coachRepo)
@@ -111,7 +113,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		updateUserStatusUseCase,
 		updateUserRoleUseCase,
 		updateUserEmail,
-		sendChangeEmailVerification)
+		sendChangeEmailVerification,
+		sendConfirmationChangeNewEmail)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase, updateCoachLevel)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,

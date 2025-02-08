@@ -12,6 +12,6 @@ type repoUserInterface interface {
 
 	FindByEmail(ctx context.Context, email string) (user.User, error)
 	UpdatePassword(ctx context.Context, tx *sqlx.Tx, password string, email string, version int64) (err error)
-	DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.Tx, email string) error
+	DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string) error
 	GetTokenEmailVerification(token string) (string, error)
 }

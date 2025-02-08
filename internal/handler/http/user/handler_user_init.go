@@ -7,13 +7,14 @@ import (
 )
 
 type Handler struct {
-	createUserStaffUseCase             CreateUserStaffUseCaseInterface
-	getUsersUseCase                    GetUsersUseCaseInterface
-	getUserByIDUseCase                 GetUserByIDUseCaseInterface
-	updateUserStatusUseCase            UpdateUserStatusUseCaseInterface
-	updateUserRoleCase                 UpdateUserRoleUseCaseInterface
-	updateUserEmailUseCase             UpdateUserEmailInterface
-	sendChangeEmailVerificationUseCase SendChangeEmailVerificationInterface
+	createUserStaffUseCase                CreateUserStaffUseCaseInterface
+	getUsersUseCase                       GetUsersUseCaseInterface
+	getUserByIDUseCase                    GetUserByIDUseCaseInterface
+	updateUserStatusUseCase               UpdateUserStatusUseCaseInterface
+	updateUserRoleCase                    UpdateUserRoleUseCaseInterface
+	updateUserEmailUseCase                UpdateUserEmailInterface
+	sendChangeEmailVerificationUseCase    SendChangeEmailVerificationInterface
+	sendConfirmationChangeNewEmailUseCase SendConfirmationChangeNewEmailInterface
 }
 
 func NewUserHandler(
@@ -24,15 +25,17 @@ func NewUserHandler(
 	updateUserRoleCase UpdateUserRoleUseCaseInterface,
 	updateUserEmailUseCase UpdateUserEmailInterface,
 	sendChangeEmailVerificationUseCase SendChangeEmailVerificationInterface,
+	sendConfirmationChangeNewEmailUseCase SendConfirmationChangeNewEmailInterface,
 ) *Handler {
 	return &Handler{
-		createUserStaffUseCase:             createUserStaffUseCase,
-		getUsersUseCase:                    getUsersUseCase,
-		getUserByIDUseCase:                 getUserByIDUseCase,
-		updateUserStatusUseCase:            updateUserStatusUseCase,
-		updateUserRoleCase:                 updateUserRoleCase,
-		updateUserEmailUseCase:             updateUserEmailUseCase,
-		sendChangeEmailVerificationUseCase: sendChangeEmailVerificationUseCase,
+		createUserStaffUseCase:                createUserStaffUseCase,
+		getUsersUseCase:                       getUsersUseCase,
+		getUserByIDUseCase:                    getUserByIDUseCase,
+		updateUserStatusUseCase:               updateUserStatusUseCase,
+		updateUserRoleCase:                    updateUserRoleCase,
+		updateUserEmailUseCase:                updateUserEmailUseCase,
+		sendChangeEmailVerificationUseCase:    sendChangeEmailVerificationUseCase,
+		sendConfirmationChangeNewEmailUseCase: sendConfirmationChangeNewEmailUseCase,
 	}
 }
 

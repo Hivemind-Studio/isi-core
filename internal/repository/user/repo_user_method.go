@@ -363,7 +363,7 @@ func (r *Repository) DeleteEmailTokenVerification(ctx context.Context, tx *sqlx.
 
 	_, err := tx.ExecContext(ctx, query, email)
 	if err != nil {
-		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to delete verification record")
 	}
 
 	return nil
@@ -538,10 +538,21 @@ func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, toke
 	return email, nil
 }
 
-func (r *Repository) DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error {
+func (r *Repository) DeleteEmailTokenVerificationByTokenAndType(ctx context.Context, tx *sqlx.Tx, token string, tokenType string) error {
 	query := `DELETE FROM email_verifications WHERE verification_token = ? AND type = ?`
 
 	_, err := tx.ExecContext(ctx, query, token, tokenType)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
+	}
+
+	return nil
+}
+
+func (r *Repository) DeleteEmailTokenVerificationByToken(ctx context.Context, tx *sqlx.Tx, token string) error {
+	query := `DELETE FROM email_verifications WHERE verification_token = ? `
+
+	_, err := tx.ExecContext(ctx, query, token)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update user password")
 	}
