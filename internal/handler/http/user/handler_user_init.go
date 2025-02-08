@@ -50,7 +50,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Get("/users/:id", h.GetUserById)
 	v1.Post("/users/email", h.SendChangeEmailVerification)
 	v1.Post("/users/new-email", h.SendConfirmationNewEmail)
-	v1.Patch("users/email", h.ConfirmChangeNewEmail)
+	v1.Patch("/users/email", h.ConfirmChangeNewEmail)
 	v1.Patch("/users/:id/status", h.UpdateStatusUser)
 	v1.Patch("/users/:id/role", h.UpdateUserRole)
 }
