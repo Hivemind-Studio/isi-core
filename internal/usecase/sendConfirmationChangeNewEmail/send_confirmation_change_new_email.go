@@ -21,7 +21,7 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 
 	_, err = uc.repoUser.GetTokenEmailVerificationWithType(ctx, token, constant.EMAIL_UPDATE, oldEmail)
 	if err != nil {
-		return httperror.New(fiber.StatusUnauthorized, "token is not valid")
+		return err
 	}
 
 	err = uc.repoUser.DeleteEmailTokenVerificationByToken(ctx, tx, token, constant.EMAIL_UPDATE)

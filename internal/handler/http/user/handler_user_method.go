@@ -202,7 +202,7 @@ func (h *Handler) SendConfirmationNewEmail(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
-			Message: "Change email users successfully",
+			Message: "Change email send to new email successfully",
 		})
 }
 
