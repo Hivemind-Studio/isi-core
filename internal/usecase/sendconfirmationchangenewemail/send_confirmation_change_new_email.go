@@ -55,7 +55,7 @@ func (uc *UseCase) sendEmailVerification(name string, token string, email string
 	}{
 		Name: name,
 		VerificationURL: fmt.Sprintf("%s%stoken=%s", os.Getenv("CALLBACK_VERIFICATION_URL"),
-			"change-email-new-email-confirm?", token),
+			"new-email-confirm?", token),
 		Year: time.Now().Year(),
 	}
 
