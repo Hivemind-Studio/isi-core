@@ -3,6 +3,7 @@ package useremail
 import (
 	"context"
 	"errors"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/utils"
@@ -28,10 +29,10 @@ func (s *Service) ValidateEmail(ctx context.Context, email string) bool {
 	return false
 }
 
-func (s *Service) ValidateTrialByDate(ctx context.Context, email string) (*int8, error) {
+func (s *Service) ValidateTrialByDate(ctx context.Context, email string, tokenType string) (*int8, error) {
 	emailLimit := os.Getenv("EMAIL_LIMIT_NUM")
 	limit, err := strconv.ParseInt(emailLimit, 10, 64)
-	trial, err := s.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now())
+	trial, err := s.repoUser.GetEmailVerificationTrialRequestByDate(ctx, email, time.Now(), tokenType)
 	if err != nil {
 		return trial, err
 	}
@@ -70,7 +71,7 @@ func (s *Service) generateAndSaveToken(ctx context.Context, tx *sqlx.Tx, email s
 			return "", httperror.Wrap(fiber.StatusInternalServerError, err, "failed to insert verification record")
 		}
 	} else {
-		existingEmailVerification, err := s.repoUser.GetByEmail(ctx, email)
+		existingEmailVerification, err := s.repoUser.GetByEmail(ctx, email, tokenType)
 		if err != nil {
 			return "", err
 		}
@@ -98,7 +99,7 @@ func (s *Service) GenerateTokenVerification(ctx context.Context, email string, t
 		}
 	}
 
-	trial, err := s.ValidateTrialByDate(ctx, email)
+	trial, err := s.ValidateTrialByDate(ctx, email, constant.REGISTER)
 	if err != nil {
 		return "", err
 	}

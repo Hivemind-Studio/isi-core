@@ -23,7 +23,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendregistrationverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachlevel"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofile"
@@ -73,7 +73,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	userEmailService := useremail.NewUserEmailService(userRepo, emailClient)
 
 	userLoginUseCase := userlogin.NewLoginUseCase(userRepo)
-	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, userEmailService)
+	sendVerificationUseCase := sendregistrationverification.NewSendVerificationUseCase(userRepo, userEmailService)
 	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
 	createUserUseCase := createuser.NewCreateUserUseCase(userRepo)
 	updateUserStatusUseCase := updateuserstatus.NewUpdateUserStatusUseCase(userRepo)
@@ -110,7 +110,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		getUserByIdUseCase,
 		updateUserStatusUseCase,
 		updateUserRoleUseCase,
-		updateUserEmail, sendChangeEmailVerification)
+		updateUserEmail,
+		sendChangeEmailVerification)
 	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase, updateCoachLevel)
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,

@@ -5,24 +5,24 @@ import (
 )
 
 type Handler struct {
-	loginUseCase                   LoginUseCaseInterface
-	sendEmailVerificationUseCase   SendVerificationUseCaseInterface
-	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface
-	createUserUseCase              CreateUserUseCaseInterface
-	updateCoachPasswordUseCase     UpdateCoachPasswordInterface
-	forgotPasswordUseCase          ForgotPasswordUseCaseInterface
+	loginUseCase                             LoginUseCaseInterface
+	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface
+	verifyRegistrationTokenUseCase           VerifyRegistrationTokenUseCaseInterface
+	createUserUseCase                        CreateUserUseCaseInterface
+	updateCoachPasswordUseCase               UpdateCoachPasswordInterface
+	forgotPasswordUseCase                    ForgotPasswordUseCaseInterface
 }
 
 func NewAuthHandler(
 	loginUseCase LoginUseCaseInterface,
-	sendVerificationUseCase SendVerificationUseCaseInterface,
+	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface,
 	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface,
 	createUserUseCase CreateUserUseCaseInterface,
 	updateCoachPasswordUseCase UpdateCoachPasswordInterface,
 	forgotPasswordUseCase ForgotPasswordUseCaseInterface) *Handler {
 	return &Handler{
 		loginUseCase,
-		sendVerificationUseCase,
+		sendRegistrationEmailVerificationUseCase,
 		verifyRegistrationTokenUseCase,
 		createUserUseCase,
 		updateCoachPasswordUseCase,

@@ -108,33 +108,7 @@ func (h *Handler) EmailVerification(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.sendEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
-		logger.Print("error", requestId, module, functionName,
-			err.Error(), requestBody)
-		return err
-	}
-
-	return c.Status(fiber.StatusOK).JSON(
-		response.WebResponse{
-			Status:  fiber.StatusOK,
-			Message: "Email verification sent",
-		})
-}
-
-func (h *Handler) VerifyEmailToken(c *fiber.Ctx) error {
-	module := "Auth Handler"
-	functionName := "VerifyEmailToken"
-
-	var requestBody authdto.EmailVerificationDTO
-	requestId := c.Locals("request_id").(string)
-
-	if err := c.BodyParser(&requestBody); err != nil {
-		logger.Print("error", requestId, module, functionName,
-			"Invalid input", string(c.Body()))
-		return httperror.New(fiber.StatusBadRequest, "Invalid input")
-	}
-
-	if err := h.sendEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
+	if err := h.sendRegistrationEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err

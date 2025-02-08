@@ -36,7 +36,7 @@ func (uc *UseCase) Execute(ctx context.Context, email string) (err error) {
 }
 
 func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email string) error {
-	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email, constant.FORGOT_PASSWORD)
 	if err != nil {
 		return err
 	}

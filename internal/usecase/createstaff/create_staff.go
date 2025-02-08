@@ -49,7 +49,7 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 }
 
 func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email string) error {
-	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email, constant.REGISTER)
 	if err != nil {
 		return err
 	}

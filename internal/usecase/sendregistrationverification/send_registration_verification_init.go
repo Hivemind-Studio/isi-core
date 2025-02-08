@@ -1,4 +1,4 @@
-package sendverification
+package sendregistrationverification
 
 type UseCase struct {
 	repoUser         repoUserInterface

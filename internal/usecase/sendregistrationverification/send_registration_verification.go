@@ -1,4 +1,4 @@
-package sendverification
+package sendregistrationverification
 
 import (
 	"context"
@@ -16,7 +16,7 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	}
 
-	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email, constant.REGISTER)
 	if err != nil {
 		return err
 	}

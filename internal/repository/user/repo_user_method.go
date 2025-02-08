@@ -263,13 +263,15 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 	return nil
 }
 
-func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
-) (*int8, error) {
+func (r *Repository) GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time, tokenType string) (*int8, error) {
 	filterDate := queryDate.Format("2006-01-02")
 
-	query := `SELECT trial FROM email_verifications WHERE email = ? AND DATE(created_at) = ?`
+	query := `SELECT trial FROM email_verifications 
+             WHERE email = ? 
+             AND DATE(created_at) = ?
+             AND type = ?`
 	var trial int8 = 0
-	err := r.GetConnDb().QueryRowContext(ctx, query, email, filterDate).Scan(&trial)
+	err := r.GetConnDb().QueryRowContext(ctx, query, email, filterDate, tokenType).Scan(&trial)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return nil, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch verification record")
@@ -335,15 +337,16 @@ func (r *Repository) GetByVerificationTokenAndEmail(ctx context.Context,
 	return &emailVerification, nil
 }
 
-func (r *Repository) GetByEmail(ctx context.Context, email string,
+func (r *Repository) GetByEmail(ctx context.Context, email string, tokenType string,
 ) (*EmailVerification, error) {
 	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at, version
 			  FROM email_verifications 
 			  WHERE email = ?
+			  AND type = ?
 			  ORDER BY created_at DESC LIMIT 1`
 
 	var emailVerification EmailVerification
-	err := r.GetConnDb().QueryRowxContext(ctx, query, email).StructScan(&emailVerification)
+	err := r.GetConnDb().QueryRowxContext(ctx, query, email, tokenType).StructScan(&emailVerification)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

@@ -1,4 +1,4 @@
-package sendverification
+package sendregistrationverification
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	FindByEmail(ctx context.Context, email string) (user.User, error)
-	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time,
+	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time, tokenType string,
 	) (*int8, error)
 	InsertEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string, token string, expiredAt time.Time, tokenType string) error
 	UpdateEmailVerificationTrial(ctx context.Context, tx *sqlx.Tx, email string,
@@ -23,6 +23,6 @@ type repoUserInterface interface {
 type userEmailService interface {
 	ValidateEmail(ctx context.Context, email string) bool
 	HandleTokenGeneration(ctx context.Context, email string, trial int8, tokenType string) (string, error)
-	ValidateTrialByDate(ctx context.Context, email string) (*int8, error)
+	ValidateTrialByDate(ctx context.Context, email string, tokenType string) (*int8, error)
 	SendEmail(recipients []string, subject, templatePath string, emailData interface{}) error
 }
