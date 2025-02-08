@@ -507,18 +507,20 @@ func (r *Repository) GetUserVersions(ctx context.Context, ids []int64) ([]int64,
 	return versions, nil
 }
 
-func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, token string, tokenType string,
+func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, token string,
+	tokenType string, oldEmail string,
 ) (string, error) {
 	query := `
 		SELECT email, expired_at 
 		FROM email_verifications 
 		WHERE verification_token = ?
 		AND type = ?
+		AND email = ?
 	`
 	var email string
 	var expiredAt time.Time
 
-	err := r.GetConnDb().QueryRowxContext(ctx, query, token, tokenType).Scan(&email, &expiredAt)
+	err := r.GetConnDb().QueryRowxContext(ctx, query, token, tokenType, oldEmail).Scan(&email, &expiredAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", httperror.New(fiber.StatusNotFound, "verification token not found")

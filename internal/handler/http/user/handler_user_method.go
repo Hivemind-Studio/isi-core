@@ -6,11 +6,9 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
-	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -158,17 +156,13 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
+	userInfo := c.Locals("user_info")
+	user, ok := userInfo.(map[string]interface{})
+	if !ok {
+		return fiber.ErrInternalServerError
 	}
 
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
-	if err != nil {
-		return fiber.ErrUnauthorized
-	}
-
-	err = h.sendChangeEmailVerificationUseCase.Execute(c.Context(), claims.Email)
+	err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), user["email"].(string))
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
@@ -181,7 +175,38 @@ func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) UpdateEmail(c *fiber.Ctx) error {
+func (h *Handler) SendConfirmationNewEmail(c *fiber.Ctx) error {
+	var payload user.ChangeEmailDTO
+	if err := c.BodyParser(&payload); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+	userInfo := c.Locals("user_info")
+
+	if userInfo == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	u, ok := userInfo.(map[string]interface{})
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid user data"})
+	}
+
+	email := u["email"].(string)
+
+	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail, email)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update email users")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Change email users successfully",
+		})
+}
+
+func (h *Handler) ConfirmChangeNewEmail(c *fiber.Ctx) error {
 	var payload user.ChangeEmailDTO
 	if err := c.BodyParser(&payload); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")

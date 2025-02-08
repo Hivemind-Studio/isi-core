@@ -11,28 +11,19 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
-	//if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
-	//	return httperror.New(fiber.StatusBadRequest, "user email already exists")
-	//}
-
-	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email)
+	token, err := uc.userEmailService.GenerateTokenVerification(ctx, email, constant.EMAIL_UPDATE)
 	if err != nil {
 		return err
 	}
 
-	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.EMAIL_UPDATE)
-	if err != nil {
-		return err
-	}
-
-	if err := uc.emailVerification(email, token, email); err != nil {
+	if err := uc.sendEmailVerification(email, token, email); err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send user email verification")
 	}
 
 	return nil
 }
 
-func (uc *UseCase) emailVerification(name string, token string, email string) error {
+func (uc *UseCase) sendEmailVerification(name string, token string, email string) error {
 	emailData := struct {
 		Name            string
 		VerificationURL string

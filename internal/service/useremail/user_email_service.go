@@ -90,3 +90,20 @@ func (s *Service) SendEmail(recipients []string, subject, templatePath string, e
 	}
 	return nil
 }
+
+func (s *Service) GenerateTokenVerification(ctx context.Context, email string, tokenType string) (string, error) {
+	if valid := s.ValidateEmail(ctx, email); !valid {
+		return "", httperror.New(fiber.StatusBadRequest, "user email already exists")
+	}
+
+	trial, err := s.ValidateTrialByDate(ctx, email)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := s.HandleTokenGeneration(ctx, email, *trial, tokenType)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}

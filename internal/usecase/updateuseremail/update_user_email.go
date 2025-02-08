@@ -16,7 +16,7 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 
-	_, err = uc.repoUser.GetTokenEmailVerificationWithType(ctx, token, constant.EMAIL_UPDATE)
+	_, err = uc.repoUser.GetTokenEmailVerificationWithType(ctx, token, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE, newEmail)
 	if err != nil {
 		return httperror.New(fiber.StatusUnauthorized, "token is not valid")
 	}
@@ -26,7 +26,7 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 		return err
 	}
 
-	err = uc.repoUser.DeleteEmailTokenVerificationByToken(ctx, tx, token, constant.EMAIL_UPDATE)
+	err = uc.repoUser.DeleteEmailTokenVerificationByToken(ctx, tx, token, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE)
 	if err != nil {
 		return err
 	}
