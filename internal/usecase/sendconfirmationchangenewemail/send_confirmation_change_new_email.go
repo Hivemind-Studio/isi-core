@@ -60,7 +60,7 @@ func (uc *UseCase) sendEmailVerification(name string, token string, email string
 	}
 
 	err := uc.emailService.SendEmail([]string{email},
-		"Inspirasi Satu - Change Email Verification",
+		"Inspirasi Satu - Confirm New Email Verification",
 		"template/change_email.html",
 		emailData,
 	)
