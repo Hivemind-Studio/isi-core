@@ -29,7 +29,7 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 		return err
 	}
 
-	newToken, err := uc.emailService.GenerateTokenVerification(ctx, newEmail, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE)
+	newToken, err := uc.emailService.GenerateTokenVerification(ctx, newEmail, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE, true)
 	if err != nil {
 		return err
 	}

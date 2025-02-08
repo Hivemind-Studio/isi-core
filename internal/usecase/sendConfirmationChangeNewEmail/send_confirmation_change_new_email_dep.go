@@ -16,5 +16,5 @@ type repoUserInterface interface {
 
 type userEmailService interface {
 	SendEmail(recipients []string, subject, templatePath string, emailData interface{}) error
-	GenerateTokenVerification(ctx context.Context, email string, tokenType string) (string, error)
+	GenerateTokenVerification(ctx context.Context, email string, tokenType string, validateExistingEmail bool) (string, error)
 }
