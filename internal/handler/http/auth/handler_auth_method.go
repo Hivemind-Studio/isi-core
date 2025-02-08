@@ -59,8 +59,6 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	logger.Print("info", requestId, module, functionName,
 		"", string(c.Body()))
 
-	c.Locals("user_info")
-
 	if err := c.BodyParser(&requestBody); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Invalid input", string(c.Body()))

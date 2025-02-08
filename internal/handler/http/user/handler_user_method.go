@@ -207,7 +207,7 @@ func (h *Handler) SendConfirmationNewEmail(c *fiber.Ctx) error {
 }
 
 func (h *Handler) ConfirmChangeNewEmail(c *fiber.Ctx) error {
-	var payload user.ChangeEmailDTO
+	var payload user.ConfirmChangeEmailDTO
 	if err := c.BodyParser(&payload); err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
@@ -224,7 +224,7 @@ func (h *Handler) ConfirmChangeNewEmail(c *fiber.Ctx) error {
 
 	email := u["email"].(string)
 
-	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail, email)
+	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, email)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update email users")

@@ -50,6 +50,10 @@ type ChangeEmailDTO struct {
 	NewEmail string `json:"new_email"`
 }
 
+type ConfirmChangeEmailDTO struct {
+	Token string `json:"token"`
+}
+
 type ChangeEmailEmailVerificationDTO struct {
 	Email string `json:"email" validate:"required"`
 }

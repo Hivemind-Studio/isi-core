@@ -31,7 +31,7 @@ type UpdateUserRoleUseCaseInterface interface {
 }
 
 type UpdateUserEmailInterface interface {
-	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
+	Execute(ctx context.Context, token string, oldEmail string) (err error)
 }
 
 type SendChangeEmailVerificationInterface interface {
@@ -43,5 +43,5 @@ type SendConfirmationChangeNewEmailInterface interface {
 }
 
 type ConfirmChangeNewEmail interface {
-	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
+	Execute(ctx context.Context, token string, oldEmail string) (err error)
 }

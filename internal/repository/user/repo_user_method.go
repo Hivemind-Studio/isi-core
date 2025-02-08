@@ -511,7 +511,7 @@ func (r *Repository) GetUserVersions(ctx context.Context, ids []int64) ([]int64,
 }
 
 func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, token string,
-	tokenType string, oldEmail string,
+	tokenType string, emailParam string,
 ) (string, error) {
 	query := `
 		SELECT email, expired_at 
@@ -523,7 +523,7 @@ func (r *Repository) GetTokenEmailVerificationWithType(ctx context.Context, toke
 	var email string
 	var expiredAt time.Time
 
-	err := r.GetConnDb().QueryRowxContext(ctx, query, token, tokenType, oldEmail).Scan(&email, &expiredAt)
+	err := r.GetConnDb().QueryRowxContext(ctx, query, token, tokenType, emailParam).Scan(&email, &expiredAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", httperror.New(fiber.StatusNotFound, "verification token not found")
@@ -627,6 +627,26 @@ func (r *Repository) GetByVerificationToken(ctx context.Context,
 
 	var emailVerification EmailVerification
 	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken).StructScan(&emailVerification)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to fetch verification record")
+	}
+
+	return &emailVerification, nil
+}
+
+func (r *Repository) GetByVerificationTokenAndTokenType(ctx context.Context, verificationToken string, tokenType string,
+) (*EmailVerification, error) {
+	query := `SELECT id, email, verification_token, trial, expired_at, created_at, updated_at, version
+			  FROM email_verifications 
+			  WHERE verification_token = ?
+			  AND type = ?`
+
+	var emailVerification EmailVerification
+	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken, tokenType).StructScan(&emailVerification)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

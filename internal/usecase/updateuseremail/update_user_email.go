@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error) {
+func (uc *UseCase) Execute(ctx context.Context, token string, oldEmail string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	defer dbtx.HandleRollback(tx)
 
@@ -16,12 +16,12 @@ func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, o
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 
-	_, err = uc.repoUser.GetTokenEmailVerificationWithType(ctx, token, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE, newEmail)
+	emailVerification, err := uc.repoUser.GetByVerificationTokenAndTokenType(ctx, token, constant.CONFIRM_TO_CHANGED_EMAIL_UPDATE)
 	if err != nil {
 		return httperror.New(fiber.StatusUnauthorized, "token is not valid")
 	}
 
-	err = uc.repoUser.UpdateUserEmail(ctx, tx, newEmail, oldEmail)
+	err = uc.repoUser.UpdateUserEmail(ctx, tx, emailVerification.Email, oldEmail)
 	if err != nil {
 		return err
 	}
