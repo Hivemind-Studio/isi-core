@@ -27,7 +27,7 @@ func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (e
 
 	generatePassword := time.Now().String()
 	userId, err := uc.repoUser.Create(ctx, tx, payload.Name, payload.Email, generatePassword, constant.RoleIDCoach,
-		payload.PhoneNumber, int(constant.PENDING))
+		payload.PhoneNumber, payload.Gender, payload.Address, int(constant.PENDING))
 
 	if err != nil {
 		logger.Print("error", requestId, "Coach service", "CreateCoach", err.Error(), payload)

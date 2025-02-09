@@ -12,6 +12,8 @@ type RegistrationDTO struct {
 	PhoneNumber     string `json:"phone_number" validate:"required"`
 	Email           string `json:"email,omitempty"`
 	Token           string `json:"token" validate:"required"`
+	Gender          string `json:"gender,omitempty"`
+	Address         string `json:"address,omitempty"`
 }
 
 type EmailVerificationDTO struct {

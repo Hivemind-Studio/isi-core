@@ -18,7 +18,7 @@ import (
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
-	password string, roleId int64, phoneNumber string, status int) (id int64, err error) {
+	password string, roleId int64, phoneNumber string, gender string, address string, status int) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
@@ -28,8 +28,11 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
-	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status, 0, 0)
+	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, gender,
+                   address, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status,
+		gender, address, 0, 0)
+
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
 	}

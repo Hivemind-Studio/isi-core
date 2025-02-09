@@ -26,7 +26,8 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 		return nil, httperror.New(fiber.StatusInternalServerError, "error when fetching email")
 	}
 
-	_, err = s.repoUser.Create(ctx, tx, body.Name, u.Email, body.Password, constant.RoleIDCoachee, body.PhoneNumber, int(constant.ACTIVE))
+	_, err = s.repoUser.Create(ctx, tx, body.Name, u.Email, body.Password, constant.RoleIDCoachee, body.PhoneNumber,
+		body.Gender, body.Address, int(constant.ACTIVE))
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)
