@@ -3,6 +3,7 @@ package updateprofile
 import (
 	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
+	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
@@ -14,7 +15,7 @@ import (
 func (uc *UseCase) Execute(ctx context.Context, id int64, role string, payload dto.UpdateUserDTO) (*dto.UserDTO, error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
-	logger.Print("info", requestId, "Profile service", "UpdateProfile", "function start", payload.Title)
+	logger.Print(loglevel.INFO, requestId, "Profile service", "UpdateProfile", "function start", payload.Title)
 
 	r := constant.GetRoleID(role)
 

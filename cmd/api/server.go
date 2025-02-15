@@ -22,6 +22,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/googlelogin"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendconfirmationchangenewemail"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendregistrationverification"
@@ -64,6 +65,7 @@ func routerList(app *AppApi) []Router {
 func initApp(cfg *configs.Config) (*AppApi, error) {
 	dbConn := dbInitConnection(cfg)
 	emailClient := initEmailClient(cfg)
+	googleOauthClient := initGoogleOauthClient(cfg)
 
 	userRepo := repouser.NewUserRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
@@ -88,8 +90,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
 
 	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
-
 	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
+	googleLoginUseCase := googlelogin.NewGoogleLoginUseCase(googleOauthClient)
 	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo, coachRepo)
 	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
 	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo, coachRepo)
@@ -105,7 +107,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		verificationRegistrationTokenUseCase,
 		createUserUseCase,
 		updateCoachPasswordUseCase,
-		forgotPasswordUseCase)
+		forgotPasswordUseCase,
+		googleLoginUseCase)
 	userHandler := handleuser.NewUserHandler(
 		createUserStaffUseCase,
 		getUsersUseCase,
@@ -121,8 +124,8 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		uploadPhoto, deletePhoto)
 
 	return &AppApi{
-			userHandle:    userHandler,
 			authHandle:    authHandler,
+			userHandle:    userHandler,
 			coacheeHandle: coacheeHandler,
 			coachHandle:   coachHandler,
 			profileHandle: profileHandler,

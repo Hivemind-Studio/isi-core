@@ -11,7 +11,7 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, email string,
-		password string, address string, phoneNumber string, status int, gender string, role string) (id int64, err error)
+		password string, address string, phoneNumber *string, status int, gender string, role string) (id int64, err error)
 	GetEmailVerificationTrialRequestByDate(ctx context.Context, email string, queryDate time.Time, tokenType string,
 	) (*int8, error)
 }

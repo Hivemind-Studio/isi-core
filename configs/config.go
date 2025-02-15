@@ -23,6 +23,11 @@ type Config struct {
 		NameFrom  string `envconfig:"MAIL_SENDER_NAME"`
 		EmailFrom string `envconfig:"MAIL_AUTH_EMAIL"`
 	}
+	GoogleConfig struct {
+		ClientID     string `envconfig:"GOOGLE_CLIENT_ID"`
+		ClientSecret string `envconfig:"GOOGLE_CLIENT_SECRET"`
+		RedirectURI  string `envconfig:"GOOGLE_REDIRECT_URI"`
+	}
 }
 
 func Init() *Config {

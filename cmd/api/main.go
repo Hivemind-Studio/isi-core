@@ -3,9 +3,11 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
+	"github.com/Hivemind-Studio/isi-core/pkg/googleoauth2"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	"golang.org/x/oauth2"
 	"os"
 	"strings"
 	"time"
@@ -73,6 +75,15 @@ func initEmailClient(cfg *configs.Config) *mail.EmailClient {
 	})
 
 	return emailClient
+}
+
+func initGoogleOauthClient(cfg *configs.Config) *oauth2.Config {
+	googleOauthConfig := cfg.GoogleConfig
+	return googleoauth2.NewGoogleOauth(&googleoauth2.OauthConfig{
+		ClientID:     googleOauthConfig.ClientID,
+		ClientSecret: googleOauthConfig.ClientSecret,
+		RedirectURL:  googleOauthConfig.RedirectURI,
+	})
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {

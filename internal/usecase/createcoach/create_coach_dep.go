@@ -23,5 +23,5 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password string, roleId int64,
-		phoneNumber string, gender string, address string, status int) (id int64, err error)
+		phoneNumber *string, gender string, address string, status int) (id int64, err error)
 }

@@ -25,7 +25,7 @@ func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) 
 	defer dbtx.HandleRollback(tx)
 
 	generatePassword := time.Now().String()
-	_, err = uc.repoUser.CreateStaff(ctx, tx, body.Name, body.Email, generatePassword, body.Address, body.Phone,
+	_, err = uc.repoUser.CreateStaff(ctx, tx, body.Name, body.Email, generatePassword, body.Address, &body.Phone,
 		int(constant.PENDING), body.Gender,
 		strconv.FormatInt(constant.GetRoleID(body.Role), 10))
 

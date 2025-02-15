@@ -18,7 +18,7 @@ import (
 )
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
-	password string, roleId int64, phoneNumber string, gender string, address string, status int) (id int64, err error) {
+	password string, roleId int64, phoneNumber *string, gender string, address string, status int) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
@@ -28,9 +28,14 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 	}
 
+	phoneValue := interface{}(nil)
+	if phoneNumber != nil {
+		phoneValue = *phoneNumber
+	}
+
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, gender,
                    address, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneNumber, status,
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneValue, status,
 		gender, address, 0, 0)
 
 	if err != nil {
@@ -46,7 +51,7 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 }
 
 func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, email string,
-	password string, address string, phoneNumber string, status int, gender string, role string) (id int64, err error) {
+	password string, address string, phoneNumber *string, status int, gender string, role string) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
@@ -197,13 +202,16 @@ func (r *Repository) checkForDuplicate(ctx context.Context, tx *sqlx.Tx, column,
 	return nil
 }
 
-func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber string, id *int64) error {
+func (r *Repository) checkExistingData(ctx context.Context, tx *sqlx.Tx, email string, phoneNumber *string, id *int64) error {
 	if err := r.checkForDuplicate(ctx, tx, "email", email, id); err != nil {
 		return err
 	}
-	if err := r.checkForDuplicate(ctx, tx, "phone_number", phoneNumber, id); err != nil {
-		return err
+	if phoneNumber != nil {
+		if err := r.checkForDuplicate(ctx, tx, "phone_number", *phoneNumber, id); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -633,7 +641,7 @@ func (r *Repository) GetByVerificationToken(ctx context.Context,
 	err := r.GetConnDb().QueryRowxContext(ctx, query, verificationToken).StructScan(&emailVerification)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, sql.ErrNoRows
 		}
 		return nil, httperror.Wrap(fiber.StatusInternalServerError, err,
 			"failed to fetch verification record")

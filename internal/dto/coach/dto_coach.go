@@ -3,11 +3,11 @@ package coach
 import "time"
 
 type CreateCoachDTO struct {
-	Name        string `json:"name" validate:"required"`
-	Email       string `json:"email" validate:"required"`
-	PhoneNumber string `json:"phone_number" validate:"required"`
-	Gender      string `json:"gender" validate:"required"`
-	Address     string `json:"address" validate:"required"`
+	Name        string  `json:"name" validate:"required"`
+	Email       string  `json:"email" validate:"required"`
+	PhoneNumber *string `json:"phone_number"`
+	Gender      string  `json:"gender" validate:"required"`
+	Address     string  `json:"address" validate:"required"`
 }
 
 type DTO struct {

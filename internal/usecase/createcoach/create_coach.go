@@ -26,6 +26,7 @@ func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (e
 	defer dbtx.HandleRollback(tx)
 
 	generatePassword := time.Now().String()
+
 	userId, err := uc.repoUser.Create(ctx, tx, payload.Name, payload.Email, generatePassword, constant.RoleIDCoach,
 		payload.PhoneNumber, payload.Gender, payload.Address, int(constant.PENDING))
 

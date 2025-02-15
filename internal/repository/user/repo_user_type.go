@@ -12,6 +12,7 @@ type User struct {
 	Password       string     `db:"password"`
 	Name           string     `db:"name"`
 	Email          string     `db:"email"`
+	GoogleID       *string    `db:"google_id"`
 	Address        *string    `db:"address"`
 	PhoneNumber    *string    `db:"phone_number"`
 	DateOfBirth    *time.Time `db:"date_of_birth"`
