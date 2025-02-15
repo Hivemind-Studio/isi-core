@@ -1,6 +1,8 @@
 package user
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
@@ -10,6 +12,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
+	"time"
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
@@ -65,10 +68,10 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
-		requestBody.Email, requestBody.Token); err != nil {
-		return err
-	}
+	//if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
+	//	requestBody.Email, requestBody.Token); err != nil {
+	//	return err
+	//}
 
 	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {
 		return err
@@ -176,3 +179,70 @@ func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
 			Message: "Forgot Password successful!",
 		})
 }
+
+func (h *Handler) GoogleLogin(c *fiber.Ctx) error {
+	url := h.googleLoginUseCase.Execute(c)
+
+	return c.Redirect(url, fiber.StatusTemporaryRedirect)
+}
+
+func (h *Handler) generateStateOauthCookie() (string, fiber.Cookie) {
+	expiration := time.Now().Add(24 * time.Hour)
+
+	b := make([]byte, 16)
+	rand.Read(b)
+	state := base64.URLEncoding.EncodeToString(b)
+
+	cookie := fiber.Cookie{
+		Name:     "oauthstate",
+		Value:    state,
+		Expires:  expiration,
+		HTTPOnly: true,
+		Secure:   true,
+	}
+
+	return state, cookie
+}
+
+//
+//func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
+//	oauthState := c.Cookies("oauthstate")
+//
+//	if c.Query("state") != oauthState {
+//		log.Println("Invalid OAuth Google state")
+//		return c.Redirect("/", fiber.StatusTemporaryRedirect)
+//	}
+//
+//	data, err := h.getUserDataFromGoogle(c.Query("code"))
+//	if err != nil {
+//		log.Println(err.Error())
+//		return c.Redirect("/", fiber.StatusTemporaryRedirect)
+//	}
+//
+//	// Return user data as a response
+//	return c.JSON(fiber.Map{
+//		"message":  "User data retrieved successfully",
+//		"userData": string(data),
+//	})
+//}
+
+//
+//func (h *Handler) getUserDataFromGoogle(code string) ([]byte, error) {
+//	token, err := googleOauthConfig.Exchange(context.Background(), code)
+//	if err != nil {
+//		return nil, fmt.Errorf("code exchange failed: %s", err.Error())
+//	}
+//
+//	response, err := http.Get(oauthGoogleURLAPI + token.AccessToken)
+//	if err != nil {
+//		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+//	}
+//	defer response.Body.Close()
+//
+//	contents, err := io.ReadAll(response.Body)
+//	if err != nil {
+//		return nil, fmt.Errorf("failed to read response: %s", err.Error())
+//	}
+//
+//	return contents, nil
+//}

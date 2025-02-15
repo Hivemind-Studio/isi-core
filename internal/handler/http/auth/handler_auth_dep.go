@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
+	"github.com/gofiber/fiber/v2"
 )
 
 type LoginUseCaseInterface interface {
@@ -28,4 +29,8 @@ type UpdateCoachPasswordInterface interface {
 
 type ForgotPasswordUseCaseInterface interface {
 	Execute(ctx context.Context, email string) (err error)
+}
+
+type GoogleLoginUseCaseInterface interface {
+	Execute(*fiber.Ctx) string
 }
