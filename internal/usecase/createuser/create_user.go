@@ -34,6 +34,13 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 		return nil, err
 	}
 
+	err = s.repoUser.DeleteEmailTokenVerificationByTokenAndType(ctx, tx, body.Token, constant.REGISTER)
+	if err != nil {
+		logger.Print("error", requestId, "User service", "CreateUser",
+			"failed to delete verification token with error :"+err.Error(), body)
+		return nil, err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, httperror.New(fiber.StatusInternalServerError, "error when committing transaction")
