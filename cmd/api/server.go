@@ -23,6 +23,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/googlelogin"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/googleoauthcallback"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendconfirmationchangenewemail"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendregistrationverification"
@@ -92,6 +93,7 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
 	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
 	googleLoginUseCase := googlelogin.NewGoogleLoginUseCase(googleOauthClient)
+	googleOAuthCallbackUseCase := googleoauthcallback.NewGoogleOAuthCallbackUseCase(googleOauthClient, userRepo)
 	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo, coachRepo)
 	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
 	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo, coachRepo)
@@ -108,7 +110,9 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 		createUserUseCase,
 		updateCoachPasswordUseCase,
 		forgotPasswordUseCase,
-		googleLoginUseCase)
+		googleLoginUseCase,
+		googleOAuthCallbackUseCase,
+	)
 	userHandler := handleuser.NewUserHandler(
 		createUserStaffUseCase,
 		getUsersUseCase,

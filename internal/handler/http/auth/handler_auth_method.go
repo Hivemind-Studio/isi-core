@@ -1,8 +1,7 @@
 package user
 
 import (
-	"crypto/rand"
-	"encoding/base64"
+	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
@@ -12,7 +11,6 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
-	"time"
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
@@ -68,10 +66,10 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	//if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
-	//	requestBody.Email, requestBody.Token); err != nil {
-	//	return err
-	//}
+	if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
+		requestBody.Email, requestBody.Token); err != nil {
+		return err
+	}
 
 	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {
 		return err
@@ -159,7 +157,7 @@ func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
 
 	var requestBody authdto.ForgotPasswordDTO
 	requestId := c.Locals("request_id").(string)
-	logger.Print("info", requestId, module, functionName,
+	logger.Print(loglevel.INFO, requestId, module, functionName,
 		"", string(c.Body()))
 
 	if err := c.BodyParser(&requestBody); err != nil {
@@ -181,68 +179,55 @@ func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GoogleLogin(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "GoogleLogin"
+	requestId := c.Locals("request_id").(string)
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"", string(c.Body()))
+
 	url := h.googleLoginUseCase.Execute(c)
 
-	return c.Redirect(url, fiber.StatusTemporaryRedirect)
+	return c.Redirect(url)
+	//return c.Status(fiber.StatusOK).JSON(
+	//	response.WebResponse{
+	//		Status:  fiber.StatusOK,
+	//		Message: "Login link created successfully!",
+	//		Data:    authdto.GoogleLoginResponse{Url: url},
+	//	})
 }
 
-func (h *Handler) generateStateOauthCookie() (string, fiber.Cookie) {
-	expiration := time.Now().Add(24 * time.Hour)
+func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "GoogleCallback"
+	requestId := c.Locals("request_id").(string)
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"", string(c.Body()))
 
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
+	returnedState := c.Query("state")
 
-	cookie := fiber.Cookie{
-		Name:     "oauthstate",
-		Value:    state,
-		Expires:  expiration,
-		HTTPOnly: true,
-		Secure:   true,
+	stateCookie := c.Cookies("oauth_state")
+	if returnedState == "" || stateCookie == "" || returnedState != stateCookie {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid OAuth state",
+		})
 	}
 
-	return state, cookie
+	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), c.Query("code"))
+	token, err := middleware.GenerateToken(
+		middleware.User{
+			ID:    userData.ID,
+			Name:  userData.Name,
+			Email: userData.Email,
+			Role:  *userData.Role,
+		})
+
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Login successful!",
+			Data:    authdto.GoogleCallbackResponse{Token: token},
+		})
 }
-
-//
-//func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
-//	oauthState := c.Cookies("oauthstate")
-//
-//	if c.Query("state") != oauthState {
-//		log.Println("Invalid OAuth Google state")
-//		return c.Redirect("/", fiber.StatusTemporaryRedirect)
-//	}
-//
-//	data, err := h.getUserDataFromGoogle(c.Query("code"))
-//	if err != nil {
-//		log.Println(err.Error())
-//		return c.Redirect("/", fiber.StatusTemporaryRedirect)
-//	}
-//
-//	// Return user data as a response
-//	return c.JSON(fiber.Map{
-//		"message":  "User data retrieved successfully",
-//		"userData": string(data),
-//	})
-//}
-
-//
-//func (h *Handler) getUserDataFromGoogle(code string) ([]byte, error) {
-//	token, err := googleOauthConfig.Exchange(context.Background(), code)
-//	if err != nil {
-//		return nil, fmt.Errorf("code exchange failed: %s", err.Error())
-//	}
-//
-//	response, err := http.Get(oauthGoogleURLAPI + token.AccessToken)
-//	if err != nil {
-//		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
-//	}
-//	defer response.Body.Close()
-//
-//	contents, err := io.ReadAll(response.Body)
-//	if err != nil {
-//		return nil, fmt.Errorf("failed to read response: %s", err.Error())
-//	}
-//
-//	return contents, nil
-//}

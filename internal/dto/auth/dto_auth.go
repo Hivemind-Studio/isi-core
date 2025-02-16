@@ -16,6 +16,18 @@ type RegistrationDTO struct {
 	Address         string `json:"address,omitempty"`
 }
 
+type GoogleCallbackDTO struct {
+	Code string `json:"code"`
+}
+
+type GoogleCallbackResponse struct {
+	Token string `json:"token"`
+}
+
+type GoogleLoginResponse struct {
+	Url string `json:"url"`
+}
+
 type EmailVerificationDTO struct {
 	Email string `json:"email" validate:"required"`
 }

@@ -34,3 +34,7 @@ type ForgotPasswordUseCaseInterface interface {
 type GoogleLoginUseCaseInterface interface {
 	Execute(*fiber.Ctx) string
 }
+
+type GoogleCallbackUseCaseInterface interface {
+	GetUserDataFromGoogle(ctx context.Context, code string) (dto.UserDTO, error)
+}

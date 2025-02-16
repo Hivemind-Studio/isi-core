@@ -12,6 +12,7 @@ type Handler struct {
 	updateCoachPasswordUseCase               UpdateCoachPasswordInterface
 	forgotPasswordUseCase                    ForgotPasswordUseCaseInterface
 	googleLoginUseCase                       GoogleLoginUseCaseInterface
+	googleCallbackUseCase                    GoogleCallbackUseCaseInterface
 }
 
 func NewAuthHandler(
@@ -21,7 +22,8 @@ func NewAuthHandler(
 	createUserUseCase CreateUserUseCaseInterface,
 	updateCoachPasswordUseCase UpdateCoachPasswordInterface,
 	forgotPasswordUseCase ForgotPasswordUseCaseInterface,
-	googleLoginUseCaseInterface GoogleLoginUseCaseInterface,
+	googleLoginUseCase GoogleLoginUseCaseInterface,
+	googleCallbackUseCase GoogleCallbackUseCaseInterface,
 ) *Handler {
 	return &Handler{
 		loginUseCase,
@@ -30,7 +32,8 @@ func NewAuthHandler(
 		createUserUseCase,
 		updateCoachPasswordUseCase,
 		forgotPasswordUseCase,
-		googleLoginUseCaseInterface,
+		googleLoginUseCase,
+		googleCallbackUseCase,
 	}
 }
 
@@ -43,4 +46,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App) {
 	v1.Patch("/password", h.PatchPassword)
 	v1.Post("/password/recover", h.ForgotPassword)
 	v1.Get("/google", h.GoogleLogin)
+	v1.Get("/google/callback", h.GoogleCallback)
 }

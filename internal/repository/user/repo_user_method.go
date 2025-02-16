@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
+	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"strings"
 	"time"
 
@@ -17,15 +19,20 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string,
-	password string, roleId int64, phoneNumber *string, gender string, address string, status int) (id int64, err error) {
+func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string,
+	roleId int64, phoneNumber *string, gender string, address string, status int, googleId *string,
+) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
 
-	hashedPassword, hashErr := hash.HashPassword(password)
-	if hashErr != nil {
-		return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+	var hashedPassword *string
+	if password != nil {
+		hashed, hashErr := hash.HashPassword(*password)
+		if hashErr != nil {
+			return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
+		}
+		hashedPassword = &hashed
 	}
 
 	phoneValue := interface{}(nil)
@@ -34,9 +41,9 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, gender,
-                   address, verification, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                   address, verification, version, google_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneValue, status,
-		gender, address, 0, 0)
+		gender, address, 0, 0, googleId)
 
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
@@ -668,4 +675,23 @@ func (r *Repository) GetByVerificationTokenAndTokenType(ctx context.Context, ver
 	}
 
 	return &emailVerification, nil
+}
+
+func (r *Repository) UpdateUserGoogleId(ctx context.Context, tx *sqlx.Tx, email string, googleId string,
+) error {
+	updateQuery := `
+			UPDATE users SET google_id = ?, updated_at = CURRENT_TIMESTAMP
+			WHERE email = ?`
+
+	_, err := tx.ExecContext(ctx, updateQuery, googleId, email)
+	if err != nil {
+		requestId := ctx.Value("request_id").(string)
+		logger.Print(loglevel.ERROR, requestId, "repo_user_method", "UpdateUserGoogleId",
+			"failed to update user google id with exception:"+
+				err.Error(), nil)
+		return httperror.Wrap(fiber.StatusInternalServerError, err,
+			"failed to update google id record")
+	}
+
+	return nil
 }

@@ -26,7 +26,7 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, currentPassword string
 
 	current, _ := hash.HashPassword(currentPassword)
 
-	if current != userProfile.Password {
+	if current != *userProfile.Password {
 		return httperror.New(fiber.StatusBadRequest, "password mismatch")
 	}
 

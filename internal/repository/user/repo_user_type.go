@@ -9,7 +9,7 @@ type User struct {
 	ID             int64      `db:"id"`
 	RoleId         *int64     `db:"role_id"`
 	RoleName       *string    `db:"role_name"`
-	Password       string     `db:"password"`
+	Password       *string    `db:"password"`
 	Name           string     `db:"name"`
 	Email          string     `db:"email"`
 	GoogleID       *string    `db:"google_id"`
