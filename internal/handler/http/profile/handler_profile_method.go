@@ -7,8 +7,8 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
-	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/s3"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"os"
@@ -17,14 +17,14 @@ import (
 )
 
 func (h *Handler) GetProfile(c *fiber.Ctx) error {
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
+	userSession := c.Locals("user")
+	if userSession == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
 	}
 
-	user, err := middleware.ExtractJWTPayload(jwtToken)
-	if err != nil {
-		return fiber.ErrUnauthorized
+	user, ok := userSession.(session.Session) // Replace with your actual session struct type
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
 	}
 
 	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
@@ -53,21 +53,16 @@ func (h *Handler) UpdateProfilePassword(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
-	}
-
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
-	if err != nil {
-		return fiber.ErrUnauthorized
-	}
-
 	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {
 		return err
 	}
 
-	err = h.updateProfilePassword.Execute(c.Context(), claims.ID, requestBody.CurrentPassword, requestBody.Password)
+	userSession, err := h.getUserSession(c)
+	if err != nil {
+		return err
+	}
+
+	err = h.updateProfilePassword.Execute(c.Context(), userSession.ID, requestBody.CurrentPassword, requestBody.Password)
 
 	if err != nil {
 		return err
@@ -77,6 +72,18 @@ func (h *Handler) UpdateProfilePassword(c *fiber.Ctx) error {
 		Status:  fiber.StatusOK,
 		Message: "change password successfully",
 	})
+}
+
+func (h *Handler) getUserSession(c *fiber.Ctx) (*session.Session, error) {
+	userSession := c.Locals("user")
+	if userSession == nil {
+		return nil, c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
+	}
+	user, ok := userSession.(session.Session) // Replace with your actual session struct type
+	if !ok {
+		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
+	}
+	return &user, nil
 }
 
 func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
@@ -92,17 +99,12 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
-	}
-
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	userSession, err := h.getUserSession(c)
 	if err != nil {
-		return fiber.ErrUnauthorized
+		return err
 	}
 
-	res, err := h.updateProfile.Execute(c.Context(), claims.ID, claims.Role, requestBody)
+	res, err := h.updateProfile.Execute(c.Context(), userSession.ID, userSession.Role, requestBody)
 
 	if err != nil {
 		return err
@@ -120,14 +122,9 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 	functionName := "UploadPhoto"
 	requestId := c.Locals("request_id").(string)
 
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
-	}
-
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	userSession, err := h.getUserSession(c)
 	if err != nil {
-		return fiber.ErrUnauthorized
+		return err
 	}
 
 	file, err := c.FormFile("photo")
@@ -160,7 +157,7 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 		}
 	}(tempFilePath)
 
-	username := claims.Name
+	username := userSession.Name
 	fileURL, err := s3.UploadFile(tempFilePath, file.Filename, username)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
@@ -168,7 +165,7 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusInternalServerError, "Failed to upload file")
 	}
 
-	err = h.updatePhoto.Execute(c.Context(), claims.ID, fileURL)
+	err = h.updatePhoto.Execute(c.Context(), userSession.ID, fileURL)
 	if err != nil {
 		return err
 	}
@@ -186,12 +183,12 @@ func (h *Handler) DeletePhoto(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	claims, err := middleware.ExtractJWTPayload(jwtToken)
+	userSession, err := h.getUserSession(c)
 	if err != nil {
 		return fiber.ErrUnauthorized
 	}
 
-	err = h.deletePhoto.Execute(c.Context(), claims.ID)
+	err = h.deletePhoto.Execute(c.Context(), userSession.ID)
 
 	if err != nil {
 		return err

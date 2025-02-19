@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -27,11 +28,11 @@ func NewCoachHandler(
 	}
 }
 
-func (h *Handler) RegisterRoutes(app *fiber.App) {
+func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
 	v1 := app.Group("/api/v1/coaches")
 
 	accessControlRules := h.manageAccessControl()
-	v1.Use(middleware.JWTAuthMiddleware(accessControlRules))
+	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
 	v1.Get("/", h.GetCoaches)
 	v1.Get("/:id", h.GetCoachById)

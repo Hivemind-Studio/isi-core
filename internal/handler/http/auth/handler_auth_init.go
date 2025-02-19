@@ -1,10 +1,12 @@
 package user
 
 import (
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Handler struct {
+	sessionManager                           *session.SessionManager
 	loginUseCase                             LoginUseCaseInterface
 	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface
 	verifyRegistrationTokenUseCase           VerifyRegistrationTokenUseCaseInterface
@@ -16,6 +18,7 @@ type Handler struct {
 }
 
 func NewAuthHandler(
+	sessionManager *session.SessionManager,
 	loginUseCase LoginUseCaseInterface,
 	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface,
 	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface,
@@ -26,18 +29,19 @@ func NewAuthHandler(
 	googleCallbackUseCase GoogleCallbackUseCaseInterface,
 ) *Handler {
 	return &Handler{
-		loginUseCase,
-		sendRegistrationEmailVerificationUseCase,
-		verifyRegistrationTokenUseCase,
-		createUserUseCase,
-		updateCoachPasswordUseCase,
-		forgotPasswordUseCase,
-		googleLoginUseCase,
-		googleCallbackUseCase,
+		sessionManager:                           sessionManager,
+		loginUseCase:                             loginUseCase,
+		sendRegistrationEmailVerificationUseCase: sendRegistrationEmailVerificationUseCase,
+		verifyRegistrationTokenUseCase:           verifyRegistrationTokenUseCase,
+		createUserUseCase:                        createUserUseCase,
+		updateCoachPasswordUseCase:               updateCoachPasswordUseCase,
+		forgotPasswordUseCase:                    forgotPasswordUseCase,
+		googleLoginUseCase:                       googleLoginUseCase,
+		googleCallbackUseCase:                    googleCallbackUseCase,
 	}
 }
 
-func (h *Handler) RegisterRoutes(app *fiber.App) {
+func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
 	v1 := app.Group("/api/v1/auth")
 
 	v1.Post("/login", h.Login)

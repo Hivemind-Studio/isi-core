@@ -7,8 +7,11 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	redisutils "github.com/Hivemind-Studio/isi-core/pkg/redis"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"golang.org/x/oauth2"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -37,10 +40,11 @@ func main() {
 
 	config := configs.Init()
 
-	api, _ := initApp(config)
+	sessionManager := initSessionManager(config)
+	api, _ := initApp(config, sessionManager)
 
 	for _, r := range routerList(api) {
-		r.RegisterRoutes(app)
+		r.RegisterRoutes(app, sessionManager)
 	}
 
 	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
@@ -84,6 +88,12 @@ func initGoogleOauthClient(cfg *configs.Config) *oauth2.Config {
 		ClientSecret: googleOauthConfig.ClientSecret,
 		RedirectURL:  googleOauthConfig.RedirectURI,
 	})
+}
+
+func initSessionManager(cfg *configs.Config) *session.SessionManager {
+	num, _ := strconv.ParseInt(cfg.RedisConfig.DefaultDB, 10, 32)
+	redisClient := redisutils.InitRedis(cfg.RedisConfig.Address, cfg.RedisConfig.Password, int(num))
+	return session.NewSessionManager(redisClient)
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {

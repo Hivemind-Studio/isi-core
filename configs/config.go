@@ -29,6 +29,11 @@ type Config struct {
 		RedirectURI    string `envconfig:"GOOGLE_REDIRECT_URI"`
 		GoogleTokenUrl string `envconfig:"GOOGLE_TOKEN_URL"`
 	}
+	RedisConfig struct {
+		Address   string `envconfig:"REDIS_ADDRESS"`
+		Password  string `envconfig:"REDIS_PASSWORD"`
+		DefaultDB string `envconfig:"REDIS_DEFAULT_DB"`
+	}
 }
 
 func Init() *Config {

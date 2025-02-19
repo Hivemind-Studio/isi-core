@@ -37,6 +37,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/uploadphoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/verifyregistrationtoken"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -50,7 +51,7 @@ type AppApi struct {
 }
 
 type Router interface {
-	RegisterRoutes(app *fiber.App)
+	RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager)
 }
 
 func routerList(app *AppApi) []Router {
@@ -63,7 +64,7 @@ func routerList(app *AppApi) []Router {
 	}
 }
 
-func initApp(cfg *configs.Config) (*AppApi, error) {
+func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppApi, error) {
 	dbConn := dbInitConnection(cfg)
 	emailClient := initEmailClient(cfg)
 	googleOauthClient := initGoogleOauthClient(cfg)
@@ -104,7 +105,9 @@ func initApp(cfg *configs.Config) (*AppApi, error) {
 	deletePhoto := deletephoto.NewDeletePhotoStatusUseCase(userRepo)
 	updateCoachLevel := updatecoachlevel.NewUpdateCoachLevelUseCase(coachRepo)
 
-	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
+	authHandler := handleauth.NewAuthHandler(
+		sessionManager,
+		userLoginUseCase,
 		sendVerificationUseCase,
 		verificationRegistrationTokenUseCase,
 		createUserUseCase,

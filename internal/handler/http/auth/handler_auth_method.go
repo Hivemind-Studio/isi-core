@@ -1,16 +1,19 @@
 package user
 
 import (
+	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
-	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/Hivemind-Studio/isi-core/pkg/validator"
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"time"
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
@@ -19,19 +22,12 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	result, err := h.loginUseCase.Execute(c.Context(), &loginDTO)
+	user, err := h.loginUseCase.Execute(c.Context(), &loginDTO)
 	if err != nil {
 		return err
 	}
 
-	token, err := middleware.GenerateToken(
-		middleware.User{
-			ID:    result.ID,
-			Name:  result.Name,
-			Email: result.Email,
-			Role:  *result.Role,
-		})
-
+	token, err := h.setSession(c.Context(), user.ID, user.Email, user.Name, user.Role, user.Photo)
 	if err != nil {
 		return err
 	}
@@ -41,11 +37,11 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 			Status:  fiber.StatusOK,
 			Message: "login successful",
 			Data: authdto.LoginResponse{
-				ID:    result.ID,
-				Name:  result.Name,
-				Email: result.Email,
-				Role:  *result.Role,
-				Photo: utils.SafeDereferenceString(result.Photo),
+				ID:    user.ID,
+				Name:  user.Name,
+				Email: user.Email,
+				Role:  *user.Role,
+				Photo: utils.SafeDereferenceString(user.Photo),
 				Token: token,
 			},
 		})
@@ -188,12 +184,6 @@ func (h *Handler) GoogleLogin(c *fiber.Ctx) error {
 	url := h.googleLoginUseCase.Execute(c)
 
 	return c.Redirect(url)
-	//return c.Status(fiber.StatusOK).JSON(
-	//	response.WebResponse{
-	//		Status:  fiber.StatusOK,
-	//		Message: "Login link created successfully!",
-	//		Data:    authdto.GoogleLoginResponse{Url: url},
-	//	})
 }
 
 func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
@@ -213,21 +203,40 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), c.Query("code"))
-	token, err := middleware.GenerateToken(
-		middleware.User{
-			ID:    userData.ID,
-			Name:  userData.Name,
-			Email: userData.Email,
-			Role:  *userData.Role,
-		})
-
 	if err != nil {
 		return err
 	}
+	token, err := h.setSession(c.Context(), userData.ID, userData.Email,
+		userData.Name, userData.Role, userData.Photo)
+	if err != nil {
+		return err
+	}
+
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
 			Message: "Login successful!",
 			Data:    authdto.GoogleCallbackResponse{Token: token},
 		})
+}
+
+func (h *Handler) setSession(c context.Context, id int64, email string, name string,
+	role *string, photo *string) (token string, err error) {
+	newUUID, err := uuid.NewUUID()
+	if err != nil {
+		return "", err
+	}
+	token = newUUID.String()
+	userSession := session.Session{
+		ID:    id,
+		Email: email,
+		Name:  name,
+		Role:  utils.SafeDereferenceString(role),
+		Photo: utils.SafeDereferenceString(photo),
+	}
+	err = h.sessionManager.CreateSession(c, "SESSION::"+token, userSession, time.Hour*1)
+	if err != nil {
+		return token, err
+	}
+	return token, nil
 }

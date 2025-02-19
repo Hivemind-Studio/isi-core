@@ -6,8 +6,10 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	validatorhelper "github.com/Hivemind-Studio/isi-core/pkg/translator"
 	"github.com/gofiber/fiber/v2"
+	"log"
 	"strconv"
 	"time"
 )
@@ -156,14 +158,17 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
-	userInfo := c.Locals("user_info")
-	user, ok := userInfo.(map[string]interface{})
-	if !ok {
-		return fiber.ErrInternalServerError
+	userSession, err := session.GetUserSession(c)
+	if err != nil || userSession == nil {
+		return fiber.ErrUnauthorized
 	}
 
-	err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), user["email"].(string))
-
+	go func() {
+		err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), userSession.Email)
+		if err != nil {
+			log.Printf("Failed to send change email verification: %v", err)
+		}
+	}()
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
 	}
