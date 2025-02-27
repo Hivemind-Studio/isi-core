@@ -3,6 +3,7 @@ package campaign
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/campaign"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -12,16 +13,32 @@ import (
 	"time"
 )
 
-func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name, channel, link string, status int8,
-	startDate, endDate *time.Time) (err error) {
-	insertUserQuery := `INSERT INTO campaign (name, channel, start_date, end_date, link, status) VALUES (?, ?, ?, ?, ?, ?)`
-	_, err = tx.ExecContext(ctx, insertUserQuery, name, channel, &startDate, &endDate, link, status)
+func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name, channel, link, campaignId string, status int8,
+	startDate, endDate *time.Time) (c Campaign, err error) {
+	insertUserQuery := `INSERT INTO campaign (name, channel, start_date, end_date, link, campaign_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	result, err := tx.ExecContext(ctx, insertUserQuery, name, channel, &startDate, &endDate, link, campaignId, status)
 
 	if err != nil {
-		return httperror.New(fiber.StatusConflict, "failed to insert campaign")
+		return Campaign{}, httperror.New(fiber.StatusConflict, "failed to insert campaign")
 	}
 
-	return nil
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return Campaign{}, httperror.New(fiber.StatusInternalServerError, fmt.Sprintf("failed to get last insert ID: %v", err))
+	}
+
+	c = Campaign{
+		ID:         lastInsertID,
+		Name:       name,
+		Channel:    channel,
+		Link:       link,
+		CampaignID: campaignId,
+		Status:     status,
+		StartDate:  startDate,
+		EndDate:    endDate,
+	}
+
+	return c, nil
 }
 
 func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64, perPage int64,

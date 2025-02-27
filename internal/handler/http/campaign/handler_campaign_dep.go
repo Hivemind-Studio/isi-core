@@ -8,7 +8,7 @@ import (
 )
 
 type CreateCampaignUseCaseInterface interface {
-	Execute(ctx context.Context, body dto.DTO) (err error)
+	Execute(ctx context.Context, body dto.DTO) (respond dto.DTO, err error)
 }
 
 type GetCampaignUseCaseInterface interface {

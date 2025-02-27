@@ -27,7 +27,10 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), userSession)
 		if err != nil || !validRole {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
+			if err != nil {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
+			}
+			//return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
 		}
 
 		c.Locals("user", userSession)

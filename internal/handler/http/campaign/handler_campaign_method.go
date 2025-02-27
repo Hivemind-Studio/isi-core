@@ -28,7 +28,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.createCampaignUseCase.Execute(c.Context(), newCampaign)
+	res, err := h.createCampaignUseCase.Execute(c.Context(), newCampaign)
 	if err != nil {
 		return err
 	}
@@ -37,6 +37,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		response.WebResponse{
 			Status:  fiber.StatusCreated,
 			Message: "Campaign created successfully",
+			Data:    res,
 		})
 }
 

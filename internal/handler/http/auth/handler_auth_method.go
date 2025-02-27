@@ -41,7 +41,6 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
 	cookie.Path = "/"                               // Set the cookie path to the root of the domain
 
-	// Set the cookie in the response
 	c.Cookie(cookie)
 
 	return c.Status(fiber.StatusOK).JSON(
