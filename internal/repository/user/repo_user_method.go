@@ -126,55 +126,47 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	var totalRecords int64
 	var args []interface{}
 
-	baseQuery := `FROM users AS users LEFT JOIN roles ON users.role_id = roles.id`
-	whereClause := " WHERE 1=1"
-
-	if params.CampaignId != nil && *params.CampaignId != "" {
-		baseQuery += " JOIN users_registration ur ON users.id = ur.user_id"
-		whereClause += " AND ur.campaign_id = ?"
-		args = append(args, *params.CampaignId)
-	}
-
+	baseQuery := `FROM users as users LEFT JOIN roles ON users.role_id = roles.id WHERE`
 	if params.Role != nil {
-		whereClause += " AND users.role_id = ?"
+		baseQuery += " users.role_id = ?"
 		args = append(args, *params.Role)
 	} else {
 		args = append(args, constant.RoleIDAdmin, constant.RoleIDStaff)
-		whereClause += " AND users.role_id IN (?,?)"
+		baseQuery += " users.role_id IN (?,?)"
 	}
 
 	if params.Name != "" {
-		whereClause += " AND users.name LIKE ?"
+		baseQuery += " AND users.name LIKE ?"
 		args = append(args, "%"+params.Name+"%")
 	}
 	if params.Email != "" {
-		whereClause += " AND users.email LIKE ?"
+		baseQuery += " AND users.email LIKE ?"
 		args = append(args, "%"+params.Email+"%")
 	}
 	if params.Status != "" {
-		whereClause += " AND users.status = ?"
+		baseQuery += " AND users.status = ?"
 		args = append(args, params.Status)
 	}
 	if params.PhoneNumber != "" {
-		whereClause += " AND users.phone_number LIKE ?"
+		baseQuery += " AND users.phone_number LIKE ?"
 		args = append(args, "%"+params.PhoneNumber+"%")
 	}
 	if params.StartDate != nil {
-		whereClause += " AND users.created_at >= ?"
+		baseQuery += " AND users.created_at >= ?"
 		args = append(args, *params.StartDate)
 	}
 	if params.EndDate != nil {
-		whereClause += " AND users.created_at <= ?"
+		baseQuery += " AND users.created_at <= ?"
 		args = append(args, *params.EndDate)
 	}
 
-	countQuery := "SELECT COUNT(*) " + baseQuery + whereClause
+	countQuery := "SELECT COUNT(*) " + baseQuery
 	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count users")
 	}
 
-	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + whereClause + " ORDER BY users.name ASC LIMIT ? OFFSET ?"
+	dataQuery := "SELECT users.*, roles.name AS role_name " + baseQuery + " ORDER BY users.name ASC LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 
 	err = r.GetConnDb().SelectContext(ctx, &users, dataQuery, queryArgs...)
@@ -182,6 +174,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
 	}
 
+	// Calculate total pages
 	totalPages := (totalRecords + perPage - 1) / perPage
 
 	paginate := pagination.Pagination{
