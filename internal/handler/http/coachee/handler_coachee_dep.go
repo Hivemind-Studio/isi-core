@@ -9,7 +9,7 @@ import (
 
 type GetCoacheesUseCaseInterface interface {
 	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate,
-		endDate *time.Time, page int64, perPage int64,
+		endDate *time.Time, campaignId string, page int64, perPage int64,
 	) ([]user.UserDTO, pagination.Pagination, error)
 }
 

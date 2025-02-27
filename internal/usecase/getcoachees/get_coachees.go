@@ -12,7 +12,7 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate,
-	endDate *time.Time, page int64, perPage int64,
+	endDate *time.Time, campaignId string, page int64, perPage int64,
 ) ([]userdto.UserDTO, pagination.Pagination, error) {
 	coacheeRoleId := constant.RoleIDCoachee
 	params := userdto.GetUsersDTO{Name: name,
@@ -22,6 +22,7 @@ func (uc *UseCase) Execute(ctx context.Context, name string, email string, phone
 		StartDate:   startDate,
 		EndDate:     endDate,
 		Role:        &coacheeRoleId,
+		CampaignId:  &campaignId,
 	}
 	users, paginate, err := uc.repoUser.GetUsers(ctx, params, page, perPage)
 	if err != nil {
