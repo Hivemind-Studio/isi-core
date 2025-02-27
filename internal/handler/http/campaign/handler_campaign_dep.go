@@ -15,3 +15,7 @@ type GetCampaignUseCaseInterface interface {
 	Execute(ctx context.Context, name, status string, startDate, endDate *time.Time, page int64, perPage int64,
 	) ([]dto.DTO, pagination.Pagination, error)
 }
+
+type DeleteCampaignUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) (err error)
+}

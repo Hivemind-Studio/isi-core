@@ -92,3 +92,27 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 		Pagination: paginate,
 	})
 }
+
+func (h *Handler) Delete(c *fiber.Ctx) error {
+	module := "Campaign Handler"
+	functionName := "CreateCampaign"
+
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+
+	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, module, functionName,
+		"", string(c.Body()))
+
+	err = h.deleteCampaignUseCase.Execute(c.Context(), id)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Campaign deleted successfully",
+	})
+}

@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"context"
+	"database/sql"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/campaign"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -85,4 +86,40 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 	}
 
 	return campaigns, paginate, nil
+}
+
+func (r *Repository) GetById(ctx context.Context, id int64) (Campaign, error) {
+	query := "SELECT * FROM campaign WHERE id = ?"
+	var c Campaign
+
+	err := r.GetConnDb().GetContext(ctx, &c, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Campaign{}, httperror.New(fiber.StatusNotFound, "campaign not found")
+		}
+		return Campaign{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve campaign")
+	}
+
+	return c, nil
+}
+
+func (r *Repository) Delete(ctx context.Context, id int64) error {
+	query := "SELECT * FROM campaign WHERE id = ?"
+	var c Campaign
+
+	err := r.GetConnDb().GetContext(ctx, &c, query, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return httperror.New(fiber.StatusNotFound, "campaign not found")
+		}
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve campaign")
+	}
+
+	deleteQuery := "DELETE FROM campaign WHERE id = ?"
+	_, err = r.GetConnDb().ExecContext(ctx, deleteQuery, id)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to delete campaign")
+	}
+
+	return nil
 }
