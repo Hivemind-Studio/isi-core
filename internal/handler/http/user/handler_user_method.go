@@ -166,6 +166,11 @@ func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
 	}
 
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("Recovered from panic in SendChangeEmailVerification: %v", r)
+			}
+		}()
 		err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), userSession.Email)
 		if err != nil {
 			log.Printf("Failed to send change email verification: %v", err)
