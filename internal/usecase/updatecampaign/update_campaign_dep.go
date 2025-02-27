@@ -12,6 +12,6 @@ type repoCampaignInterface interface {
 	dbtx.DBTXInterface
 
 	Update(ctx context.Context, tx *sqlx.Tx, id int64, name *string, channel *string, link *string,
-		status *int8, startDate, endDate *time.Time) (campaign.Campaign, error)
+		status *int8, startDate, endDate *time.Time, version int64) (campaign.Campaign, error)
 	GetById(ctx context.Context, id int64) (campaign.Campaign, error)
 }

@@ -35,6 +35,7 @@ func (uc *UseCase) Execute(ctx context.Context, id int64, payload dto.DTO) (dto.
 		&payload.Status,
 		payload.StartDate,
 		payload.EndDate,
+		findCampaign.Version+1,
 	)
 
 	if err != nil {

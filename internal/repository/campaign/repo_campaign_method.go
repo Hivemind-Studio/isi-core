@@ -149,7 +149,7 @@ func (r *Repository) UpdateStatus(ctx context.Context, ids []int64, status int8)
 }
 
 func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, channel, link *string, status *int8,
-	startDate, endDate *time.Time) (Campaign, error) {
+	startDate, endDate *time.Time, version int64) (Campaign, error) {
 	setClauses := []string{}
 	args := []interface{}{}
 
@@ -182,8 +182,11 @@ func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, ch
 		return Campaign{}, httperror.New(fiber.StatusBadRequest, "no campaigns found with the provided id")
 	}
 
-	query := fmt.Sprintf(`UPDATE campaign SET %s WHERE id = ?`, strings.Join(setClauses, ", "))
-	args = append(args, id)
+	query := fmt.Sprintf(
+		`UPDATE campaign SET %s, version = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+		strings.Join(setClauses, ", "),
+	)
+	args = append(args, version, id)
 
 	_, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
