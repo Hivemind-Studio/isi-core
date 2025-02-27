@@ -21,7 +21,7 @@ func (uc *UseCase) Execute(ctx context.Context, payload campaign.DTO) (err error
 	defer dbtx.HandleRollback(tx)
 
 	err = uc.repoCampaign.Create(ctx, tx, payload.Name, payload.Channel, payload.Link,
-		payload.StartDate, payload.EndDate, payload.Status)
+		payload.Status, payload.StartDate, payload.EndDate)
 
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateStaff", err.Error(), payload)
