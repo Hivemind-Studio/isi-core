@@ -6,14 +6,17 @@ type LoginDTO struct {
 }
 
 type RegistrationDTO struct {
-	Name            string `json:"name" validate:"required"`
-	Password        string `json:"password" validate:"required,min=8,max=12"`
-	ConfirmPassword string `json:"confirm_password" validate:"required,min=8,max=12"`
-	PhoneNumber     string `json:"phone_number" validate:"required"`
-	Email           string `json:"email,omitempty"`
-	Token           string `json:"token" validate:"required"`
-	Gender          string `json:"gender,omitempty"`
-	Address         string `json:"address,omitempty"`
+	Name            string  `json:"name" validate:"required"`
+	Password        string  `json:"password" validate:"required,min=8,max=12"`
+	ConfirmPassword string  `json:"confirm_password" validate:"required,min=8,max=12"`
+	PhoneNumber     string  `json:"phone_number" validate:"required"`
+	Email           string  `json:"email,omitempty"`
+	Token           string  `json:"token" validate:"required"`
+	Gender          string  `json:"gender,omitempty"`
+	Address         string  `json:"address,omitempty"`
+	CampaignId      *string `json:"campaign_id,omitempty"`
+	IPAddress       string  `json:"ip_address,omitempty"`
+	UserAgent       string  `json:"user_agent,omitempty"`
 }
 
 type GoogleCallbackDTO struct {

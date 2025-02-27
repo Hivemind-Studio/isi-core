@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/campaign"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/httphelper/response"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -61,6 +62,8 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 func (h *Handler) Create(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "CreateUser"
+	ipAddress := c.IP()
+	userAgent := c.Get("User-Agent")
 
 	var requestBody authdto.RegistrationDTO
 	requestId := c.Locals("request_id").(string)
@@ -86,11 +89,28 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, err.Error())
 	}
 
+	requestBody.IPAddress = ipAddress
+	requestBody.UserAgent = userAgent
+
 	result, err := h.createUserUseCase.Execute(c.Context(), &requestBody)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
+	}
+
+	if requestBody.CampaignId != nil {
+		userCampaign := campaign.UserCampaign{
+			Email:      result.Email,
+			IPAddress:  ipAddress,
+			UserAgent:  userAgent,
+			CampaignId: *requestBody.CampaignId,
+		}
+		err = h.createUserCampaign.Execute(c.Context(), userCampaign)
+
+		if err != nil {
+			return nil
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(

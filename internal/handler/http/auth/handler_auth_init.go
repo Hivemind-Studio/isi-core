@@ -15,6 +15,7 @@ type Handler struct {
 	forgotPasswordUseCase                    ForgotPasswordUseCaseInterface
 	googleLoginUseCase                       GoogleLoginUseCaseInterface
 	googleCallbackUseCase                    GoogleCallbackUseCaseInterface
+	createUserCampaign                       CreateUserCampaign
 }
 
 func NewAuthHandler(
@@ -27,6 +28,7 @@ func NewAuthHandler(
 	forgotPasswordUseCase ForgotPasswordUseCaseInterface,
 	googleLoginUseCase GoogleLoginUseCaseInterface,
 	googleCallbackUseCase GoogleCallbackUseCaseInterface,
+	createUserCampaign CreateUserCampaign,
 ) *Handler {
 	return &Handler{
 		sessionManager:                           sessionManager,
@@ -38,6 +40,7 @@ func NewAuthHandler(
 		forgotPasswordUseCase:                    forgotPasswordUseCase,
 		googleLoginUseCase:                       googleLoginUseCase,
 		googleCallbackUseCase:                    googleCallbackUseCase,
+		createUserCampaign:                       createUserCampaign,
 	}
 }
 

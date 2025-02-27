@@ -201,3 +201,17 @@ func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, ch
 
 	return updatedCampaign, nil
 }
+
+func (r *Repository) CreateUserCampaign(ctx context.Context, tx *sqlx.Tx, userId int64, campaignId, ipAddress, userAgent string,
+	registrationDate string) error {
+	insertUserQuery := `INSERT INTO users_registration (user_id, campaign_id, registration_date, ip_address, 
+                                user_agent) VALUES (?, ?, ?, ?, ?)`
+
+	_, err := tx.ExecContext(ctx, insertUserQuery, userId, campaignId, registrationDate, ipAddress, userAgent)
+
+	if err != nil {
+		return httperror.New(fiber.StatusConflict, err.Error())
+	}
+
+	return nil
+}

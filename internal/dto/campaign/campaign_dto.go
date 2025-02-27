@@ -28,3 +28,10 @@ type PatchStatus struct {
 	IDS    []int64 `json:"ids" validate:"required"`
 	Status int8    `json:"status" validate:"required"`
 }
+
+type UserCampaign struct {
+	Email      string `json:"email"`
+	CampaignId string `json:"campaign_id"`
+	UserAgent  string `json:"user_agent"`
+	IPAddress  string `json:"ip_address"`
+}

@@ -16,6 +16,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createusercampaign"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletephoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaign"
@@ -118,6 +119,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	getCampaign := getcampaign.NewGetCampaignUseCase(campaignRepo)
 	updateStatusCampaign := updatestatuscampaign.NewUpdateStatusCampaignUseCase(campaignRepo)
 	updateCampaign := updatecampaign.NewUpdateCampaignUseCase(campaignRepo)
+	createUserCampaign := createusercampaign.NewCreateUserCampaignUseCase(campaignRepo, userRepo)
 
 	authHandler := handleauth.NewAuthHandler(
 		sessionManager,
@@ -129,6 +131,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 		forgotPasswordUseCase,
 		googleLoginUseCase,
 		googleOAuthCallbackUseCase,
+		createUserCampaign,
 	)
 	userHandler := handleuser.NewUserHandler(
 		createUserStaffUseCase,
