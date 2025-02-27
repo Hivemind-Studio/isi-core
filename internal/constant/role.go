@@ -1,17 +1,19 @@
 package constant
 
 const (
-	RoleIDAdmin   int64 = 1
-	RoleIDStaff   int64 = 2
-	RoleIDCoach   int64 = 3
-	RoleIDCoachee int64 = 4
+	RoleIDAdmin     int64 = 1
+	RoleIDStaff     int64 = 2
+	RoleIDCoach     int64 = 3
+	RoleIDCoachee   int64 = 4
+	RoleIDMarketing int64 = 4
 )
 
 var roleToID = map[string]int64{
-	"Admin":   RoleIDAdmin,
-	"Staff":   RoleIDStaff,
-	"Coach":   RoleIDCoach,
-	"Coachee": RoleIDCoachee,
+	"Admin":     RoleIDAdmin,
+	"Staff":     RoleIDStaff,
+	"Coach":     RoleIDCoach,
+	"Coachee":   RoleIDCoachee,
+	"Marketing": RoleIDMarketing,
 }
 
 func GetRoleID(role string) int64 {
