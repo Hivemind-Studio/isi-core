@@ -5,33 +5,32 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/gofiber/fiber/v2"
+	"log"
 )
 
 type Handler struct {
 	createCampaignUseCase CreateCampaignUseCaseInterface
 	getCampaignUseCase    GetCampaignUseCaseInterface
-	deleteCampaignUseCase DeleteCampaignUseCaseInterface
 }
 
 func NewCampaignHandler(createCampaignUseCase CreateCampaignUseCaseInterface,
-	getCampaignUseCase GetCampaignUseCaseInterface,
-	deleteCampaignUseCase DeleteCampaignUseCaseInterface) *Handler {
+	getCampaignUseCase GetCampaignUseCaseInterface) *Handler {
 	return &Handler{
 		createCampaignUseCase,
 		getCampaignUseCase,
-		deleteCampaignUseCase,
 	}
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
 	v1 := app.Group("/api/v1/campaign")
-
 	accessControlRules := h.manageAccessControl()
+
+	log.Printf("Registering routes for campaignHandler")
+	log.Printf("Applying SessionAuthMiddleware to /api/v1/campaign")
 	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
 	v1.Get("/", h.Get)
 	v1.Post("/", h.Create)
-	v1.Delete("/:id", h.Delete)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {

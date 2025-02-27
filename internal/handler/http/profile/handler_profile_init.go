@@ -31,16 +31,16 @@ func NewProfileHandler(
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
-	v1 := app.Group("/api/v1")
+	v1 := app.Group("/api/v1/profile")
 
 	accessControlRules := h.manageAccessControl()
 	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
-	v1.Get("/profile", h.GetProfile)
-	v1.Put("/profile", h.UpdateProfile)
-	v1.Patch("/profile", h.UpdateProfilePassword)
-	v1.Patch("/profile/photo", h.UploadPhoto)
-	v1.Delete("/profile/photo", h.DeletePhoto)
+	v1.Get("/", h.GetProfile)
+	v1.Put("/", h.UpdateProfile)
+	v1.Patch("/", h.UpdateProfilePassword)
+	v1.Patch("/photo", h.UploadPhoto)
+	v1.Delete("/photo", h.DeletePhoto)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
