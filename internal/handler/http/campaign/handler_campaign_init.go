@@ -5,7 +5,6 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/gofiber/fiber/v2"
-	"log"
 )
 
 type Handler struct {
@@ -28,8 +27,6 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 	v1 := app.Group("/api/v1/campaign")
 	accessControlRules := h.manageAccessControl()
 
-	log.Printf("Registering routes for campaignHandler")
-	log.Printf("Applying SessionAuthMiddleware to /api/v1/campaign")
 	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
 	v1.Get("/", h.Get)
