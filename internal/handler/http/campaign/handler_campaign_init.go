@@ -12,15 +12,18 @@ type Handler struct {
 	createCampaignUseCase CreateCampaignUseCaseInterface
 	getCampaignUseCase    GetCampaignUseCaseInterface
 	updateStatusCampaign  UpdateStatusCampaignUseCaseInterface
+	updateCampaign        UpdateCampaignUseCaseInterface
 }
 
 func NewCampaignHandler(createCampaignUseCase CreateCampaignUseCaseInterface,
 	getCampaignUseCase GetCampaignUseCaseInterface,
-	updateStatusCampaign UpdateStatusCampaignUseCaseInterface) *Handler {
+	updateStatusCampaign UpdateStatusCampaignUseCaseInterface,
+	updateCampaign UpdateCampaignUseCaseInterface) *Handler {
 	return &Handler{
 		createCampaignUseCase,
 		getCampaignUseCase,
 		updateStatusCampaign,
+		updateCampaign,
 	}
 }
 
@@ -34,7 +37,9 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 
 	v1.Get("/", h.Get)
 	v1.Post("/", h.Create)
+	v1.Put("/:id", h.Update)
 	v1.Patch("/status", h.UpdateStatusCampaign)
+
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {

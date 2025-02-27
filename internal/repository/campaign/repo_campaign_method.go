@@ -147,3 +147,54 @@ func (r *Repository) UpdateStatus(ctx context.Context, ids []int64, status int8)
 
 	return nil
 }
+
+func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, channel, link *string, status *int8,
+	startDate, endDate *time.Time) (Campaign, error) {
+	setClauses := []string{}
+	args := []interface{}{}
+
+	if name != nil {
+		setClauses = append(setClauses, "name = ?")
+		args = append(args, *name)
+	}
+	if channel != nil {
+		setClauses = append(setClauses, "channel = ?")
+		args = append(args, *channel)
+	}
+	if link != nil {
+		setClauses = append(setClauses, "link = ?")
+		args = append(args, *link)
+	}
+	if status != nil {
+		setClauses = append(setClauses, "status = ?")
+		args = append(args, *status)
+	}
+	if startDate != nil {
+		setClauses = append(setClauses, "start_date = ?")
+		args = append(args, *startDate)
+	}
+	if endDate != nil {
+		setClauses = append(setClauses, "end_date = ?")
+		args = append(args, *endDate)
+	}
+
+	if len(setClauses) == 0 {
+		return Campaign{}, httperror.New(fiber.StatusBadRequest, "no campaigns found with the provided id")
+	}
+
+	query := fmt.Sprintf(`UPDATE campaign SET %s WHERE id = ?`, strings.Join(setClauses, ", "))
+	args = append(args, id)
+
+	_, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return Campaign{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to update campaign")
+	}
+
+	var updatedCampaign Campaign
+	err = tx.GetContext(ctx, &updatedCampaign, `SELECT * FROM campaign WHERE id = ?`, id)
+	if err != nil {
+		return Campaign{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch updated campaign")
+	}
+
+	return updatedCampaign, nil
+}
