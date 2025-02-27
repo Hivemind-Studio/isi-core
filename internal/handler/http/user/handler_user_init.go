@@ -70,6 +70,12 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 				constant.V1 + "/users": {"GET"},
 			},
 		},
+		"Marketing": {
+			Role: "Marketing",
+			AllowedMethod: map[string][]string{
+				constant.V1 + "/users": {"GET"},
+			},
+		},
 	}
 	return accessControlRules
 }

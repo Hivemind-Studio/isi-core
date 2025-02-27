@@ -23,3 +23,8 @@ type Params struct {
 	StartDate *time.Time `json:"start_date" validate:"required"`
 	EndDate   *time.Time `json:"end_date" validate:"required"`
 }
+
+type PatchStatus struct {
+	IDS    []int64 `json:"ids" validate:"required"`
+	Status int8    `json:"status" validate:"required"`
+}

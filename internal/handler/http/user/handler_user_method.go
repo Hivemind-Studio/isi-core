@@ -45,6 +45,7 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 	status := c.Query("status")
 	pageParam := c.Query("page")
 	perPageParam := c.Query("per_page")
+	campaignId := c.Query("campaign_id")
 
 	var start, end *time.Time
 	if startDate != "" {
@@ -78,7 +79,8 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, paginate, err := h.getUsersUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end, page, perPage)
+	users, paginate, err := h.getUsersUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end,
+		campaignId, page, perPage)
 	if err != nil {
 		return err
 	}

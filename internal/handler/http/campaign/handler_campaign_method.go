@@ -98,16 +98,16 @@ func (h *Handler) UpdateStatusCampaign(c *fiber.Ctx) error {
 	module := "Campaign Handler"
 	functionName := "UpdateStatusCampaign"
 
-	paramId := c.Params("id")
-
-	id, err := strconv.ParseInt(paramId, 10, 64)
-
 	requestId := c.Locals("request_id").(string)
 	logger.Print("info", requestId, module, functionName,
 		"", string(c.Body()))
 
-	// TODO: Update ke patch status
-	err = h.deleteCampaignUseCase.Execute(c.Context(), id)
+	var patchCampaign campaign.PatchStatus
+	if err := c.BodyParser(&patchCampaign); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	err := h.updateStatusCampaign.Execute(c.Context(), patchCampaign.IDS, patchCampaign.Status)
 
 	if err != nil {
 		return err
@@ -115,6 +115,43 @@ func (h *Handler) UpdateStatusCampaign(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
-		Message: "Campaign deleted successfully",
+		Message: "Patch status campaign successfully",
 	})
+}
+
+func (h *Handler) Update(c *fiber.Ctx) error {
+	module := "Campaign Handler"
+	functionName := "UpdateCampaign"
+
+	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, module, functionName,
+		"", string(c.Body()))
+
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.New(fiber.StatusBadRequest, "Invalid campaign id")
+	}
+
+	var newCampaign campaign.DTO
+	if err := c.BodyParser(&newCampaign); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	if err := validatorhelper.ValidateStruct(newCampaign); err != nil {
+		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
+	}
+
+	res, err := h.updateCampaign.Execute(c.Context(), id, newCampaign)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusCreated,
+			Message: "Campaign created successfully",
+			Data:    res,
+		})
 }

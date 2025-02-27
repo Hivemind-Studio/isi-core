@@ -16,6 +16,10 @@ type GetCampaignUseCaseInterface interface {
 	) ([]dto.DTO, pagination.Pagination, error)
 }
 
-type DeleteCampaignUseCaseInterface interface {
-	Execute(ctx context.Context, id int64) (err error)
+type UpdateStatusCampaignUseCaseInterface interface {
+	Execute(ctx context.Context, ids []int64, status int8) (err error)
+}
+
+type UpdateCampaignUseCaseInterface interface {
+	Execute(ctx context.Context, id int64, body dto.DTO) (respond dto.DTO, err error)
 }

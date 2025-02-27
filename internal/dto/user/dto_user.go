@@ -34,6 +34,7 @@ type GetUsersDTO struct {
 	Role        *int64     `json:"role"`
 	StartDate   *time.Time `json:"start_date"`
 	EndDate     *time.Time `json:"end_date"`
+	CampaignId  *string    `json:"campaign_id"`
 }
 
 type SuspendDTO struct {

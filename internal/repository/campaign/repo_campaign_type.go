@@ -15,6 +15,7 @@ type Campaign struct {
 	Link       string     `db:"link"`
 	CampaignID string     `db:"campaign_id"`
 	Status     int8       `db:"status"`
+	Version    int64      `db:"version"`
 	CreatedAt  *time.Time `db:"created_at"`
 	UpdatedAt  *time.Time `db:"updated_at"`
 }
