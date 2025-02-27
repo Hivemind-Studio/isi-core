@@ -32,6 +32,18 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
+	// Create a new cookie
+	cookie := new(fiber.Cookie)
+	cookie.Name = "session_id"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(24 * time.Hour) // Set the cookie to expire in 24 hours
+	cookie.HTTPOnly = true                          // Make the cookie accessible only via HTTP
+	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
+	cookie.Path = "/"                               // Set the cookie path to the root of the domain
+
+	// Set the cookie in the response
+	c.Cookie(cookie)
+
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,

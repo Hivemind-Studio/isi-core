@@ -7,7 +7,7 @@ CREATE TABLE campaign (
      start_date DATETIME NOT NULL,
      end_date DATETIME NOT NULL,
      link varchar(255) NOT NULL,
-     status boolean NOT NULL,
+     status BOOLEAN DEFAULT TRUE,
      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

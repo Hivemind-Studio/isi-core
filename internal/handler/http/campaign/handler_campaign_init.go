@@ -9,11 +9,14 @@ import (
 
 type Handler struct {
 	createCampaignUseCase CreateCampaignUseCaseInterface
+	getCampaignUseCase    GetCampaignUseCaseInterface
 }
 
-func NewCampaignHandler(createCampaignUseCase CreateCampaignUseCaseInterface) *Handler {
+func NewCampaignHandler(createCampaignUseCase CreateCampaignUseCaseInterface,
+	getCampaignUseCase GetCampaignUseCaseInterface) *Handler {
 	return &Handler{
 		createCampaignUseCase,
+		getCampaignUseCase,
 	}
 }
 
@@ -23,7 +26,8 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 	accessControlRules := h.manageAccessControl()
 	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
-	v1.Get("/", h.Create)
+	v1.Get("/", h.Get)
+	v1.Post("/", h.Create)
 }
 
 func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule {
@@ -31,13 +35,13 @@ func (h *Handler) manageAccessControl() map[string]middleware.AccessControlRule 
 		"Admin": {
 			Role: "Admin",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/campaign": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/campaign": {"GET", "POST", "PUT", "DELETE", "PATCH"},
 			},
 		},
-		"Staff": {
-			Role: "Staff",
+		"Marketing": {
+			Role: "Marketing",
 			AllowedMethod: map[string][]string{
-				constant.V1 + "/campaign": {"GET", "POST", "DELETE", "PATCH"},
+				constant.V1 + "/campaign": {"GET", "POST", "PUT", "DELETE", "PATCH"},
 			},
 		},
 	}

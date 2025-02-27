@@ -10,7 +10,7 @@ import (
 type repoCampaignInterface interface {
 	dbtx.DBTXInterface
 
-	Create(ctx context.Context, tx *sqlx.Tx, name, channel, link string, startDate, endDate time.Time, status bool) error
+	Create(ctx context.Context, tx *sqlx.Tx, name, channel, link string, status int8, startDate, endDate *time.Time) error
 }
 
 type repoUserInterface interface {
