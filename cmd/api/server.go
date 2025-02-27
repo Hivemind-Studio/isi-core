@@ -16,7 +16,6 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletecampaign"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletephoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaign"
@@ -36,6 +35,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofile"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofilepassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatestatuscampaign"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuseremail"
 	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
@@ -115,7 +115,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 
 	createCampaign := createcampaign.NewCreateCampaignUseCase(campaignRepo, userRepo)
 	getCampaign := getcampaign.NewGetCampaignUseCase(campaignRepo)
-	deleteCampaign := deletecampaign.NewDeleteCampaignUseCase(campaignRepo)
+	updateStatusCampaign := updatestatuscampaign.NewUpdateStatusCampaignUseCase(campaignRepo)
 
 	authHandler := handleauth.NewAuthHandler(
 		sessionManager,
@@ -141,7 +141,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
 		uploadPhoto, deletePhoto)
-	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, deleteCampaign)
+	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, updateStatusCampaign)
 
 	return &AppApi{
 			authHandle:      authHandler,

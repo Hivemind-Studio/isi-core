@@ -1,4 +1,4 @@
-package deletecampaign
+package updatestatuscampaign
 
 import (
 	"context"
@@ -8,5 +8,5 @@ import (
 type repoCampaignInterface interface {
 	dbtx.DBTXInterface
 
-	Delete(ctx context.Context, id int64) (err error)
+	UpdateStatus(ctx context.Context, ids []int64, status int8) (err error)
 }

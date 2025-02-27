@@ -1,4 +1,4 @@
-package deletecampaign
+package updatestatuscampaign
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64) error {
+func (uc *UseCase) Execute(ctx context.Context, ids []int64, status int8) error {
 	tx, err := uc.repoCampaign.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
 	}
 	defer dbtx.HandleRollback(tx)
 
-	err = uc.repoCampaign.Delete(ctx, id)
+	err = uc.repoCampaign.UpdateStatus(ctx, ids, status)
 
 	err = tx.Commit()
 	if err != nil {
