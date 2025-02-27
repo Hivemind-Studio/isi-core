@@ -3,13 +3,16 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
+	handlecampaign "github.com/Hivemind-Studio/isi-core/internal/handler/http/campaign"
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
 	handleprofile "github.com/Hivemind-Studio/isi-core/internal/handler/http/profile"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
+	repocampaign "github.com/Hivemind-Studio/isi-core/internal/repository/campaign"
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/internal/service/useremail"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcampaign"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
@@ -43,11 +46,12 @@ import (
 )
 
 type AppApi struct {
-	authHandle    *handleauth.Handler
-	userHandle    *handleuser.Handler
-	coachHandle   *handlecoach.Handler
-	coacheeHandle *handlecoachee.Handler
-	profileHandle *handleprofile.Handler
+	authHandle      *handleauth.Handler
+	userHandle      *handleuser.Handler
+	coachHandle     *handlecoach.Handler
+	coacheeHandle   *handlecoachee.Handler
+	profileHandle   *handleprofile.Handler
+	campaignHandler *handlecampaign.Handler
 }
 
 type Router interface {
@@ -61,6 +65,7 @@ func routerList(app *AppApi) []Router {
 		app.userHandle,
 		app.coacheeHandle,
 		app.profileHandle,
+		app.campaignHandler,
 	}
 }
 
@@ -71,6 +76,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 
 	userRepo := repouser.NewUserRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
+	campaignRepo := repocampaign.NewCampaignRepo(dbConn)
 
 	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
 	getCoachByIdUseCase := getcoachbyid.NewGetCoachByIdUseCase(coachRepo)
@@ -105,6 +111,8 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	deletePhoto := deletephoto.NewDeletePhotoStatusUseCase(userRepo)
 	updateCoachLevel := updatecoachlevel.NewUpdateCoachLevelUseCase(coachRepo)
 
+	createCampaign := createcampaign.NewCreateCampaignUseCase(campaignRepo, userRepo)
+
 	authHandler := handleauth.NewAuthHandler(
 		sessionManager,
 		userLoginUseCase,
@@ -129,13 +137,15 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
 		uploadPhoto, deletePhoto)
+	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign)
 
 	return &AppApi{
-			authHandle:    authHandler,
-			userHandle:    userHandler,
-			coacheeHandle: coacheeHandler,
-			coachHandle:   coachHandler,
-			profileHandle: profileHandler,
+			authHandle:      authHandler,
+			userHandle:      userHandler,
+			coacheeHandle:   coacheeHandler,
+			coachHandle:     coachHandler,
+			profileHandle:   profileHandler,
+			campaignHandler: campaignHandler,
 		},
 		nil
 }
