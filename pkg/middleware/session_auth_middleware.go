@@ -11,6 +11,9 @@ import (
 
 func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControlRules map[string]AccessControlRule) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		if c.Cookies("session_id") == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "No session"})
+		}
 		sessionID := rediskey.SESSION_PREFIX_KEY + c.Cookies("session_id")
 		if sessionID == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "No session"})
@@ -24,9 +27,7 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), userSession)
 		if err != nil || !validRole {
-			if err != nil {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
-			}
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
 		}
 
 		c.Locals("user", userSession)
