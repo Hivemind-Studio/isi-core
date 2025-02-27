@@ -24,7 +24,12 @@ type GoogleCallbackDTO struct {
 }
 
 type GoogleCallbackResponse struct {
-	Token string `json:"token"`
+	ID    int64   `json:"id"`
+	Name  string  `json:"name"`
+	Email string  `json:"email"`
+	Role  *string `json:"role"`
+	Photo *string `json:"photo"`
+	Token string  `json:"token"`
 }
 
 type GoogleLoginResponse struct {

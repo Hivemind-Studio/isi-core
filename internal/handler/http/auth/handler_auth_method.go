@@ -33,16 +33,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Create a new cookie
-	cookie := new(fiber.Cookie)
-	cookie.Name = "session_id"
-	cookie.Value = token
-	cookie.Expires = time.Now().Add(24 * time.Hour) // Set the cookie to expire in 24 hours
-	cookie.HTTPOnly = true                          // Make the cookie accessible only via HTTP
-	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
-	cookie.Path = "/"                               // Set the cookie path to the root of the domain
-
-	c.Cookie(cookie)
+	setCookie(c, token)
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
@@ -57,6 +48,18 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 				Token: token,
 			},
 		})
+}
+
+func setCookie(c *fiber.Ctx, token string) {
+	cookie := new(fiber.Cookie)
+	cookie.Name = "session_id"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(24 * time.Hour) // Set the cookie to expire in 24 hours
+	cookie.HTTPOnly = true                          // Make the cookie accessible only via HTTP
+	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
+	cookie.Path = "/"                               // Set the cookie path to the root of the domain
+
+	c.Cookie(cookie)
 }
 
 func (h *Handler) Create(c *fiber.Ctx) error {
@@ -226,7 +229,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 
 	returnedState := c.Query("state")
 
-	stateCookie := c.Cookies("oauth_state")
+	stateCookie := c.Cookies("oauthstate")
 	if returnedState == "" || stateCookie == "" || returnedState != stateCookie {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid OAuth state",
@@ -243,11 +246,19 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		return err
 	}
 
+	setCookie(c, token)
+
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
 			Message: "Login successful!",
-			Data:    authdto.GoogleCallbackResponse{Token: token},
+			Data: authdto.GoogleCallbackResponse{
+				Token: token,
+				ID:    userData.ID,
+				Name:  userData.Name,
+				Role:  userData.Role,
+				Photo: userData.Photo,
+			},
 		})
 }
 
