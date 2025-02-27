@@ -94,9 +94,9 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	})
 }
 
-func (h *Handler) Delete(c *fiber.Ctx) error {
+func (h *Handler) UpdateStatusCampaign(c *fiber.Ctx) error {
 	module := "Campaign Handler"
-	functionName := "CreateCampaign"
+	functionName := "UpdateStatusCampaign"
 
 	paramId := c.Params("id")
 
@@ -106,6 +106,7 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	logger.Print("info", requestId, module, functionName,
 		"", string(c.Body()))
 
+	// TODO: Update ke patch status
 	err = h.deleteCampaignUseCase.Execute(c.Context(), id)
 
 	if err != nil {
