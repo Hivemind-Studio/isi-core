@@ -132,6 +132,15 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 		baseQuery += " JOIN users_registration ur ON users.id = ur.user_id"
 		whereClause += " AND ur.campaign_id = ?"
 		args = append(args, *params.CampaignId)
+
+		if params.StartDate != nil {
+			whereClause += " AND ur.registration_date >= ?"
+			args = append(args, *params.StartDate)
+		}
+		if params.EndDate != nil {
+			whereClause += " AND ur.registration_date <= ?"
+			args = append(args, *params.EndDate)
+		}
 	}
 
 	if params.Role != nil {
@@ -164,15 +173,6 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	}
 	if params.EndDate != nil {
 		whereClause += " AND users.created_at <= ?"
-		args = append(args, *params.EndDate)
-	}
-
-	if params.StartDate != nil {
-		whereClause += " AND ur.registration_date >= ?"
-		args = append(args, *params.StartDate)
-	}
-	if params.EndDate != nil {
-		whereClause += " AND ur.registration_date <= ?"
 		args = append(args, *params.EndDate)
 	}
 
