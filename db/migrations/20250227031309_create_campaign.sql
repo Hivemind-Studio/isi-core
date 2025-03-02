@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE campaign (
+CREATE TABLE campaigns (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(200) NOT NULL,
   channel VARCHAR(50) NOT NULL,
