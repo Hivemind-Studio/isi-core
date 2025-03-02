@@ -37,7 +37,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 
 	v1.Get("/", h.Get)
 	v1.Post("/", h.Create)
-	v1.Get("/:id")
+	v1.Get("/:id", h.GetCampaignById)
 	v1.Put("/:id", h.Update)
 	v1.Patch("/status", h.UpdateStatusCampaign)
 
