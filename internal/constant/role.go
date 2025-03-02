@@ -5,7 +5,7 @@ const (
 	RoleIDStaff     int64 = 2
 	RoleIDCoach     int64 = 3
 	RoleIDCoachee   int64 = 4
-	RoleIDMarketing int64 = 4
+	RoleIDMarketing int64 = 5
 )
 
 var roleToID = map[string]int64{
