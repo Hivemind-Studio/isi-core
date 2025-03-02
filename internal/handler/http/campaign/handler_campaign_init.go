@@ -12,17 +12,20 @@ type Handler struct {
 	getCampaignUseCase    GetCampaignUseCaseInterface
 	updateStatusCampaign  UpdateStatusCampaignUseCaseInterface
 	updateCampaign        UpdateCampaignUseCaseInterface
+	getCampaignByID       GetCampaignByIDUseCaseInterface
 }
 
 func NewCampaignHandler(createCampaignUseCase CreateCampaignUseCaseInterface,
 	getCampaignUseCase GetCampaignUseCaseInterface,
 	updateStatusCampaign UpdateStatusCampaignUseCaseInterface,
-	updateCampaign UpdateCampaignUseCaseInterface) *Handler {
+	updateCampaign UpdateCampaignUseCaseInterface,
+	getCampaignByID GetCampaignByIDUseCaseInterface) *Handler {
 	return &Handler{
 		createCampaignUseCase,
 		getCampaignUseCase,
 		updateStatusCampaign,
 		updateCampaign,
+		getCampaignByID,
 	}
 }
 
@@ -33,6 +36,7 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 	v1.Use(middleware.SessionAuthMiddleware(sessionManager, accessControlRules))
 
 	v1.Get("/", h.Get)
+	v1.Get("/:d")
 	v1.Post("/", h.Create)
 	v1.Put("/:id", h.Update)
 	v1.Patch("/status", h.UpdateStatusCampaign)

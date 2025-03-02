@@ -20,6 +20,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletephoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaign"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaignbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachbyid"
 	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
@@ -120,6 +121,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	updateStatusCampaign := updatestatuscampaign.NewUpdateStatusCampaignUseCase(campaignRepo)
 	updateCampaign := updatecampaign.NewUpdateCampaignUseCase(campaignRepo)
 	createUserCampaign := createusercampaign.NewCreateUserCampaignUseCase(campaignRepo, userRepo)
+	getCampaignById := getcampaignbyid.NewGetCampaignByIdUseCase(campaignRepo)
 
 	authHandler := handleauth.NewAuthHandler(
 		sessionManager,
@@ -146,7 +148,8 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
 	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
 		uploadPhoto, deletePhoto)
-	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, updateStatusCampaign, updateCampaign)
+	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, updateStatusCampaign,
+		updateCampaign, getCampaignById)
 
 	return &AppApi{
 			authHandle:      authHandler,

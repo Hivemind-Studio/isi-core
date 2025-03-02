@@ -23,3 +23,7 @@ type UpdateStatusCampaignUseCaseInterface interface {
 type UpdateCampaignUseCaseInterface interface {
 	Execute(ctx context.Context, id int64, body dto.DTO) (respond dto.DTO, err error)
 }
+
+type GetCampaignByIDUseCaseInterface interface {
+	Execute(ctx context.Context, id int64) (respond dto.DTO, err error)
+}

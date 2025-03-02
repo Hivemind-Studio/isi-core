@@ -155,3 +155,24 @@ func (h *Handler) Update(c *fiber.Ctx) error {
 			Data:    res,
 		})
 }
+
+func (h *Handler) GetCampaignById(c *fiber.Ctx) error {
+	paramId := c.Params("id")
+
+	id, err := strconv.ParseInt(paramId, 10, 64)
+	if err != nil {
+		return httperror.New(fiber.StatusBadRequest, "Invalid campaign id")
+	}
+
+	res, err := h.getCampaignByID.Execute(c.Context(), id)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
+		Status:  fiber.StatusOK,
+		Message: "Campaign retrieved successfully",
+		Data:    res,
+	})
+}
