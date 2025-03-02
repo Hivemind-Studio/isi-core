@@ -33,7 +33,7 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
 	}
 
-	user, _ := userSession.(session.Session)
+	user, ok := userSession.(session.Session)
 	if !ok {
 		logger.Print("error", requestId, module, functionName, "Invalid session format", userSession)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
