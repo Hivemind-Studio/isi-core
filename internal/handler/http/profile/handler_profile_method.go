@@ -17,21 +17,41 @@ import (
 )
 
 func (h *Handler) GetProfile(c *fiber.Ctx) error {
+	module := "Profile Handler"
+	functionName := "GetProfile"
+	requestId, ok := c.Locals("request_id").(string)
+	if !ok {
+		requestId = "unknown"
+	}
+
+	logger.Print("info", requestId, module, functionName, "📌 [GetProfile] Request received", "")
+
 	userSession := c.Locals("user")
 	if userSession == nil {
+		logger.Print("error", requestId, module, functionName,
+			"user session is not found", userSession)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
 	}
 
 	user, ok := userSession.(session.Session) // Replace with your actual session struct type
 	if !ok {
+		logger.Print("error", requestId, module, functionName,
+			"invalid session data", userSession)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
 	}
 
-	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
+	logger.Print("info", requestId, module, functionName,
+		fmt.Sprintf("Fetching profile for user: ID=%s, Role=%s", user.ID, user.Role), "")
 
+	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
 	if err != nil {
+		logger.Print("error", requestId, module, functionName,
+			fmt.Sprintf("Failed to retrieve profile for user ID=%s", user.ID), err.Error())
 		return err
 	}
+
+	logger.Print("info", requestId, module, functionName,
+		fmt.Sprintf("Successfully retrieved profile for user ID=%s", user.ID), "")
 
 	return c.Status(fiber.StatusOK).JSON(response.WebResponse{
 		Status:  fiber.StatusOK,
