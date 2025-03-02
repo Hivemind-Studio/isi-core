@@ -47,6 +47,19 @@ func NewAuthHandler(
 func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
 	v1 := app.Group("/api/v1/auth")
 
+	v1.Use(func(c *fiber.Ctx) error {
+		c.Response().Header.Set("Access-Control-Allow-Origin", "http://localhost:3000") // Change to your frontend URL
+		c.Response().Header.Set("Access-Control-Allow-Credentials", "true")             // ✅ Allow cookies
+		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
+		c.Response().Header.Set("Access-Control-Allow-Headers", "*")
+
+		if c.Method() == "OPTIONS" {
+			return c.SendStatus(fiber.StatusOK)
+		}
+
+		return c.Next()
+	})
+
 	v1.Post("/login", h.Login)
 	v1.Post("/register", h.Create)
 	v1.Post("/email/verify", h.EmailVerification)

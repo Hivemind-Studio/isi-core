@@ -90,14 +90,7 @@ func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error
 
 	query := `
 		SELECT 
-			users.id, 
-			users.name, 
-			users.email, 
-			users.password, 
-			users.role_id, 
-			users.photo, 
-			roles.name AS role_name,
-			users.version
+			*
 		FROM 
 			users 
 		LEFT JOIN 
