@@ -40,7 +40,7 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 	}
 
 	logger.Print("info", requestId, module, functionName,
-		fmt.Sprintf("Fetching profile for user: ID=%s, Role=%s", user.ID, user.Role), "")
+		fmt.Sprintf("Fetching profile for user: %+v", user), "")
 
 	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
 	if err != nil {
