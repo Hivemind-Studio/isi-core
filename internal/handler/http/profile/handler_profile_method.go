@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"encoding/json"
 	"fmt"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
@@ -33,11 +34,20 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
 	}
 
-	user, ok := userSession.(session.Session) // Replace with your actual session struct type
+	userStr, ok := userSession.(string)
 	if !ok {
 		logger.Print("error", requestId, module, functionName,
-			"invalid session data", userSession)
+			"Invalid session format", userSession)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
+	}
+
+	// Convert JSON string to struct
+	var user session.Session
+	err := json.Unmarshal([]byte(userStr), &user)
+	if err != nil {
+		logger.Print("error", requestId, module, functionName,
+			"Failed to parse user session", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse session"})
 	}
 
 	logger.Print("info", requestId, module, functionName,
