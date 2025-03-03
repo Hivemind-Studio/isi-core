@@ -2,6 +2,7 @@ package userlogin
 
 import (
 	"context"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/hash"
@@ -34,10 +35,11 @@ func (uc *UseCase) Execute(ctx context.Context, body *auth.LoginDTO) (user dto.U
 
 	logger.Print("info", requestID, "user_login", "execute", "login successful", savedUser)
 
+	roleName := constant.GetRoleName(savedUser.RoleId)
 	return dto.UserDTO{
 		ID:    savedUser.ID,
 		Name:  savedUser.Name,
-		Role:  savedUser.RoleName,
+		Role:  &roleName,
 		Email: savedUser.Email,
 		Photo: savedUser.Photo,
 	}, nil

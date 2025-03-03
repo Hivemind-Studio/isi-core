@@ -16,9 +16,27 @@ var roleToID = map[string]int64{
 	"Marketing": RoleIDMarketing,
 }
 
+var roleIdToName = map[int64]string{
+	RoleIDAdmin:     "Admin",
+	RoleIDStaff:     "Staff",
+	RoleIDCoach:     "Coach",
+	RoleIDCoachee:   "Coachee",
+	RoleIDMarketing: "Marketing",
+}
+
 func GetRoleID(role string) int64 {
 	if id, exists := roleToID[role]; exists {
 		return id
 	}
 	return 0
+}
+
+func GetRoleName(roleId *int64) string {
+	if roleId == nil {
+		return ""
+	}
+	if name, exists := roleIdToName[*roleId]; exists {
+		return name
+	}
+	return ""
 }

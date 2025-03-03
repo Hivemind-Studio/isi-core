@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	userdto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
 	"time"
 )
@@ -8,7 +9,6 @@ import (
 type User struct {
 	ID             int64      `db:"id"`
 	RoleId         *int64     `db:"role_id"`
-	RoleName       *string    `db:"role_name"`
 	Password       *string    `db:"password"`
 	Name           string     `db:"name"`
 	Email          string     `db:"email"`
@@ -45,6 +45,7 @@ type EmailVerification struct {
 }
 
 func ConvertUserToDTO(user User) userdto.UserDTO {
+	roleName := constant.GetRoleName(user.RoleId)
 	return userdto.UserDTO{
 		ID:          user.ID,
 		Name:        user.Name,
@@ -56,7 +57,7 @@ func ConvertUserToDTO(user User) userdto.UserDTO {
 		Occupation:  user.Occupation,
 		Status:      user.Status,
 		Photo:       user.Photo,
-		Role:        user.RoleName,
+		Role:        &roleName,
 		Title:       user.Title,
 		Bio:         user.Bio,
 		Expertise:   user.Expertise,
