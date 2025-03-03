@@ -32,7 +32,7 @@ func (uc *UseCase) Execute(ctx context.Context, body *auth.LoginDTO) (user dto.U
 		return dto.UserDTO{}, httperror.New(fiber.StatusBadRequest, "invalid password")
 	}
 
-	logger.Print("info", requestID, "user_login", "execute", "login successful", body.Email)
+	logger.Print("info", requestID, "user_login", "execute", "login successful", savedUser)
 
 	return dto.UserDTO{
 		ID:    savedUser.ID,

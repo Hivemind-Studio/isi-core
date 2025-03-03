@@ -23,6 +23,7 @@ type UserDTO struct {
 	Certifications *string    `json:"certifications,omitempty"`
 	Experiences    *string    `json:"experiences,omitempty"`
 	Educations     *string    `json:"educations,omitempty"`
+	GoogleId       *string    `json:"google_id,omitempty"`
 }
 
 type GetUsersDTO struct {
