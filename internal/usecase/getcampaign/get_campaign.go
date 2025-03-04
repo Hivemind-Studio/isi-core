@@ -10,11 +10,12 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, name, status string, startDate,
+func (uc *UseCase) Execute(ctx context.Context, name, status, channel string, startDate,
 	endDate *time.Time, page int64, perPage int64,
 ) ([]dto.DTO, pagination.Pagination, error) {
 	params := dto.Params{
 		Name:      name,
+		Channel:   channel,
 		StartDate: startDate,
 		Status:    status,
 		EndDate:   endDate,

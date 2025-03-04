@@ -47,45 +47,50 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 	var totalRecords int64
 	var args []interface{}
 
+	// Start with base query
 	baseQuery := "SELECT * FROM campaign"
+	whereConditions := []string{}
 
-	if params.Name != "" || params.Status != "" || params.StartDate != nil || params.EndDate != nil {
-		baseQuery += " WHERE"
-	}
-
+	// Build where conditions based on params
 	if params.Name != "" {
-		baseQuery += " name LIKE ?"
+		whereConditions = append(whereConditions, "name LIKE ?")
 		args = append(args, "%"+params.Name+"%")
-		if params.Status != "" || params.StartDate != nil || params.EndDate != nil {
-			baseQuery += " AND"
-		}
 	}
+
 	if params.Status != "" {
-		baseQuery += " status = ?"
+		whereConditions = append(whereConditions, "status = ?")
 		args = append(args, params.Status)
-		if params.StartDate != nil || params.EndDate != nil {
-			baseQuery += " AND"
-		}
 	}
+
+	if params.Channel != "" {
+		whereConditions = append(whereConditions, "channel = ?")
+		args = append(args, params.Channel)
+	}
+
 	if params.StartDate != nil {
-		baseQuery += " created_at >= ?"
+		whereConditions = append(whereConditions, "created_at >= ?")
 		args = append(args, *params.StartDate)
-		if params.EndDate != nil {
-			baseQuery += " AND"
-		}
 	}
+
 	if params.EndDate != nil {
-		baseQuery += " created_at <= ?"
+		whereConditions = append(whereConditions, "created_at <= ?")
 		args = append(args, *params.EndDate)
 	}
 
-	countQuery := "SELECT COUNT(*) " + strings.Replace(baseQuery, "SELECT * FROM campaign", "FROM campaign", 1)
+	// Add WHERE clause if we have conditions
+	if len(whereConditions) > 0 {
+		baseQuery += " WHERE " + strings.Join(whereConditions, " AND ")
+	}
+
+	// Count query for pagination
+	countQuery := strings.Replace(baseQuery, "SELECT * FROM campaign", "SELECT COUNT(*) FROM campaign", 1)
 	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError,
 			err, "failed to count campaigns")
 	}
 
+	// Data query with sorting and pagination
 	dataQuery := baseQuery + " ORDER BY name ASC LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 	err = r.GetConnDb().SelectContext(ctx, &campaigns, dataQuery, queryArgs...)
@@ -94,6 +99,7 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 			err, "failed to retrieve campaigns")
 	}
 
+	// Calculate pagination info
 	totalPages := (totalRecords + perPage - 1) / perPage
 	paginate := pagination.Pagination{
 		CurrentPage:  page,

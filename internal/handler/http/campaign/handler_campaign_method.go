@@ -48,6 +48,7 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	endDate := c.Query("end_date")
 	pageParam := c.Query("page")
 	perPageParam := c.Query("per_page")
+	channel := c.Query("channel")
 
 	var start, end *time.Time
 	if startDate != "" {
@@ -81,7 +82,8 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 		}
 	}
 
-	campaigns, paginate, err := h.getCampaignUseCase.Execute(c.Context(), name, status, start, end, page, perPage)
+	campaigns, paginate, err := h.getCampaignUseCase.Execute(c.Context(), name, status, channel, start,
+		end, page, perPage)
 	if err != nil {
 		return err
 	}

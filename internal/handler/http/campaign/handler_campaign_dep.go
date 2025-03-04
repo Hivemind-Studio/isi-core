@@ -12,7 +12,7 @@ type CreateCampaignUseCaseInterface interface {
 }
 
 type GetCampaignUseCaseInterface interface {
-	Execute(ctx context.Context, name, status string, startDate, endDate *time.Time, page int64, perPage int64,
+	Execute(ctx context.Context, name, status, channel string, startDate, endDate *time.Time, page int64, perPage int64,
 	) ([]dto.DTO, pagination.Pagination, error)
 }
 
