@@ -14,7 +14,14 @@ func (s *UseCase) Execute(ctx context.Context, id int64) (dto.DTO, error) {
 		return dto.DTO{}, httperror.New(fiber.StatusNotFound, "campaign not found")
 	}
 
+	totalRegistrants, err := s.repoCampaign.GetTotalRegistrants(ctx, id)
+
+	if err != nil {
+		return dto.DTO{}, httperror.New(fiber.StatusNotFound, "campaign not found")
+	}
+
 	response := campaign.ConvertCampaignToDTO(res)
+	response.TotalRegistrants = &totalRegistrants
 
 	return response, nil
 }

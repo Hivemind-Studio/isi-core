@@ -7,17 +7,18 @@ import (
 )
 
 type Campaign struct {
-	ID         int64      `db:"id"`
-	Name       string     `db:"name"`
-	Channel    string     `db:"channel"`
-	StartDate  *time.Time `db:"start_date"`
-	EndDate    *time.Time `db:"end_date"`
-	Link       string     `db:"link"`
-	CampaignID string     `db:"campaign_id"`
-	Status     int8       `db:"status"`
-	Version    int64      `db:"version"`
-	CreatedAt  *time.Time `db:"created_at"`
-	UpdatedAt  *time.Time `db:"updated_at"`
+	ID               int64      `db:"id"`
+	Name             string     `db:"name"`
+	Channel          string     `db:"channel"`
+	StartDate        *time.Time `db:"start_date"`
+	EndDate          *time.Time `db:"end_date"`
+	Link             string     `db:"link"`
+	CampaignID       string     `db:"campaign_id"`
+	Status           int8       `db:"status"`
+	Version          int64      `db:"version"`
+	CreatedAt        *time.Time `db:"created_at"`
+	UpdatedAt        *time.Time `db:"updated_at"`
+	TotalRegistrants *int64     `db:"total_registrants"`
 }
 
 type UserRegistration struct {
@@ -33,16 +34,17 @@ type UserRegistration struct {
 
 func ConvertCampaignToDTO(c Campaign) campaign.DTO {
 	return campaign.DTO{
-		ID:            c.ID,
-		Name:          c.Name,
-		Channel:       c.Channel,
-		Status:        c.Status,
-		Link:          c.Link,
-		GeneratedLink: fmt.Sprintf("%s?%s=%s", c.Link, "campaign_id", c.CampaignID),
-		StartDate:     c.StartDate,
-		EndDate:       c.EndDate,
-		CreatedAt:     c.CreatedAt,
-		UpdatedAt:     c.UpdatedAt,
+		ID:               c.ID,
+		Name:             c.Name,
+		Channel:          c.Channel,
+		Status:           c.Status,
+		Link:             c.Link,
+		GeneratedLink:    fmt.Sprintf("%s?%s=%s", c.Link, "campaign_id", c.CampaignID),
+		StartDate:        c.StartDate,
+		EndDate:          c.EndDate,
+		TotalRegistrants: c.TotalRegistrants,
+		CreatedAt:        c.CreatedAt,
+		UpdatedAt:        c.UpdatedAt,
 	}
 }
 
