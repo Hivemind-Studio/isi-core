@@ -9,7 +9,7 @@ CREATE TABLE campaign_registrations (
    user_agent VARCHAR(255),
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-   FOREIGN KEY (campaign_id) REFERENCES campaign(campaign_id),
+   FOREIGN KEY (campaign_id) REFERENCES campaigns(campaign_id),
    INDEX idx_campaign_id (campaign_id)
 );
 -- +goose StatementEnd

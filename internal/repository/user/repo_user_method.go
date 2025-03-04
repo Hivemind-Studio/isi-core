@@ -122,7 +122,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	whereClause := " WHERE 1=1"
 
 	if params.CampaignId != nil && *params.CampaignId != "" {
-		baseQuery += " JOIN users_registration ur ON users.id = ur.user_id"
+		baseQuery += " JOIN campaign_registrations ur ON users.id = ur.user_id"
 		whereClause += " AND ur.campaign_id = ?"
 		args = append(args, *params.CampaignId)
 
