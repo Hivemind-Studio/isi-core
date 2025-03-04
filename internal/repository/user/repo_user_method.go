@@ -88,18 +88,7 @@ func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error) {
 	var result User
 
-	query := `
-		SELECT 
-			*
-		FROM 
-			users 
-		LEFT JOIN 
-			roles 
-		ON 
-			users.role_id = roles.id 
-		WHERE 
-			users.email = ?
-	`
+	query := ` SELECT * FROM users WHERE email = ?`
 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, &email).StructScan(&result)
 
