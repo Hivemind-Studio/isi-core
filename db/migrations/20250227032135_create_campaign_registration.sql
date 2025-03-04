@@ -16,5 +16,5 @@ CREATE TABLE campaign_registrations (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE users_registration;
+DROP TABLE campaign_registrations;
 -- +goose StatementEnd

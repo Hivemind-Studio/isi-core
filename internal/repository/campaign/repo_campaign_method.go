@@ -217,14 +217,14 @@ func (r *Repository) CreateUserCampaign(ctx context.Context, tx *sqlx.Tx, userId
 	return nil
 }
 
-func (r *Repository) GetTotalRegistrants(ctx context.Context, id int64) (int64, error) {
+func (r *Repository) GetTotalRegistrants(ctx context.Context, campaignId string) (int64, error) {
 	query := `
         SELECT COUNT(*) 
         FROM campaign_registrations 
-        WHERE id = ?
+        WHERE campaign_id = ?
     `
 	var count int64
-	err := r.GetConnDb().GetContext(ctx, &count, query, id)
+	err := r.GetConnDb().GetContext(ctx, &count, query, campaignId)
 	if err != nil {
 		return 0, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count registrations")
 	}

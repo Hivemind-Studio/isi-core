@@ -40,6 +40,7 @@ func ConvertCampaignToDTO(c Campaign) campaign.DTO {
 		Status:           c.Status,
 		Link:             c.Link,
 		GeneratedLink:    fmt.Sprintf("%s?%s=%s", c.Link, "campaign_id", c.CampaignID),
+		CampaignId:       c.CampaignID,
 		StartDate:        c.StartDate,
 		EndDate:          c.EndDate,
 		TotalRegistrants: c.TotalRegistrants,
