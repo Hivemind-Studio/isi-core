@@ -31,6 +31,7 @@ type User struct {
 	Bio            *string    `db:"bio"`
 	Expertise      *string    `db:"expertise"`
 	Level          *int64     `db:"level"`
+	RoleName       *string    `db:"role_name"`
 }
 
 type EmailVerification struct {
