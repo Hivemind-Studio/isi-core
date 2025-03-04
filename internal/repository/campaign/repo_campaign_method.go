@@ -15,7 +15,7 @@ import (
 
 func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name, channel, link, campaignId string, status int8,
 	startDate, endDate *time.Time) (c Campaign, err error) {
-	insertUserQuery := `INSERT INTO campaign (name, channel, start_date, end_date, link, campaign_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	insertUserQuery := `INSERT INTO campaigns (name, channel, start_date, end_date, link, campaign_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, name, channel, &startDate, &endDate, link, campaignId, status)
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 	var totalRecords int64
 	var args []interface{}
 
-	baseQuery := "SELECT * FROM campaign"
+	baseQuery := "SELECT * FROM campaigns"
 	whereConditions := []string{}
 
 	if params.Name != "" {
@@ -79,7 +79,7 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 		baseQuery += " WHERE " + strings.Join(whereConditions, " AND ")
 	}
 
-	countQuery := strings.Replace(baseQuery, "SELECT * FROM campaign", "SELECT COUNT(*) FROM campaign", 1)
+	countQuery := strings.Replace(baseQuery, "SELECT * FROM campaigns", "SELECT COUNT(*) FROM campaigns", 1)
 	err := r.GetConnDb().GetContext(ctx, &totalRecords, countQuery, args...)
 	if err != nil {
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError,
@@ -107,7 +107,7 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 }
 
 func (r *Repository) GetById(ctx context.Context, id int64) (Campaign, error) {
-	query := "SELECT * FROM campaign WHERE id = ?"
+	query := "SELECT * FROM campaigns WHERE id = ?"
 	var c Campaign
 
 	err := r.GetConnDb().GetContext(ctx, &c, query, id)
@@ -128,7 +128,7 @@ func (r *Repository) UpdateStatus(ctx context.Context, ids []int64, status int8)
 
 	idsStr := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(ids)), ","), "[]")
 
-	query := fmt.Sprintf("SELECT id FROM campaign WHERE id IN (%s)", idsStr)
+	query := fmt.Sprintf("SELECT id FROM campaigns WHERE id IN (%s)", idsStr)
 	var campaigns []Campaign
 
 	err := r.GetConnDb().SelectContext(ctx, &campaigns, query)
@@ -139,7 +139,7 @@ func (r *Repository) UpdateStatus(ctx context.Context, ids []int64, status int8)
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve campaigns")
 	}
 
-	updateQuery := fmt.Sprintf("UPDATE campaign SET status = ? WHERE id IN (%s)", idsStr)
+	updateQuery := fmt.Sprintf("UPDATE campaigns SET status = ? WHERE id IN (%s)", idsStr)
 
 	_, err = r.GetConnDb().ExecContext(ctx, updateQuery, status)
 	if err != nil {
@@ -184,7 +184,7 @@ func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, ch
 	}
 
 	query := fmt.Sprintf(
-		`UPDATE campaign SET %s, version = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+		`UPDATE campaigns SET %s, version = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
 		strings.Join(setClauses, ", "),
 	)
 	args = append(args, version, id)
@@ -195,7 +195,7 @@ func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, ch
 	}
 
 	var updatedCampaign Campaign
-	err = tx.GetContext(ctx, &updatedCampaign, `SELECT * FROM campaign WHERE id = ?`, id)
+	err = tx.GetContext(ctx, &updatedCampaign, `SELECT * FROM campaigns WHERE id = ?`, id)
 	if err != nil {
 		return Campaign{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to fetch updated campaign")
 	}
@@ -205,7 +205,7 @@ func (r *Repository) Update(ctx context.Context, tx *sqlx.Tx, id int64, name, ch
 
 func (r *Repository) CreateUserCampaign(ctx context.Context, tx *sqlx.Tx, userId int64, campaignId, ipAddress, userAgent string,
 	registrationDate string) error {
-	insertUserQuery := `INSERT INTO users_registration (user_id, campaign_id, registration_date, ip_address, 
+	insertUserQuery := `INSERT INTO campaign_registrations (user_id, campaign_id, registration_date, ip_address, 
                                 user_agent) VALUES (?, ?, ?, ?, ?)`
 
 	_, err := tx.ExecContext(ctx, insertUserQuery, userId, campaignId, registrationDate, ipAddress, userAgent)
