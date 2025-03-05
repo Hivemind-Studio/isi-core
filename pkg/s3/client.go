@@ -14,9 +14,10 @@ import (
 
 func s3Client() (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(os.Getenv("DO_SPACE_REGION")),
-		Credentials: credentials.NewStaticCredentials(os.Getenv("DO_SPACE_ACCESS_KEY"), os.Getenv("DO_SPACE_SECRET_KEY"), ""),
-		Endpoint:    aws.String(os.Getenv("DO_SPACE_ENDPOINT")),
+		Region:           aws.String(os.Getenv("CDN_REGION")),
+		Credentials:      credentials.NewStaticCredentials(os.Getenv("CDN_ACCESS_KEY"), os.Getenv("CDN_SECRET_KEY"), ""),
+		Endpoint:         aws.String(os.Getenv("CDN_ENDPOINT")),
+		S3ForcePathStyle: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func UploadFile(filePath string, fileName string, username string) (string, erro
 	fileName = strings.ToLower(username) + "/" + fileName
 
 	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(os.Getenv("DO_SPACE_BUCKET")),
+		Bucket: aws.String(os.Getenv("CDN_BUCKET")),
 		Key:    aws.String(fileName),
 		Body:   file,
 		ACL:    aws.String("public-read"),
@@ -51,9 +52,9 @@ func UploadFile(filePath string, fileName string, username string) (string, erro
 		return "", fmt.Errorf("failed to upload file: %v", err)
 	}
 
-	cdnURL := fmt.Sprintf("https://%s.%s/%s", os.Getenv("DO_SPACE_BUCKET"), os.Getenv("DO_SPACE_ENDPOINT"), fileName)
+	cdnUrl := fmt.Sprintf("%s/%s", os.Getenv("CDN_URL"), fileName)
 
-	return cdnURL, nil
+	return cdnUrl, nil
 }
 
 func DeleteFile(fileURL string) error {
@@ -62,18 +63,25 @@ func DeleteFile(fileURL string) error {
 		return fmt.Errorf("failed to create S3 client: %v", err)
 	}
 
-	parsedURL, err := url.Parse(fileURL)
+	_, err = url.Parse(fileURL)
 	if err != nil {
 		return fmt.Errorf("failed to parse file URL: %v", err)
 	}
 
-	hostParts := strings.Split(parsedURL.Host, ".")
-	if len(hostParts) < 2 {
+	cdnEndpoint := os.Getenv("CDN_ENDPOINT")
+	if cdnEndpoint == "" {
+		return fmt.Errorf("CDN_ENDPOINT environment variable is not set")
+	}
+
+	path := strings.TrimPrefix(fileURL, cdnEndpoint)
+
+	parts := strings.Split(strings.TrimPrefix(path, "/"), "/")
+	if len(parts) < 2 {
 		return fmt.Errorf("invalid file URL format")
 	}
 
-	bucket := hostParts[0]
-	key := strings.TrimPrefix(parsedURL.Path, "/")
+	bucket := os.Getenv("CDN_BUCKET")
+	key := strings.Join(parts, "/")
 
 	svc := s3.New(s)
 
