@@ -98,11 +98,11 @@ func (h *Handler) getUserSession(c *fiber.Ctx) (*session.Session, error) {
 	if userSession == nil {
 		return nil, c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User not found"})
 	}
-	user, ok := userSession.(session.Session) // Replace with your actual session struct type
+	user, ok := userSession.(*session.Session)
 	if !ok {
 		return nil, c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid session data"})
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
