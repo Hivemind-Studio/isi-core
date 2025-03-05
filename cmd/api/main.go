@@ -3,9 +3,15 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
+	"github.com/Hivemind-Studio/isi-core/pkg/googleoauth2"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	redisutils "github.com/Hivemind-Studio/isi-core/pkg/redis"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
+	"golang.org/x/oauth2"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,16 +36,18 @@ func main() {
 	app.Use(recover.New())
 	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	app.Use(middleware.RequestIdMiddleware)
+	app.Use(middleware.BodyLimit("3MB"))
 
 	config := configs.Init()
 
-	api, _ := initApp(config)
+	sessionManager := initSessionManager(config)
+	api, _ := initApp(config, sessionManager)
 
 	for _, r := range routerList(api) {
-		r.RegisterRoutes(app)
+		r.RegisterRoutes(app, sessionManager)
 	}
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 }
 
 func dbInitConnection(cfg *configs.Config) *sqlx.DB {
@@ -71,6 +79,21 @@ func initEmailClient(cfg *configs.Config) *mail.EmailClient {
 	})
 
 	return emailClient
+}
+
+func initGoogleOauthClient(cfg *configs.Config) *oauth2.Config {
+	googleOauthConfig := cfg.GoogleConfig
+	return googleoauth2.NewGoogleOauth(&googleoauth2.OauthConfig{
+		ClientID:     googleOauthConfig.ClientID,
+		ClientSecret: googleOauthConfig.ClientSecret,
+		RedirectURL:  googleOauthConfig.RedirectURI,
+	})
+}
+
+func initSessionManager(cfg *configs.Config) *session.SessionManager {
+	num, _ := strconv.ParseInt(cfg.RedisConfig.DefaultDB, 10, 32)
+	redisClient := redisutils.InitRedis(cfg.RedisConfig.Address, cfg.RedisConfig.Password, int(num))
+	return session.NewSessionManager(redisClient)
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {

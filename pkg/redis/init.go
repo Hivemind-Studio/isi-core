@@ -7,14 +7,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Global variables to hold the Redis client and options
 var (
 	redisClient  *redis.Client
 	redisOptions *redis.Options
 )
 
-// InitRedis initializes the Redis client with the provided configuration.
-func InitRedis(addr string, password string, db int) error {
+func InitRedis(addr string, password string, db int) *redis.Client {
 	logger := utils.NewLogger()
 
 	// Set up Redis options
@@ -33,14 +31,13 @@ func InitRedis(addr string, password string, db int) error {
 	_, err := redisClient.Ping(ctx).Result()
 	if err != nil {
 		logger.Error("Failed Connect Redis %v", err)
-		return err
+		return nil
 	}
 
 	logger.Success("Connected to Redis %s", addr)
-	return nil
+	return redisClient
 }
 
-// GetRedisClient returns the initialized Redis client.
 func GetRedisClient() *redis.Client {
 	if redisClient == nil {
 		log.Fatal("Redis client is not initialized")

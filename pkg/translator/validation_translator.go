@@ -2,8 +2,9 @@ package validatorhelper
 
 import (
 	"fmt"
-	"github.com/go-playground/validator"
 	"strings"
+
+	"github.com/go-playground/validator"
 )
 
 // ErrorMessages is a map that holds the user-friendly messages for validation errors

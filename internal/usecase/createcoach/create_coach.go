@@ -26,8 +26,9 @@ func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (e
 	defer dbtx.HandleRollback(tx)
 
 	generatePassword := time.Now().String()
-	userId, err := uc.repoUser.Create(ctx, tx, payload.Name, payload.Email, generatePassword, constant.RoleIDCoach,
-		payload.PhoneNumber, int(constant.PENDING))
+
+	userId, err := uc.repoUser.Create(ctx, tx, payload.Name, payload.Email, &generatePassword, constant.RoleIDCoach,
+		payload.PhoneNumber, payload.Gender, payload.Address, int(constant.PENDING), nil)
 
 	if err != nil {
 		logger.Print("error", requestId, "Coach service", "CreateCoach", err.Error(), payload)
@@ -120,7 +121,7 @@ func (uc *UseCase) emailVerification(name string, token string, email string) er
 		Year            int
 	}{
 		Name:            name,
-		VerificationURL: fmt.Sprintf("%scoach/token=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
+		VerificationURL: fmt.Sprintf("%sjoin?token=%s", os.Getenv("CALLBACK_VERIFICATION_URL"), token),
 		Year:            time.Now().Year(),
 	}
 

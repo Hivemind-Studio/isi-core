@@ -23,6 +23,17 @@ type Config struct {
 		NameFrom  string `envconfig:"MAIL_SENDER_NAME"`
 		EmailFrom string `envconfig:"MAIL_AUTH_EMAIL"`
 	}
+	GoogleConfig struct {
+		ClientID       string `envconfig:"GOOGLE_CLIENT_ID"`
+		ClientSecret   string `envconfig:"GOOGLE_CLIENT_SECRET"`
+		RedirectURI    string `envconfig:"GOOGLE_REDIRECT_URI"`
+		GoogleTokenUrl string `envconfig:"GOOGLE_TOKEN_URL"`
+	}
+	RedisConfig struct {
+		Address   string `envconfig:"REDIS_ADDRESS"`
+		Password  string `envconfig:"REDIS_PASSWORD"`
+		DefaultDB string `envconfig:"REDIS_DEFAULT_DB"`
+	}
 }
 
 func Init() *Config {

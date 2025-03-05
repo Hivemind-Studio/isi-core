@@ -3,39 +3,64 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
+	handlecampaign "github.com/Hivemind-Studio/isi-core/internal/handler/http/campaign"
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
 	handlecoachee "github.com/Hivemind-Studio/isi-core/internal/handler/http/coachee"
-	handlerole "github.com/Hivemind-Studio/isi-core/internal/handler/http/role"
+	handleprofile "github.com/Hivemind-Studio/isi-core/internal/handler/http/profile"
 	handleuser "github.com/Hivemind-Studio/isi-core/internal/handler/http/user"
+	repocampaign "github.com/Hivemind-Studio/isi-core/internal/repository/campaign"
 	repoCoach "github.com/Hivemind-Studio/isi-core/internal/repository/coach"
-	reporole "github.com/Hivemind-Studio/isi-core/internal/repository/role"
 	repouser "github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	"github.com/Hivemind-Studio/isi-core/internal/service/useremail"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcampaign"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createcoach"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/createrole"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createstaff"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/createuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/createusercampaign"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/deletephoto"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/forgotpassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaign"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcampaignbyid"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachbyid"
+	getcoaceehbyid "github.com/Hivemind-Studio/isi-core/internal/usecase/getcoacheebyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendverification"
-	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachpassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/googlelogin"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/googleoauthcallback"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendchangeemailverification"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendconfirmationchangenewemail"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/sendregistrationverification"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecampaign"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatecoachlevel"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatepassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofile"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateprofilepassword"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updatestatuscampaign"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuseremail"
+	updateuserole "github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserrole"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/updateuserstatus"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/uploadphoto"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/userlogin"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/verifyregistrationtoken"
+	"github.com/Hivemind-Studio/isi-core/pkg/session"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type AppApi struct {
-	authHandle    *handleauth.Handler
-	userHandle    *handleuser.Handler
-	roleHandle    *handlerole.Handler
-	coachHandle   *handlecoach.Handler
-	coacheeHandle *handlecoachee.Handler
+	authHandle      *handleauth.Handler
+	userHandle      *handleuser.Handler
+	coachHandle     *handlecoach.Handler
+	coacheeHandle   *handlecoachee.Handler
+	profileHandle   *handleprofile.Handler
+	campaignHandler *handlecampaign.Handler
 }
 
 type Router interface {
-	RegisterRoutes(app *fiber.App)
+	RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager)
 }
 
 func routerList(app *AppApi) []Router {
@@ -43,52 +68,96 @@ func routerList(app *AppApi) []Router {
 		app.authHandle,
 		app.coachHandle,
 		app.userHandle,
-		app.roleHandle,
 		app.coacheeHandle,
+		app.profileHandle,
+		app.campaignHandler,
 	}
 }
 
-func initApp(cfg *configs.Config) (*AppApi, error) {
+func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppApi, error) {
 	dbConn := dbInitConnection(cfg)
 	emailClient := initEmailClient(cfg)
+	googleOauthClient := initGoogleOauthClient(cfg)
 
 	userRepo := repouser.NewUserRepo(dbConn)
-	roleRepo := reporole.NewRoleRepo(dbConn)
 	coachRepo := repoCoach.NewCoachRepo(dbConn)
+	campaignRepo := repocampaign.NewCampaignRepo(dbConn)
 
-	createRoleUseCase := createrole.NewCreateRoleUseCase(roleRepo)
+	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
+	getCoachByIdUseCase := getcoachbyid.NewGetCoachByIdUseCase(coachRepo)
+
+	userEmailService := useremail.NewUserEmailService(userRepo, emailClient)
+
 	userLoginUseCase := userlogin.NewLoginUseCase(userRepo)
-	sendVerificationUseCase := sendverification.NewSendVerificationUseCase(userRepo, emailClient)
+	sendVerificationUseCase := sendregistrationverification.NewSendVerificationUseCase(userRepo, userEmailService)
 	verificationRegistrationTokenUseCase := verifyregistrationtoken.NewVerifyRegistrationTokenUsecase(userRepo)
 	createUserUseCase := createuser.NewCreateUserUseCase(userRepo)
 	updateUserStatusUseCase := updateuserstatus.NewUpdateUserStatusUseCase(userRepo)
-	updateCoachPasswordUseCase := updatecoachpassword.NewUpdateCoachPasswordUseCase(coachRepo, userRepo)
+	updateCoachPasswordUseCase := updatepassword.NewUpdatePasswordUseCase(userRepo)
 	getUsersUseCase := getusers.NewGetUsersUseCase(userRepo)
 	getUserByIdUseCase := getuserbyid.NewGetUserByIdUseCase(userRepo)
 	getCoachesUseCase := getcoaches.NewGetCoachesUseCase(coachRepo)
-	createCoachUseCase := createcoach.NewCreateCoachUseCase(coachRepo, userRepo, emailClient)
-	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
+	getCoacheeByIdUseCase := getcoaceehbyid.NewGetCoacheeInterface(userRepo)
 
-	roleHandler := handlerole.NewRoleHandler(createRoleUseCase)
-	authHandler := handleauth.NewAuthHandler(userLoginUseCase,
+	getCoacheesUseCase := getcoachees.NewGetCoacheesUseCase(userRepo)
+	createUserStaffUseCase := createstaff.NewCreateUserStaffUseCase(userRepo, userEmailService)
+
+	forgotPasswordUseCase := forgotpassword.NewForgotPasswordUseCase(userRepo, userEmailService)
+	updateUserRoleUseCase := updateuserole.NewUpdateUserRoleUseCase(userRepo)
+	googleLoginUseCase := googlelogin.NewGoogleLoginUseCase(googleOauthClient)
+	googleOAuthCallbackUseCase := googleoauthcallback.NewGoogleOAuthCallbackUseCase(googleOauthClient, userRepo)
+	getProfileUser := getprofileuser.NewGetProfileUserByLogin(userRepo, coachRepo)
+	updateProfilePassword := updateprofilepassword.NewUpdateProfilePasswordUseCase(userRepo)
+	updateProfile := updateprofile.NewUpdateProfileUseCase(userRepo, coachRepo)
+	updateUserEmail := updateuseremail.NewUpdateUserEmailUseCase(userRepo)
+	sendChangeEmailVerification := sendchangeemailverification.NewSendChangeEmailVerificationUseCase(userRepo, userEmailService)
+	sendConfirmationChangeNewEmail := sendconfirmationchangenewemail.NewSendConfirmationChangeNewEmail(userRepo, userEmailService)
+	uploadPhoto := uploadphoto.NewUpdatePhotoStatusUseCase(userRepo)
+	deletePhoto := deletephoto.NewDeletePhotoStatusUseCase(userRepo)
+	updateCoachLevel := updatecoachlevel.NewUpdateCoachLevelUseCase(coachRepo)
+
+	createCampaign := createcampaign.NewCreateCampaignUseCase(campaignRepo, userRepo)
+	getCampaign := getcampaign.NewGetCampaignUseCase(campaignRepo)
+	updateStatusCampaign := updatestatuscampaign.NewUpdateStatusCampaignUseCase(campaignRepo)
+	updateCampaign := updatecampaign.NewUpdateCampaignUseCase(campaignRepo)
+	createUserCampaign := createusercampaign.NewCreateUserCampaignUseCase(campaignRepo, userRepo)
+	getCampaignById := getcampaignbyid.NewGetCampaignByIdUseCase(campaignRepo)
+
+	authHandler := handleauth.NewAuthHandler(
+		sessionManager,
+		userLoginUseCase,
 		sendVerificationUseCase,
 		verificationRegistrationTokenUseCase,
 		createUserUseCase,
-		updateCoachPasswordUseCase)
+		updateCoachPasswordUseCase,
+		forgotPasswordUseCase,
+		googleLoginUseCase,
+		googleOAuthCallbackUseCase,
+		createUserCampaign,
+	)
 	userHandler := handleuser.NewUserHandler(
-		createUserUseCase,
+		createUserStaffUseCase,
 		getUsersUseCase,
 		getUserByIdUseCase,
-		updateUserStatusUseCase)
-	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase)
-	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase)
+		updateUserStatusUseCase,
+		updateUserRoleUseCase,
+		updateUserEmail,
+		sendChangeEmailVerification,
+		sendConfirmationChangeNewEmail)
+	coachHandler := handlecoach.NewCoachHandler(getCoachesUseCase, createCoachUseCase, getCoachByIdUseCase, updateCoachLevel)
+	coacheeHandler := handlecoachee.NewCoacheeHandler(getCoacheesUseCase, getCoacheeByIdUseCase)
+	profileHandler := handleprofile.NewProfileHandler(getProfileUser, updateProfilePassword, updateProfile,
+		uploadPhoto, deletePhoto)
+	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, updateStatusCampaign,
+		updateCampaign, getCampaignById)
 
 	return &AppApi{
-			userHandle:    userHandler,
-			roleHandle:    roleHandler,
-			authHandle:    authHandler,
-			coacheeHandle: coacheeHandler,
-			coachHandle:   coachHandler,
+			authHandle:      authHandler,
+			userHandle:      userHandler,
+			coacheeHandle:   coacheeHandler,
+			coachHandle:     coachHandler,
+			profileHandle:   profileHandler,
+			campaignHandler: campaignHandler,
 		},
 		nil
 }

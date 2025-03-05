@@ -4,6 +4,7 @@ CREATE TABLE email_verifications (
     email VARCHAR(255) NOT NULL,
     verification_token VARCHAR(255) UNIQUE,
     trial TINYINT,
+    version INT DEFAULT 0 NOT NULL,
     expired_at DATETIME NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

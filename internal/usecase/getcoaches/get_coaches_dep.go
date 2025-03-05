@@ -2,13 +2,14 @@ package getcoaches
 
 import (
 	"context"
-	dto "github.com/Hivemind-Studio/isi-core/internal/dto/user"
-	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
+	coachDTO "github.com/Hivemind-Studio/isi-core/internal/dto/coach"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/pagination"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/coach"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 )
 
 type repoCoachInterface interface {
 	dbtx.DBTXInterface
 
-	GetUsers(ctx context.Context, params dto.GetUsersDTO, page int64, perPage int64) ([]user.User, error)
+	GetCoaches(ctx context.Context, params coachDTO.QueryCoachDTO, page int64, perPage int64) ([]coach.Coach, pagination.Pagination, error)
 }
