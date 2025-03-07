@@ -149,7 +149,8 @@ func (h *Handler) EmailVerification(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.sendRegistrationEmailVerificationUseCase.Execute(c.Context(), requestBody.Email); err != nil {
+	ctx := context.WithValue(c.Context(), "request_id", requestId)
+	if err := h.sendRegistrationEmailVerificationUseCase.Execute(ctx, requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
