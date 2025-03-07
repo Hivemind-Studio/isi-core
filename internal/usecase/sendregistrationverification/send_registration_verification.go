@@ -16,6 +16,7 @@ import (
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	log.Info("Executing email verification")
+
 	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
 		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	}
@@ -31,26 +32,19 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	}
 
 	requestId, ok := ctx.Value("request_id").(string)
-	if ok != true {
-		logger.Print(loglevel.INFO, requestId, "emailVerification", "emailVerification goroutine",
-			fmt.Sprintf("requestId: %v", requestId), nil)
+	if !ok || requestId == "" {
+		log.Warn("request_id is missing or invalid in context")
+		requestId = "unknown"
 	}
-	logger.Print(loglevel.INFO, requestId, "emailVerification", "emailVerification goroutine",
+
+	logger.Print(loglevel.INFO, requestId, "emailVerification", "Execute",
 		fmt.Sprintf("requestId: %v", requestId), nil)
 
-	go func(email, token, requestId string) {
-		defer func() {
-			if r := recover(); r != nil {
-				logger.Print(loglevel.ERROR, requestId, "emailVerification", "goroutine",
-					fmt.Sprintf("panic recovered: %v", r), email)
-			}
-		}()
-
-		if err := uc.emailVerification(email, token, email, requestId); err != nil {
-			logger.Print(loglevel.ERROR, requestId, "emailVerification", "goroutine",
-				"sending registration verification email failed because: "+err.Error(), email)
-		}
-	}(email, token, requestId)
+	if err := uc.emailVerification(email, token, email, requestId); err != nil {
+		logger.Print(loglevel.ERROR, requestId, "emailVerification", "Execute",
+			"sending registration verification email failed: "+err.Error(), email)
+		return err
+	}
 
 	return nil
 }
