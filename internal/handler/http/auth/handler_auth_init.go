@@ -48,8 +48,8 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 	v1 := app.Group("/api/v1/auth")
 
 	v1.Use(func(c *fiber.Ctx) error {
-		c.Response().Header.Set("Access-Control-Allow-Origin", "http://localhost:3000") // Change to your frontend URL
-		c.Response().Header.Set("Access-Control-Allow-Credentials", "true")             // ✅ Allow cookies
+		c.Response().Header.Set("Access-Control-Allow-Origin", "https://dashboard.inspirasisatu.com") // Change to your frontend URL
+		c.Response().Header.Set("Access-Control-Allow-Credentials", "true")                           // ✅ Allow cookies
 		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
 		c.Response().Header.Set("Access-Control-Allow-Headers", "*")
 
