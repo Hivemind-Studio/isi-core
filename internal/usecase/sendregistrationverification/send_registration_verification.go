@@ -31,16 +31,16 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	requestId, _ := ctx.Value("request_id").(string)
 
 	go func(email, token, requestId string) {
-		select {
-		case <-ctx.Done():
-			logger.Print(loglevel.ERROR, requestId, "emailVerification", "send_email_verification",
-				"email verification canceled due to context timeout", email)
-			return
-		default:
-			if err := uc.emailVerification(email, token, email, requestId); err != nil {
+		defer func() {
+			if r := recover(); r != nil {
 				logger.Print(loglevel.ERROR, requestId, "emailVerification", "goroutine",
-					"sending registration verification email failed because: "+err.Error(), email)
+					fmt.Sprintf("panic recovered: %v", r), email)
 			}
+		}()
+
+		if err := uc.emailVerification(email, token, email, requestId); err != nil {
+			logger.Print(loglevel.ERROR, requestId, "emailVerification", "goroutine",
+				"sending registration verification email failed because: "+err.Error(), email)
 		}
 	}(email, token, requestId)
 
@@ -48,6 +48,8 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 }
 
 func (uc *UseCase) emailVerification(name string, token string, email string, requestId string) error {
+	logger.Print(loglevel.INFO, requestId, "send_registration_verification", "emailVerification", "Email verification sent with request id:", requestId)
+
 	emailData := struct {
 		Name            string
 		VerificationURL string
@@ -67,8 +69,6 @@ func (uc *UseCase) emailVerification(name string, token string, email string, re
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification user email")
 	}
-
-	logger.Print(loglevel.INFO, requestId, "send_registration_verification", "emailVerification", "Email verification sent with request id:", requestId)
 
 	return nil
 }
