@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type Handler struct {
@@ -45,20 +46,14 @@ func NewAuthHandler(
 }
 
 func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.SessionManager) {
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "https://dashboard.inspirasisatu.com", // ✅ Explicit frontend URL
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,OPTIONS",
+		AllowHeaders:     "Content-Type, Authorization",
+	}))
+
 	v1 := app.Group("/api/v1/auth")
-
-	v1.Use(func(c *fiber.Ctx) error {
-		c.Response().Header.Set("Access-Control-Allow-Origin", "https://dashboard.inspirasisatu.com") // Change to your frontend URL
-		c.Response().Header.Set("Access-Control-Allow-Credentials", "true")                           // ✅ Allow cookies
-		c.Response().Header.Set("Access-Control-Allow-Methods", "*")
-		c.Response().Header.Set("Access-Control-Allow-Headers", "*")
-
-		if c.Method() == "OPTIONS" {
-			return c.SendStatus(fiber.StatusOK)
-		}
-
-		return c.Next()
-	})
 
 	v1.Post("/login", h.Login)
 	v1.Post("/register", h.Create)

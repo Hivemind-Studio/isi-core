@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/campaign"
@@ -18,6 +19,10 @@ import (
 )
 
 func (h *Handler) Login(c *fiber.Ctx) error {
+	module := "Auth Handler"
+	functionName := "Login"
+	requestId := c.Locals("request_id").(string)
+
 	var loginDTO authdto.LoginDTO
 	if err := c.BodyParser(&loginDTO); err != nil {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
@@ -33,7 +38,13 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
+	logger.Print("info", requestId, module, functionName,
+		fmt.Sprintf("token created: %s", token), string(c.Body()))
+
 	setCookie(c, token)
+
+	logger.Print("info", requestId, module, functionName,
+		fmt.Sprintf("cookie set created: %s", token), string(c.Body()))
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
@@ -57,7 +68,8 @@ func setCookie(c *fiber.Ctx, token string) {
 	cookie.Expires = time.Now().Add(24 * time.Hour) // Set the cookie to expire in 24 hours
 	cookie.HTTPOnly = true                          // Make the cookie accessible only via HTTP
 	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
-	cookie.Path = "/"                               // Set the cookie path to the root of the domain
+	cookie.Path = "/"
+	cookie.SameSite = "None"
 
 	c.Cookie(cookie)
 }
