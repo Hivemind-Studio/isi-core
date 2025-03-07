@@ -88,18 +88,7 @@ func (r *Repository) CreateStaff(ctx context.Context, tx *sqlx.Tx, name string, 
 func (r *Repository) FindByEmail(ctx context.Context, email string) (User, error) {
 	var result User
 
-	query := `
-		SELECT 
-			*
-		FROM 
-			users 
-		LEFT JOIN 
-			roles 
-		ON 
-			users.role_id = roles.id 
-		WHERE 
-			users.email = ?
-	`
+	query := ` SELECT * FROM users WHERE email = ?`
 
 	err := r.GetConnDb().QueryRowxContext(ctx, query, &email).StructScan(&result)
 
@@ -122,7 +111,7 @@ func (r *Repository) GetUsers(ctx context.Context, params dto.GetUsersDTO, page 
 	whereClause := " WHERE 1=1"
 
 	if params.CampaignId != nil && *params.CampaignId != "" {
-		baseQuery += " JOIN users_registration ur ON users.id = ur.user_id"
+		baseQuery += " JOIN campaign_registrations ur ON users.id = ur.user_id"
 		whereClause += " AND ur.campaign_id = ?"
 		args = append(args, *params.CampaignId)
 

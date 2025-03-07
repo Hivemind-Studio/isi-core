@@ -18,5 +18,5 @@ CREATE TABLE campaigns (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE campaign;
+DROP TABLE campaigns;
 -- +goose StatementEnd

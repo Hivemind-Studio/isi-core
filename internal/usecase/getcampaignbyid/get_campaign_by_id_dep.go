@@ -10,4 +10,5 @@ type repoCampaignInterface interface {
 	dbtx.DBTXInterface
 
 	GetById(ctx context.Context, id int64) (campaign.Campaign, error)
+	GetTotalRegistrants(ctx context.Context, campaignId string) (int64, error)
 }
