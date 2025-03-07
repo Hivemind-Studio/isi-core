@@ -28,7 +28,13 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		return err
 	}
 
-	requestId, _ := ctx.Value("request_id").(string)
+	requestId, ok := ctx.Value("request_id").(string)
+	if ok != true {
+		logger.Print(loglevel.INFO, requestId, "emailVerification", "emailVerification goroutine",
+			fmt.Sprintf("requestId: %v", requestId), nil)
+	}
+	logger.Print(loglevel.INFO, requestId, "emailVerification", "emailVerification goroutine",
+		fmt.Sprintf("requestId: %v", requestId), nil)
 
 	go func(email, token, requestId string) {
 		defer func() {
