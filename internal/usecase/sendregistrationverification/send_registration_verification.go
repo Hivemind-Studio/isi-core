@@ -8,6 +8,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"github.com/gofiber/fiber/v2/log"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
@@ -40,15 +41,23 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 	logger.Print(loglevel.INFO, requestId, "emailVerification", "Execute",
 		fmt.Sprintf("requestId: %v", requestId), nil)
 
-	if err := uc.emailVerification(email, token, email, requestId); err != nil {
-		logger.Print(loglevel.ERROR, requestId, "emailVerification", "Execute",
-			"sending registration verification email failed: "+err.Error(), email)
-		return err
-	}
+	go func(emailAddr, tokenStr, recipient, reqId string) {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Print(loglevel.ERROR, reqId, "emailVerification", "Execute",
+					fmt.Sprintf("panic recovered in email verification: %v", r), emailAddr)
+				debug.PrintStack()
+			}
+		}()
+
+		if err := uc.emailVerification(emailAddr, tokenStr, recipient, reqId); err != nil {
+			logger.Print(loglevel.ERROR, reqId, "emailVerification", "Execute",
+				"sending registration verification email failed: "+err.Error(), emailAddr)
+		}
+	}(email, token, email, requestId)
 
 	return nil
 }
-
 func (uc *UseCase) emailVerification(name string, token string, email string, requestId string) error {
 	logger.Print(loglevel.INFO, requestId, "send_registration_verification", "emailVerification", "Email verification sent with request id:", requestId)
 
