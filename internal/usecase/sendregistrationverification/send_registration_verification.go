@@ -28,22 +28,21 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		return err
 	}
 
-	go func(ctx context.Context) {
+	requestId, _ := ctx.Value("request_id").(string)
+
+	go func(email, token, requestId string) {
 		select {
 		case <-ctx.Done():
-			requestId := ctx.Value("request_id").(string)
 			logger.Print(loglevel.ERROR, requestId, "emailVerification", "send_email_verification",
 				"email verification canceled due to context timeout", email)
 			return
 		default:
-			requestId := ctx.Value("request_id").(string)
 			if err := uc.emailVerification(email, token, email, requestId); err != nil {
-				requestId := ctx.Value("request_id").(string)
 				logger.Print(loglevel.ERROR, requestId, "emailVerification", "goroutine",
 					"sending registration verification email failed because: "+err.Error(), email)
 			}
 		}
-	}(ctx)
+	}(email, token, requestId)
 
 	return nil
 }
