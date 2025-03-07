@@ -6,6 +6,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
+	"github.com/gofiber/fiber/v2/log"
 	"os"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 )
 
 func (uc *UseCase) Execute(ctx context.Context, email string) error {
+	log.Info("Executing email verification")
 	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
 		return httperror.New(fiber.StatusBadRequest, "email already exists")
 	}
