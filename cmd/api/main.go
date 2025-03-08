@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/googleoauth2"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
@@ -41,15 +42,15 @@ func main() {
 		AllowOrigins:     "https://dashboard.inspirasisatu.com, https://backoffice.inspirasisatu.com",
 		AllowCredentials: true,
 		AllowMethods:     "GET,POST,OPTIONS,PUT,PATCH",
-		AllowHeaders:     "Content-Type, Authorization",
+		AllowHeaders:     "Content-Type, Authorization," + constant.APP_ORIGIN_HEADER,
 	}))
 
 	app.Use(func(c *fiber.Ctx) error {
-		origin := string(c.Request().Header.Peek("Origin"))
+		origin := c.Get("Origin")
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
-		log.Printf("Incoming Request: method=%s path=%s origin=%s cookie=%s userAgent=%s ip=%s",
+		log.Printf("Incoming Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
 			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
 		)
 
