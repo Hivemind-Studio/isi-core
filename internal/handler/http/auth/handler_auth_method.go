@@ -87,13 +87,16 @@ func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) err
 	origin := c.Get("Origin")
 	logger.Print("info", requestId, module, functionName, fmt.Sprintf("Request Origin: %s", origin), nil)
 
-	if h.env == "production" {
+	if constant.PRODUCTION == h.env {
 		logger.Print("info", requestId, module, functionName, "Production environment detected", nil)
 		return h.setProductionCookie(c, *roleId, token, origin, requestId)
 	}
 
-	// In non-production, allow all domains
-	setCookie(c, token, "")
+	if constant.IsDashboardUser(*roleId) {
+		setCookie(c, token, "", constant.TOKEN_ACCESS_DASHBOARD)
+	} else if constant.IsBackofficeUser(*roleId) {
+		setCookie(c, token, "", constant.TOKEN_ACCESS_BACKOFFICE)
+	}
 	logger.Print("info", requestId, module, functionName, "Cookie set for non-production environment", nil)
 	return nil
 }
@@ -101,8 +104,7 @@ func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) err
 func (h *Handler) setProductionCookie(c *fiber.Ctx, roleId int64, token, origin string, requestId string) error {
 	module := "Auth Handler"
 	functionName := "setProductionCookie"
-	const dashboardDomain = "dashboard.inspirasisatu.com"
-	const backofficeDomain = "backoffice.inspirasisatu.com"
+	const domain = ".inspirasisatu.com"
 
 	logger.Print("info", requestId, module, functionName, fmt.Sprintf("Processing role: %d, Origin: %s", roleId, origin), nil)
 
@@ -111,15 +113,15 @@ func (h *Handler) setProductionCookie(c *fiber.Ctx, roleId int64, token, origin 
 			logger.Print("error", requestId, module, functionName, "Dashboard user detected but request came from backoffice", nil)
 			return httperror.New(fiber.StatusForbidden, "Invalid user role for dashboard application")
 		}
-		setCookie(c, token, dashboardDomain)
-		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Dashboard at %s", dashboardDomain), nil)
+		setCookie(c, token, domain, constant.TOKEN_ACCESS_DASHBOARD)
+		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Dashboard "), nil)
 	} else {
 		if isOriginDashboard(origin) {
 			logger.Print("error", requestId, module, functionName, "Backoffice user detected but request came from dashboard", nil)
 			return httperror.New(fiber.StatusForbidden, "Invalid user role for backoffice application")
 		}
-		setCookie(c, token, backofficeDomain)
-		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Backoffice at %s", backofficeDomain), nil)
+		setCookie(c, token, domain, constant.TOKEN_ACCESS_BACKOFFICE)
+		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Backoffice "), nil)
 	}
 	return nil
 }
@@ -132,9 +134,9 @@ func isOriginBackoffice(origin string) bool {
 	return strings.Contains(origin, "backoffice")
 }
 
-func setCookie(c *fiber.Ctx, token string, domain string) {
+func setCookie(c *fiber.Ctx, token string, domain string, sessionCookieName string) {
 	cookie := new(fiber.Cookie)
-	cookie.Name = "session_id"
+	cookie.Name = sessionCookieName
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(24 * time.Hour) // Set the cookie to expire in 24 hours
 	cookie.HTTPOnly = true                          // Make the cookie accessible only via HTTP

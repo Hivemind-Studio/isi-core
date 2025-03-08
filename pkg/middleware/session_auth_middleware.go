@@ -3,18 +3,41 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/rediskey"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
+	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
+	"os"
 	"strings"
 )
 
 func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControlRules map[string]AccessControlRule) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		if c.Cookies("session_id") == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "No session"})
+		environment := os.Getenv("ENVIRONMENT")
+		origin := c.Get("Origin")
+		var cookieName string
+
+		if environment == constant.PRODUCTION {
+			if utils.IsOriginDashboard(origin) {
+				cookieName = constant.TOKEN_ACCESS_DASHBOARD
+			} else if utils.IsOriginBackoffice(origin) {
+				cookieName = constant.TOKEN_ACCESS_BACKOFFICE
+			} else {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token origin"})
+			}
+		} else {
+			appOrigin := c.Get(constant.APP_ORIGIN_HEADER)
+			if appOrigin == constant.DASHBOARD {
+				cookieName = constant.TOKEN_ACCESS_DASHBOARD
+			} else if appOrigin == constant.BACKOFFICE {
+				cookieName = constant.TOKEN_ACCESS_BACKOFFICE
+			} else {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token origin"})
+			}
 		}
-		sessionID := rediskey.SESSION_PREFIX_KEY + c.Cookies("session_id")
+
+		sessionID := rediskey.SESSION_PREFIX_KEY + c.Cookies(cookieName)
 		if sessionID == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "No session"})
 		}
@@ -27,10 +50,7 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 
 		validRole, err := validateUserRoles(accessControlRules, c.Path(), c.Method(), userSession)
 		if err != nil || !validRole {
-			if err != nil {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
-			}
-			//return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid path for role"})
 		}
 
 		c.Locals("user", userSession)

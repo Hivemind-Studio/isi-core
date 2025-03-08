@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 )
 
 func ParseBody(c *fiber.Ctx, dto interface{}) error {
@@ -35,4 +36,12 @@ func GenerateVerificationToken() string {
 		panic(err)
 	}
 	return hex.EncodeToString(bytes)
+}
+
+func IsOriginDashboard(origin string) bool {
+	return strings.Contains(origin, "dashboard")
+}
+
+func IsOriginBackoffice(origin string) bool {
+	return strings.Contains(origin, "backoffice")
 }
