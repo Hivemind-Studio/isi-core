@@ -40,7 +40,7 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "https://dashboard.inspirasisatu.com, https://backoffice.inspirasisatu.com",
 		AllowCredentials: true,
-		AllowMethods:     "GET,POST,OPTIONS",
+		AllowMethods:     "GET,POST,OPTIONS,PUT,PATCH",
 		AllowHeaders:     "Content-Type, Authorization",
 	}))
 
