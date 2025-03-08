@@ -38,14 +38,7 @@ func main() {
 	app.Use(middleware.BodyLimit("3MB"))
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://dashboard.inspirasisatu.com", // ✅ Explicit frontend URL
-		AllowCredentials: true,
-		AllowMethods:     "GET,POST,OPTIONS",
-		AllowHeaders:     "Content-Type, Authorization",
-	}))
-
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "https://backoffice.inspirasisatu.com", // ✅ Explicit frontend URL
+		AllowOrigins:     "https://dashboard.inspirasisatu.com, https://backoffice.inspirasisatu.com", // ✅ Explicit frontend URL
 		AllowCredentials: true,
 		AllowMethods:     "GET,POST,OPTIONS",
 		AllowHeaders:     "Content-Type, Authorization",
