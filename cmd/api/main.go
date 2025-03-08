@@ -9,6 +9,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	redisutils "github.com/Hivemind-Studio/isi-core/pkg/redis"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"golang.org/x/oauth2"
 	"os"
 	"strconv"
@@ -35,6 +36,20 @@ func main() {
 	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	app.Use(middleware.RequestIdMiddleware)
 	app.Use(middleware.BodyLimit("3MB"))
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "https://dashboard.inspirasisatu.com", // ✅ Explicit frontend URL
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,OPTIONS",
+		AllowHeaders:     "Content-Type, Authorization",
+	}))
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "https://backoffice.inspirasisatu.com", // ✅ Explicit frontend URL
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,OPTIONS",
+		AllowHeaders:     "Content-Type, Authorization",
+	}))
 
 	app.Use(func(c *fiber.Ctx) error {
 		origin := string(c.Request().Header.Peek("Origin"))

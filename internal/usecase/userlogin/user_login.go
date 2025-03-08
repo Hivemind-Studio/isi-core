@@ -37,10 +37,11 @@ func (uc *UseCase) Execute(ctx context.Context, body *auth.LoginDTO) (user dto.U
 
 	roleName := constant.GetRoleName(savedUser.RoleId)
 	return dto.UserDTO{
-		ID:    savedUser.ID,
-		Name:  savedUser.Name,
-		Role:  &roleName,
-		Email: savedUser.Email,
-		Photo: savedUser.Photo,
+		ID:     savedUser.ID,
+		Name:   savedUser.Name,
+		Role:   &roleName,
+		RoleID: savedUser.RoleId,
+		Email:  savedUser.Email,
+		Photo:  savedUser.Photo,
 	}, nil
 }

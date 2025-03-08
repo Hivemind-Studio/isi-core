@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
 	authdto "github.com/Hivemind-Studio/isi-core/internal/dto/auth"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/campaign"
@@ -33,7 +34,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.setSession(c.Context(), user.ID, user.Email, user.Name, user.Role, user.Photo)
+	token, err := h.generateAndSaveSessionToken(c.Context(), user.ID, user.Email, user.Name, user.Role, user.Photo)
 	if err != nil {
 		return err
 	}
@@ -41,7 +42,14 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	logger.Print("info", requestId, module, functionName,
 		fmt.Sprintf("token created: %s", token), string(c.Body()))
 
-	setCookie(c, token)
+	if user.RoleID == nil {
+		logger.Print("error", requestId, module, functionName,
+			fmt.Sprintf("user does not have role", user), string(c.Body()))
+		return httperror.New(fiber.StatusUnauthorized, "User has no role")
+
+	}
+
+	h.setCookieByRole(c, user.RoleID, token)
 
 	logger.Print("info", requestId, module, functionName,
 		fmt.Sprintf("cookie set created: %s", token), string(c.Body()))
@@ -61,7 +69,15 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		})
 }
 
-func setCookie(c *fiber.Ctx, token string) {
+func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) {
+	if constant.IsDashboardUser(*roleId) {
+		setCookie(c, token, "dashboard")
+	} else if constant.IsDashboardUser(*roleId) {
+		setCookie(c, token, "backoffice")
+	}
+}
+
+func setCookie(c *fiber.Ctx, token string, domain string) {
 	cookie := new(fiber.Cookie)
 	cookie.Name = "session_id"
 	cookie.Value = token
@@ -70,6 +86,7 @@ func setCookie(c *fiber.Ctx, token string) {
 	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
 	cookie.Path = "/"
 	cookie.SameSite = "None"
+	cookie.Domain = fmt.Sprintf("%s+.inspirasisatu.com", domain)
 
 	c.Cookie(cookie)
 }
@@ -253,13 +270,13 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	token, err := h.setSession(c.Context(), userData.ID, userData.Email,
+	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email,
 		userData.Name, userData.Role, userData.Photo)
 	if err != nil {
 		return err
 	}
 
-	setCookie(c, token)
+	h.setCookieByRole(c, userData.RoleID, token)
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
@@ -275,7 +292,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) setSession(c context.Context, id int64, email string, name string,
+func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email string, name string,
 	role *string, photo *string) (token string, err error) {
 	newUUID, err := uuid.NewUUID()
 	if err != nil {

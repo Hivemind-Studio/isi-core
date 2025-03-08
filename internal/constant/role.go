@@ -24,6 +24,28 @@ var roleIdToName = map[int64]string{
 	RoleIDMarketing: "Marketing",
 }
 
+var backofficeRoles = map[int64]struct{}{
+	RoleIDAdmin:     {},
+	RoleIDStaff:     {},
+	RoleIDMarketing: {},
+}
+
+var dashboardRoles = map[int64]struct{}{
+	RoleIDCoach:   {},
+	RoleIDCoachee: {},
+}
+
+func IsBackofficeUser(roleID int64) bool {
+	_, exists := backofficeRoles[roleID]
+	return exists
+}
+
+// IsDashboardUser checks if a role belongs to the dashboard category.
+func IsDashboardUser(roleID int64) bool {
+	_, exists := dashboardRoles[roleID]
+	return exists
+}
+
 func GetRoleID(role string) int64 {
 	if id, exists := roleToID[role]; exists {
 		return id

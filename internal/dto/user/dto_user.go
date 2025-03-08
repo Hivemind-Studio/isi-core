@@ -15,6 +15,7 @@ type UserDTO struct {
 	Occupation     *string    `json:"occupation"`
 	Status         int64      `json:"status"`
 	Role           *string    `json:"role,omitempty"`
+	RoleID         *int64     `json:"role_id,omitempty"`
 	Photo          *string    `json:"photo"`
 	CreatedAt      *time.Time `json:"created_at"`
 	Title          *string    `json:"title,omitempty"`
