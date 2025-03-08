@@ -101,8 +101,8 @@ func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) err
 func (h *Handler) setProductionCookie(c *fiber.Ctx, roleId int64, token, origin string, requestId string) error {
 	module := "Auth Handler"
 	functionName := "setProductionCookie"
-	const dashboardDomain = ".inspirasisatu.com"
-	const backofficeDomain = ".inspirasisatu.com"
+	const dashboardDomain = "dashboard.inspirasisatu.com"
+	const backofficeDomain = "backoffice.inspirasisatu.com"
 
 	logger.Print("info", requestId, module, functionName, fmt.Sprintf("Processing role: %d, Origin: %s", roleId, origin), nil)
 
