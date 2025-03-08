@@ -387,3 +387,21 @@ func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email
 	}
 	return token, nil
 }
+
+func (h *Handler) DeleteSession(c *fiber.Ctx) (err error) {
+	module := "Auth Handler"
+	functionName := "DeleteSession"
+	requestId := c.Locals("request_id").(string)
+	token := c.Locals("token").(string)
+
+	logger.Print("info", requestId, module, functionName,
+		"deleting session:", token,
+	)
+
+	err = h.sessionManager.DeleteSession(c.Context(), "SESSION::"+token)
+	if err != nil {
+		return httperror.New(http.StatusInternalServerError,
+			fmt.Sprintf("Failed to delete token, %v", err))
+	}
+	return nil
+}

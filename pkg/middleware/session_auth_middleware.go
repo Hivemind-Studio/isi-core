@@ -73,6 +73,7 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 		log.Printf("SessionAuthMiddleware: User authorized, sessionID=%s, Path=%s, Method=%s", sessionID, c.Path(), c.Method())
 
 		c.Locals("user", userSession)
+		c.Locals("token", token)
 		return c.Next()
 	}
 }

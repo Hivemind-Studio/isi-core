@@ -46,4 +46,5 @@ func (h *Handler) RegisterRoutes(app *fiber.App, sessionManager *session.Session
 	v1.Post("/password/recover", h.ForgotPassword)
 	v1.Get("/google", h.GoogleLogin)
 	v1.Get("/google/callback", h.GoogleCallback)
+	v1.Delete("/logout", h.DeleteSession)
 }
