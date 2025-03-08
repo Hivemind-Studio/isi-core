@@ -19,9 +19,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string,
-	roleId int64, phoneNumber *string, gender string, address string, status int, googleId *string,
-) (id int64, err error) {
+func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string, roleId int64,
+	phoneNumber *string, gender string, address string,
+	status int, googleId *string, photo *string) (id int64, err error) {
 	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
 		return 0, err
 	}
@@ -41,9 +41,9 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, gender,
-                   address, verification, version, google_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                   address, verification, version, google_id, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneValue, status,
-		gender, address, 0, 0, googleId)
+		gender, address, 0, 0, googleId, photo)
 
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")
