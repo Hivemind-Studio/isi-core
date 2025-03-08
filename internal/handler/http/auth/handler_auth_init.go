@@ -6,6 +6,7 @@ import (
 )
 
 type Handler struct {
+	env                                      string
 	sessionManager                           *session.SessionManager
 	loginUseCase                             LoginUseCaseInterface
 	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface
@@ -18,19 +19,9 @@ type Handler struct {
 	createUserCampaign                       CreateUserCampaign
 }
 
-func NewAuthHandler(
-	sessionManager *session.SessionManager,
-	loginUseCase LoginUseCaseInterface,
-	sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface,
-	verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface,
-	createUserUseCase CreateUserUseCaseInterface,
-	updateCoachPasswordUseCase UpdateCoachPasswordInterface,
-	forgotPasswordUseCase ForgotPasswordUseCaseInterface,
-	googleLoginUseCase GoogleLoginUseCaseInterface,
-	googleCallbackUseCase GoogleCallbackUseCaseInterface,
-	createUserCampaign CreateUserCampaign,
-) *Handler {
+func NewAuthHandler(sessionManager *session.SessionManager, loginUseCase LoginUseCaseInterface, sendRegistrationEmailVerificationUseCase SendVerificationUseCaseInterface, verifyRegistrationTokenUseCase VerifyRegistrationTokenUseCaseInterface, createUserUseCase CreateUserUseCaseInterface, updateCoachPasswordUseCase UpdateCoachPasswordInterface, forgotPasswordUseCase ForgotPasswordUseCaseInterface, googleLoginUseCase GoogleLoginUseCaseInterface, googleCallbackUseCase GoogleCallbackUseCaseInterface, createUserCampaign CreateUserCampaign, environtment string) *Handler {
 	return &Handler{
+		env:                                      environtment,
 		sessionManager:                           sessionManager,
 		loginUseCase:                             loginUseCase,
 		sendRegistrationEmailVerificationUseCase: sendRegistrationEmailVerificationUseCase,

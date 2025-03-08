@@ -34,6 +34,9 @@ type Config struct {
 		Password  string `envconfig:"REDIS_PASSWORD"`
 		DefaultDB string `envconfig:"REDIS_DEFAULT_DB"`
 	}
+	EnvConfig struct {
+		Environment string `envconfig:"ENVIRONMENT"`
+	}
 }
 
 func Init() *Config {

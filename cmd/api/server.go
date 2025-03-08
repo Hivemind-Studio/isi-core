@@ -123,18 +123,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	createUserCampaign := createusercampaign.NewCreateUserCampaignUseCase(campaignRepo, userRepo)
 	getCampaignById := getcampaignbyid.NewGetCampaignByIdUseCase(campaignRepo)
 
-	authHandler := handleauth.NewAuthHandler(
-		sessionManager,
-		userLoginUseCase,
-		sendVerificationUseCase,
-		verificationRegistrationTokenUseCase,
-		createUserUseCase,
-		updateCoachPasswordUseCase,
-		forgotPasswordUseCase,
-		googleLoginUseCase,
-		googleOAuthCallbackUseCase,
-		createUserCampaign,
-	)
+	authHandler := handleauth.NewAuthHandler(sessionManager, userLoginUseCase, sendVerificationUseCase, verificationRegistrationTokenUseCase, createUserUseCase, updateCoachPasswordUseCase, forgotPasswordUseCase, googleLoginUseCase, googleOAuthCallbackUseCase, createUserCampaign, cfg.EnvConfig.Environment)
 	userHandler := handleuser.NewUserHandler(
 		createUserStaffUseCase,
 		getUsersUseCase,

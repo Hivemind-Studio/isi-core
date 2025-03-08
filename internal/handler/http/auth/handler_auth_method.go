@@ -16,6 +16,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -35,7 +36,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return err
 	}
 
-	token, err := h.generateAndSaveSessionToken(c.Context(), user.ID, user.Email, user.Name, user.Role, user.Photo)
+	token, err := h.generateAndSaveSessionToken(c.Context(), user.ID, user.Email, user.Name, user.Role, user.Photo, requestId)
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 				ID:    user.ID,
 				Name:  user.Name,
 				Email: user.Email,
-				Role:  *user.Role,
+				Role:  utils.SafeDereferenceString(user.Role),
 				Photo: utils.SafeDereferenceString(user.Photo),
 				Token: token,
 			},
@@ -74,22 +75,61 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 }
 
 func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) error {
-	origin := c.Get("Origin")
+	module := "Auth Handler"
+	functionName := "setCookieByRole"
+	requestId := c.Locals("request_id").(string)
 
-	if constant.IsDashboardUser(*roleId) {
-		backoffice := "backoffice"
-		if strings.Contains(origin, backoffice) {
+	if roleId == nil {
+		logger.Print("error", requestId, module, functionName, "Role ID is missing", nil)
+		return httperror.New(fiber.StatusBadRequest, "Role ID is required")
+	}
+
+	origin := c.Get("Origin")
+	logger.Print("info", requestId, module, functionName, fmt.Sprintf("Request Origin: %s", origin), nil)
+
+	if h.env == "production" {
+		logger.Print("info", requestId, module, functionName, "Production environment detected", nil)
+		return h.setProductionCookie(c, *roleId, token, origin, requestId)
+	}
+
+	// In non-production, allow all domains
+	setCookie(c, token, "")
+	logger.Print("info", requestId, module, functionName, "Cookie set for non-production environment", nil)
+	return nil
+}
+
+func (h *Handler) setProductionCookie(c *fiber.Ctx, roleId int64, token, origin string, requestId string) error {
+	module := "Auth Handler"
+	functionName := "setProductionCookie"
+	const dashboardDomain = "dashboard.inspirasisatu.com"
+	const backofficeDomain = "backoffice.inspirasisatu.com"
+
+	logger.Print("info", requestId, module, functionName, fmt.Sprintf("Processing role: %d, Origin: %s", roleId, origin), nil)
+
+	if constant.IsDashboardUser(roleId) {
+		if isOriginBackoffice(origin) {
+			logger.Print("error", requestId, module, functionName, "Dashboard user detected but request came from backoffice", nil)
 			return httperror.New(fiber.StatusForbidden, "Invalid user role for dashboard application")
 		}
-		setCookie(c, token, backoffice)
-	} else if constant.IsDashboardUser(*roleId) {
-		dashboard := "dashboard"
-		if strings.Contains(origin, dashboard) {
+		setCookie(c, token, dashboardDomain)
+		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Dashboard at %s", dashboardDomain), nil)
+	} else {
+		if isOriginDashboard(origin) {
+			logger.Print("error", requestId, module, functionName, "Backoffice user detected but request came from dashboard", nil)
 			return httperror.New(fiber.StatusForbidden, "Invalid user role for backoffice application")
 		}
-		setCookie(c, token, "backoffice")
+		setCookie(c, token, backofficeDomain)
+		logger.Print("info", requestId, module, functionName, fmt.Sprintf("Cookie set for Backoffice at %s", backofficeDomain), nil)
 	}
 	return nil
+}
+
+func isOriginDashboard(origin string) bool {
+	return strings.Contains(origin, "dashboard")
+}
+
+func isOriginBackoffice(origin string) bool {
+	return strings.Contains(origin, "backoffice")
 }
 
 func setCookie(c *fiber.Ctx, token string, domain string) {
@@ -101,7 +141,9 @@ func setCookie(c *fiber.Ctx, token string, domain string) {
 	cookie.Secure = true                            // Set the cookie to be sent only over HTTPS
 	cookie.Path = "/"
 	cookie.SameSite = "None"
-	cookie.Domain = fmt.Sprintf("%s+.inspirasisatu.com", domain)
+	if domain != "" {
+		cookie.Domain = domain
+	}
 
 	c.Cookie(cookie)
 }
@@ -285,8 +327,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email,
-		userData.Name, userData.Role, userData.Photo)
+	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email, userData.Name, userData.Role, userData.Photo, "")
 	if err != nil {
 		return err
 	}
@@ -310,8 +351,17 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email string, name string,
-	role *string, photo *string) (token string, err error) {
+func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email string, name string, role *string, photo *string, requestId string) (token string, err error) {
+	module := "Auth Handler"
+	functionName := "generateAndSaveSessionToken"
+	logger.Print("info", requestId, module, functionName,
+		fmt.Sprintf(
+			"Generating session token with params: ID=%d, Email=%s, Name=%s, Role=%v, Photo=%v",
+			id, email, name, role, photo,
+		),
+		nil,
+	)
+
 	newUUID, err := uuid.NewUUID()
 	if err != nil {
 		return "", err
@@ -324,9 +374,14 @@ func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email
 		Role:  utils.SafeDereferenceString(role),
 		Photo: utils.SafeDereferenceString(photo),
 	}
+
+	logger.Print("info", requestId, module, functionName,
+		"session created", userSession,
+	)
 	err = h.sessionManager.CreateSession(c, "SESSION::"+token, userSession, time.Hour*1)
 	if err != nil {
-		return token, err
+		return token, httperror.New(http.StatusInternalServerError,
+			fmt.Sprintf("Failed to create session token, %v", err))
 	}
 	return token, nil
 }
