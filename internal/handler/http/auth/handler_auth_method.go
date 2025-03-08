@@ -16,6 +16,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"strings"
 	"time"
 )
 
@@ -49,7 +50,10 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 
 	}
 
-	h.setCookieByRole(c, user.RoleID, token)
+	err = h.setCookieByRole(c, user.RoleID, token)
+	if err != nil {
+		return err
+	}
 
 	logger.Print("info", requestId, module, functionName,
 		fmt.Sprintf("cookie set created: %s", token), string(c.Body()))
@@ -69,12 +73,23 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		})
 }
 
-func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) {
+func (h *Handler) setCookieByRole(c *fiber.Ctx, roleId *int64, token string) error {
+	origin := c.Get("Origin")
+
 	if constant.IsDashboardUser(*roleId) {
-		setCookie(c, token, "dashboard")
+		backoffice := "backoffice"
+		if strings.Contains(origin, backoffice) {
+			return httperror.New(fiber.StatusForbidden, "Invalid user role for dashboard application")
+		}
+		setCookie(c, token, backoffice)
 	} else if constant.IsDashboardUser(*roleId) {
+		dashboard := "dashboard"
+		if strings.Contains(origin, dashboard) {
+			return httperror.New(fiber.StatusForbidden, "Invalid user role for backoffice application")
+		}
 		setCookie(c, token, "backoffice")
 	}
+	return nil
 }
 
 func setCookie(c *fiber.Ctx, token string, domain string) {
@@ -276,7 +291,10 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		return err
 	}
 
-	h.setCookieByRole(c, userData.RoleID, token)
+	err = h.setCookieByRole(c, userData.RoleID, token)
+	if err != nil {
+		return err
+	}
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
