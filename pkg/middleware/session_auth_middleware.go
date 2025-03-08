@@ -24,9 +24,9 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 		var cookieName string
 
 		if environment == constant.PRODUCTION {
-			if utils.IsOriginDashboard(origin) {
+			if utils.IsOriginDashboard(origin) || appOrigin == constant.DASHBOARD {
 				cookieName = constant.TOKEN_ACCESS_DASHBOARD
-			} else if utils.IsOriginBackoffice(origin) {
+			} else if utils.IsOriginBackoffice(origin) || appOrigin == constant.BACKOFFICE {
 				cookieName = constant.TOKEN_ACCESS_BACKOFFICE
 			} else {
 				log.Println("Unauthorized access: Invalid token origin in production")
