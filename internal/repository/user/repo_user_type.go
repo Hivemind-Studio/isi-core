@@ -59,6 +59,7 @@ func ConvertUserToDTO(user User) userdto.UserDTO {
 		Status:      user.Status,
 		Photo:       user.Photo,
 		Role:        &roleName,
+		RoleID:      user.RoleId,
 		Title:       user.Title,
 		Bio:         user.Bio,
 		Expertise:   user.Expertise,
