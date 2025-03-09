@@ -19,15 +19,14 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string, roleId int64, phoneNumber *string, gender string, address string,
-	status int, googleId *string, photo *string, verifiedEmail bool) (id int64, err error) {
-	if err := r.checkExistingData(ctx, tx, email, phoneNumber, nil); err != nil {
+func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, params CreateUserParams) (int64, error) {
+	if err := r.checkExistingData(ctx, tx, params.Email, params.PhoneNumber, nil); err != nil {
 		return 0, err
 	}
 
 	var hashedPassword *string
-	if password != nil {
-		hashed, hashErr := hash.HashPassword(*password)
+	if params.Password != nil {
+		hashed, hashErr := hash.HashPassword(*params.Password)
 		if hashErr != nil {
 			return 0, httperror.Wrap(fiber.StatusInternalServerError, hashErr, "failed to hash password")
 		}
@@ -35,14 +34,14 @@ func (r *Repository) Create(ctx context.Context, tx *sqlx.Tx, name string, email
 	}
 
 	phoneValue := interface{}(nil)
-	if phoneNumber != nil {
-		phoneValue = *phoneNumber
+	if params.PhoneNumber != nil {
+		phoneValue = *params.PhoneNumber
 	}
 
 	insertUserQuery := `INSERT INTO users (name, email, password, role_id, phone_number, status, gender,
                    address, verification, version, google_id, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := tx.ExecContext(ctx, insertUserQuery, name, email, hashedPassword, roleId, phoneValue, status,
-		gender, address, verifiedEmail, 0, googleId, photo)
+	result, err := tx.ExecContext(ctx, insertUserQuery, params.Name, params.Email, hashedPassword, params.RoleID, phoneValue,
+		params.Status, params.Gender, params.Address, params.VerifiedEmail, 0, params.GoogleID, params.Photo)
 
 	if err != nil {
 		return 0, httperror.New(fiber.StatusConflict, "failed to insert user")

@@ -2,6 +2,7 @@ package createcoach
 
 import (
 	"context"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -22,5 +23,5 @@ type repoCoachInterface interface {
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string, roleId int64, phoneNumber *string, gender string, address string, status int, googleId *string, photo *string, verifiedEmail bool) (id int64, err error)
+	Create(ctx context.Context, tx *sqlx.Tx, params user.CreateUserParams) (id int64, err error)
 }

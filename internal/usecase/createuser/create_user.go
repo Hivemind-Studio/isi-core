@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -25,9 +26,20 @@ func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (resu
 		return nil, httperror.New(fiber.StatusInternalServerError, "error when fetching email")
 	}
 
-	_, err = s.repoUser.Create(ctx, tx, body.Name, u.Email, &body.Password,
-		constant.RoleIDCoachee, &body.PhoneNumber, body.Gender, body.Address, int(constant.ACTIVE),
-		nil, nil, false)
+	_, err = s.repoUser.Create(ctx, tx, user.CreateUserParams{
+		Name:          body.Name,
+		Email:         u.Email,
+		Password:      &body.Password,
+		RoleID:        constant.RoleIDCoachee,
+		PhoneNumber:   &body.PhoneNumber,
+		Gender:        body.Gender,
+		Address:       body.Address,
+		Status:        int(constant.ACTIVE),
+		GoogleID:      nil,
+		Photo:         nil,
+		VerifiedEmail: false,
+	})
+
 	if err != nil {
 		logger.Print("error", requestId, "User service", "CreateUser", err.Error(), body)
 		dbtx.HandleRollback(tx)

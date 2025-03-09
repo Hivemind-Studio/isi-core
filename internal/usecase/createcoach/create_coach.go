@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/internal/dto/coach"
+	"github.com/Hivemind-Studio/isi-core/internal/repository/user"
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
@@ -27,7 +28,19 @@ func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (e
 
 	generatePassword := time.Now().String()
 
-	userId, err := uc.repoUser.Create(ctx, tx, payload.Name, payload.Email, &generatePassword, constant.RoleIDCoach, payload.PhoneNumber, payload.Gender, payload.Address, int(constant.PENDING), nil, nil, false)
+	userId, err := uc.repoUser.Create(ctx, tx, user.CreateUserParams{
+		Name:          payload.Name,
+		Email:         payload.Email,
+		Password:      &generatePassword,
+		RoleID:        constant.RoleIDCoach,
+		PhoneNumber:   payload.PhoneNumber, // Ensure this matches the expected type (*string or string)
+		Gender:        payload.Gender,
+		Address:       payload.Address,
+		Status:        int(constant.PENDING),
+		GoogleID:      nil,
+		Photo:         nil,
+		VerifiedEmail: false,
+	})
 
 	if err != nil {
 		logger.Print("error", requestId, "Coach service", "CreateCoach", err.Error(), payload)

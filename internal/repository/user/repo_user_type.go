@@ -74,3 +74,17 @@ func ConvertUsersToDTOs(users []User) []userdto.UserDTO {
 	}
 	return dtos
 }
+
+type CreateUserParams struct {
+	Name          string
+	Email         string
+	Password      *string
+	RoleID        int64
+	PhoneNumber   *string
+	Gender        string
+	Address       string
+	Status        int
+	GoogleID      *string
+	Photo         *string
+	VerifiedEmail bool
+}

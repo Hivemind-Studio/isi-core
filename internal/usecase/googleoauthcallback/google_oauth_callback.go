@@ -66,9 +66,19 @@ func (uc *GoogleOAuthCallbackUseCase) GetUserDataFromGoogle(ctx context.Context,
 				return userDTO.UserDTO{}, err
 			}
 
-			createdUserId, err := uc.repoUser.Create(ctx, tx, userInfo.Name, userInfo.Email, nil,
-				constant.RoleIDCoachee, nil, "", "", int(constant.ACTIVE),
-				&userInfo.ID, &userInfo.Avatar, true)
+			createdUserId, err := uc.repoUser.Create(ctx, tx, user.CreateUserParams{
+				Name:          userInfo.Name,
+				Email:         userInfo.Email,
+				Password:      nil,
+				RoleID:        constant.RoleIDCoachee,
+				PhoneNumber:   nil,
+				Gender:        "",
+				Address:       "",
+				Status:        int(constant.ACTIVE),
+				GoogleID:      &userInfo.ID,
+				Photo:         &userInfo.Avatar,
+				VerifiedEmail: true,
+			})
 
 			if err != nil {
 				logger.Print(loglevel.ERROR, requestId, "google_oauth_callback",
