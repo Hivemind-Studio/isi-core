@@ -235,7 +235,7 @@ func (r *Repository) GetUserByID(ctx context.Context, id int64) (User, error) {
 	return result, nil
 }
 
-func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string, versions []int64) error {
+func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus int64, versions []int64) error {
 	if len(ids) == 0 {
 		return httperror.New(fiber.StatusBadRequest, "no user IDs provided")
 	}
@@ -255,7 +255,7 @@ func (r *Repository) UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []in
 		strings.Join(versionConditions, " OR "),
 	)
 
-	args = append([]interface{}{constant.GetStatusFromString(updatedStatus)}, args...)
+	args = append([]interface{}{updatedStatus}, args...)
 
 	result, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {

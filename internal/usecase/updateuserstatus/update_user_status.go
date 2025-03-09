@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, ids []int64, updatedStatus string) error {
+func (uc *UseCase) Execute(ctx context.Context, ids []int64, updatedStatus int64) error {
 	versions, err := uc.repoUser.GetUserVersions(ctx, ids)
 	if err != nil {
 		return err

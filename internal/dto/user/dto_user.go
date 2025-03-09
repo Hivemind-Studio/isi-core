@@ -41,7 +41,7 @@ type GetUsersDTO struct {
 
 type SuspendDTO struct {
 	Ids           []int64 `json:"ids"`
-	UpdatedStatus string  `json:"updated_status"`
+	UpdatedStatus int64   `json:"updated_status"`
 }
 
 type UserRole struct {
