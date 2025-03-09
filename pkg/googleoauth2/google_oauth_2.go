@@ -17,7 +17,7 @@ func NewGoogleOauth(config *OauthConfig) *oauth2.Config {
 		RedirectURL:  config.RedirectURL,
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
-		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		Endpoint:     google.Endpoint,
 	}
 }

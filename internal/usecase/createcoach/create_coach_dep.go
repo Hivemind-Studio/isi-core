@@ -22,5 +22,5 @@ type repoCoachInterface interface {
 type repoUserInterface interface {
 	dbtx.DBTXInterface
 
-	Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string, roleId int64, phoneNumber *string, gender string, address string, status int, googleId *string, photo *string) (id int64, err error)
+	Create(ctx context.Context, tx *sqlx.Tx, name string, email string, password *string, roleId int64, phoneNumber *string, gender string, address string, status int, googleId *string, photo *string, verifiedEmail bool) (id int64, err error)
 }

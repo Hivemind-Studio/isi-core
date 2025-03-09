@@ -313,31 +313,61 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "GoogleCallback"
 	requestId := c.Locals("request_id").(string)
+
 	logger.Print(loglevel.INFO, requestId, module, functionName,
-		"", string(c.Body()))
+		"Incoming request", string(c.Body()))
 
 	returnedState := c.Query("state")
-
 	stateCookie := c.Cookies("oauthstate")
+
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"State Verification", fmt.Sprintf("ReturnedState: %s, StateCookie: %s", returnedState, stateCookie))
+
 	if returnedState == "" || stateCookie == "" || returnedState != stateCookie {
+		logger.Print(loglevel.WARN, requestId, module, functionName,
+			"OAuth State Mismatch", "Invalid OAuth state detected")
+
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid OAuth state",
 		})
 	}
 
-	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), c.Query("code"))
+	code := c.Query("code")
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"Exchanging code", fmt.Sprintf("Code: %s", code))
+
+	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), code)
 	if err != nil {
-		return err
-	}
-	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email, userData.Name, userData.Role, userData.Photo, "")
-	if err != nil {
+		logger.Print(loglevel.ERROR, requestId, module, functionName,
+			"GetUserDataFromGoogle failed", err.Error())
+
 		return err
 	}
 
-	err = h.setCookieByRole(c, userData.RoleID, token)
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"User data retrieved", fmt.Sprintf("ID: %d, Email: %s, Name: %s", userData.ID, userData.Email, userData.Name))
+
+	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email, userData.Name, userData.Role, userData.Photo, "")
 	if err != nil {
+		logger.Print(loglevel.ERROR, requestId, module, functionName,
+			"Session token generation failed", err.Error())
+
 		return err
 	}
+
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"Session token generated", fmt.Sprintf("Token: %s", token))
+
+	err = h.setCookieByRole(c, userData.RoleID, token)
+	if err != nil {
+		logger.Print(loglevel.ERROR, requestId, module, functionName,
+			"Setting cookie by role failed", err.Error())
+
+		return err
+	}
+
+	logger.Print(loglevel.INFO, requestId, module, functionName,
+		"Login successful", fmt.Sprintf("UserID: %d, Role: %v", userData.ID, userData.Role))
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{

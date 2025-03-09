@@ -12,7 +12,6 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"net/http"
-	"strconv"
 )
 
 func (uc *GoogleOAuthCallbackUseCase) GetUserDataFromGoogle(ctx context.Context, code string) (userDTO.UserDTO, error) {
@@ -53,28 +52,49 @@ func (uc *GoogleOAuthCallbackUseCase) GetUserDataFromGoogle(ctx context.Context,
 
 	savedUser, err := uc.repoUser.FindByEmail(ctx, userInfo.Email)
 	if err != nil {
-		if err.Error() == "user not found" {
-			tx, err := uc.repoUser.StartTx(ctx)
+		logger.Print(loglevel.ERROR, requestId, "google_oauth_callback",
+			"FindByEmail", fmt.Sprintf("Error finding user by email: %s", err.Error()), userInfo.Email)
 
-			createdUserId, err := uc.repoUser.Create(ctx, tx, userInfo.Name, userInfo.Email, nil, constant.RoleIDCoachee,
-				nil, "", "", int(constant.ACTIVE), &userInfo.ID, &userInfo.Avatar)
+		if err.Error() == "user not found" {
+			logger.Print(loglevel.INFO, requestId, "google_oauth_callback",
+				"UserCreation", "User not found, proceeding with user creation", userInfo)
+
+			tx, err := uc.repoUser.StartTx(ctx)
+			if err != nil {
+				logger.Print(loglevel.ERROR, requestId, "google_oauth_callback",
+					"UserCreation", fmt.Sprintf("Failed to start transaction: %s", err.Error()), userInfo)
+				return userDTO.UserDTO{}, err
+			}
+
+			createdUserId, err := uc.repoUser.Create(ctx, tx, userInfo.Name, userInfo.Email, nil,
+				constant.RoleIDCoachee, nil, "", "", int(constant.ACTIVE),
+				&userInfo.ID, &userInfo.Avatar, true)
 
 			if err != nil {
 				logger.Print(loglevel.ERROR, requestId, "google_oauth_callback",
-					"GetUserDataFromGoogle", err.Error(), userInfo)
+					"UserCreation", fmt.Sprintf("Error creating user: %s", err.Error()), nil)
 				dbtx.HandleRollback(tx)
 				return userDTO.UserDTO{}, err
 			}
-			err = uc.repoUser.CommitTx()
 
-			roleId := strconv.FormatInt(constant.RoleIDCoachee, 10)
-			return userDTO.UserDTO{
-				ID:    createdUserId,
-				Name:  userInfo.Name,
-				Email: userInfo.Email,
-				Role:  &roleId,
-			}, err
+			err = uc.repoUser.CommitTx()
+			if err != nil {
+				logger.Print(loglevel.ERROR, requestId, "google_oauth_callback",
+					"UserCreation", fmt.Sprintf("Error committing transaction: %s", err.Error()), nil)
+				return userDTO.UserDTO{}, err
+			}
+
+			logger.Print(loglevel.INFO, requestId, "google_oauth_callback",
+				"UserCreation", fmt.Sprintf("User successfully created with ID: %d", createdUserId), createdUserId)
+
+			savedUser, err = uc.repoUser.FindByEmail(ctx, userInfo.Email)
+			if err != nil {
+				return userDTO.UserDTO{}, err
+			}
+
+			return user.ConvertUserToDTO(savedUser), nil
 		}
+
 		return userDTO.UserDTO{}, err
 	}
 
