@@ -466,12 +466,15 @@ func (h *Handler) DeleteSession(c *fiber.Ctx) error {
 	}
 
 	c.Cookie(&fiber.Cookie{
-		Name:    cookieName,
-		Value:   "",
-		Expires: time.Now().Add(-1 * time.Hour),
-		Path:    "/",
+		Name:     cookieName,
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		Path:     "/",
+		Domain:   ".inspirasisatu.com",
+		Secure:   true,
+		HTTPOnly: true,
+		SameSite: "None",
 	})
-
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
 			Status:  fiber.StatusOK,
