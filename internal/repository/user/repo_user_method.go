@@ -688,3 +688,17 @@ func (r *Repository) UpdateUserGoogleId(ctx context.Context, tx *sqlx.Tx, email 
 
 	return nil
 }
+
+func (r *Repository) GetTotalRegistrant(ctx context.Context) (total int64, error error) {
+	query := `
+        SELECT COUNT(*) 
+        FROM users 
+        WHERE role_id = ?
+    `
+	var count int64
+	err := r.GetConnDb().GetContext(ctx, &count, query, constant.RoleIDCoachee)
+	if err != nil {
+		return 0, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to count registrations")
+	}
+	return count, nil
+}

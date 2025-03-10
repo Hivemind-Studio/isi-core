@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Hivemind-Studio/isi-core/configs"
+	handleanalytic "github.com/Hivemind-Studio/isi-core/internal/handler/http/analytic"
 	handleauth "github.com/Hivemind-Studio/isi-core/internal/handler/http/auth"
 	handlecampaign "github.com/Hivemind-Studio/isi-core/internal/handler/http/campaign"
 	handlecoach "github.com/Hivemind-Studio/isi-core/internal/handler/http/coach"
@@ -26,6 +27,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoachees"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getcoaches"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getprofileuser"
+	"github.com/Hivemind-Studio/isi-core/internal/usecase/gettotalregistrant"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getuserbyid"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/getusers"
 	"github.com/Hivemind-Studio/isi-core/internal/usecase/googlelogin"
@@ -57,6 +59,7 @@ type AppApi struct {
 	coacheeHandle   *handlecoachee.Handler
 	profileHandle   *handleprofile.Handler
 	campaignHandler *handlecampaign.Handler
+	handleAnalytic  *handleanalytic.Handler
 }
 
 type Router interface {
@@ -71,6 +74,7 @@ func routerList(app *AppApi) []Router {
 		app.coacheeHandle,
 		app.profileHandle,
 		app.campaignHandler,
+		app.handleAnalytic,
 	}
 }
 
@@ -122,6 +126,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 	updateCampaign := updatecampaign.NewUpdateCampaignUseCase(campaignRepo)
 	createUserCampaign := createusercampaign.NewCreateUserCampaignUseCase(campaignRepo, userRepo)
 	getCampaignById := getcampaignbyid.NewGetCampaignByIdUseCase(campaignRepo)
+	getTotalRegistrant := gettotalregistrant.NewGetTotalRegistrantUseCase(userRepo)
 
 	authHandler := handleauth.NewAuthHandler(sessionManager, userLoginUseCase, sendVerificationUseCase, verificationRegistrationTokenUseCase, createUserUseCase, updateCoachPasswordUseCase, forgotPasswordUseCase, googleLoginUseCase, googleOAuthCallbackUseCase, createUserCampaign, cfg.EnvConfig.Environment)
 	userHandler := handleuser.NewUserHandler(
@@ -139,6 +144,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 		uploadPhoto, deletePhoto)
 	campaignHandler := handlecampaign.NewCampaignHandler(createCampaign, getCampaign, updateStatusCampaign,
 		updateCampaign, getCampaignById)
+	analyticHandler := handleanalytic.NewAnalyticHandler(getTotalRegistrant)
 
 	return &AppApi{
 			authHandle:      authHandler,
@@ -147,6 +153,7 @@ func initApp(cfg *configs.Config, sessionManager *session.SessionManager) (*AppA
 			coachHandle:     coachHandler,
 			profileHandle:   profileHandler,
 			campaignHandler: campaignHandler,
+			handleAnalytic:  analyticHandler,
 		},
 		nil
 }

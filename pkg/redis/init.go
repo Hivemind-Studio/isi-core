@@ -17,10 +17,10 @@ func InitRedis(addr string, password string, db int) *redis.Client {
 
 	// Set up Redis options
 	redisOptions = &redis.Options{
-		Addr:     addr,     // Redis server address (e.g., "localhost:6379")
-		Password: password, // Redis server password (if any)
-		DB:       db,       // Redis database number
-		PoolSize: 10,       // Connection pool size
+		Addr:     addr,
+		Password: password,
+		DB:       db,
+		PoolSize: 10,
 	}
 
 	// Create a new Redis client

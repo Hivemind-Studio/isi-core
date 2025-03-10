@@ -8,7 +8,7 @@ type DTO struct {
 	Channel          string     `json:"channel" validate:"required"`
 	Link             string     `json:"link" validate:"required"`
 	GeneratedLink    string     `json:"generated_link,omitempty"`
-	CampaignId       string     `json:"campaign_id" validate:"required"`
+	CampaignId       string     `json:"campaign_id,omitempty" validate:"required"`
 	Status           int8       `json:"status" validate:"required"`
 	StartDate        *time.Time `json:"start_date" validate:"required"`
 	EndDate          *time.Time `json:"end_date" validate:"required"`
