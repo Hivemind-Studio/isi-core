@@ -16,7 +16,9 @@ import (
 	"github.com/Hivemind-Studio/isi-core/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -418,20 +420,53 @@ func (h *Handler) generateAndSaveSessionToken(c context.Context, id int64, email
 	return token, nil
 }
 
-func (h *Handler) DeleteSession(c *fiber.Ctx) (err error) {
+func (h *Handler) DeleteSession(c *fiber.Ctx) error {
 	module := "Auth Handler"
 	functionName := "DeleteSession"
-	requestId := c.Locals("request_id").(string)
-	token := c.Locals("token").(string)
+	requestId, _ := c.Locals("request_id").(string) // Avoid panic if nil
 
-	logger.Print("info", requestId, module, functionName,
-		"deleting session:", token,
-	)
+	origin := c.Get("Origin")
+	environment := os.Getenv("ENV")  // Ensure this is set correctly
+	appOrigin := c.Get("App-Origin") // Ensure this is passed in request headers
+	var cookieName string
 
-	err = h.sessionManager.DeleteSession(c.Context(), "SESSION::"+token)
-	if err != nil {
-		return httperror.New(http.StatusInternalServerError,
-			fmt.Sprintf("Failed to delete token, %v", err))
+	if environment == constant.PRODUCTION {
+		if utils.IsOriginDashboard(origin) || appOrigin == constant.DASHBOARD {
+			cookieName = constant.TOKEN_ACCESS_DASHBOARD
+		} else if utils.IsOriginBackoffice(origin) || appOrigin == constant.BACKOFFICE {
+			cookieName = constant.TOKEN_ACCESS_BACKOFFICE
+		} else {
+			log.Println("Unauthorized access: Invalid token origin in production")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token origin"})
+		}
+	} else {
+		if appOrigin == constant.DASHBOARD {
+			cookieName = constant.TOKEN_ACCESS_DASHBOARD
+		} else if appOrigin == constant.BACKOFFICE {
+			cookieName = constant.TOKEN_ACCESS_BACKOFFICE
+		} else {
+			log.Println("Unauthorized access: Invalid token origin in non-production")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token origin"})
+		}
 	}
-	return nil
+
+	// Get the token from the cookie
+	token := c.Cookies(cookieName)
+	if token == "" {
+		log.Println("Unauthorized access: No session token found in cookies")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "No session"})
+	}
+
+	logger.Print("info", requestId, module, functionName, "deleting session:", token)
+
+	// Delete the session from Redis (or other session store)
+	err := h.sessionManager.DeleteSession(c.Context(), "SESSION::"+token)
+	if err != nil {
+		return httperror.New(http.StatusInternalServerError, fmt.Sprintf("Failed to delete token, %v", err))
+	}
+
+	// Clear the cookie
+	c.ClearCookie(cookieName)
+
+	return c.SendStatus(fiber.StatusOK)
 }
