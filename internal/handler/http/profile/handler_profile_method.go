@@ -140,6 +140,7 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 	module := "Profile Handler"
 	functionName := "UploadPhoto"
 	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, module, functionName, "[UploadPhoto] Request received", "")
 
 	userSession, err := h.getUserSession(c)
 	if err != nil {
@@ -197,14 +198,14 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 }
 
 func (h *Handler) DeletePhoto(c *fiber.Ctx) error {
-	jwtToken := c.Get("Authorization")
-	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-		return fiber.ErrUnauthorized
-	}
+	module := "Profile Handler"
+	functionName := "DeletePhoto"
+	requestId := c.Locals("request_id").(string)
+	logger.Print("info", requestId, module, functionName, "[DeletePhoto] Request received", "")
 
 	userSession, err := h.getUserSession(c)
 	if err != nil {
-		return fiber.ErrUnauthorized
+		return err
 	}
 
 	err = h.deletePhoto.Execute(c.Context(), userSession.ID)
