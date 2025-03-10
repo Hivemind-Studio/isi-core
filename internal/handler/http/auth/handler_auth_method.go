@@ -465,8 +465,16 @@ func (h *Handler) DeleteSession(c *fiber.Ctx) error {
 		return httperror.New(http.StatusInternalServerError, fmt.Sprintf("Failed to delete token, %v", err))
 	}
 
-	// Clear the cookie
-	c.ClearCookie(cookieName)
+	c.Cookie(&fiber.Cookie{
+		Name:    cookieName,
+		Value:   "",
+		Expires: time.Now().Add(-1 * time.Hour),
+		Path:    "/",
+	})
 
-	return c.SendStatus(fiber.StatusOK)
+	return c.Status(fiber.StatusOK).JSON(
+		response.WebResponse{
+			Status:  fiber.StatusOK,
+			Message: "Logout successful!",
+		})
 }
