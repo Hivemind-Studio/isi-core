@@ -427,7 +427,7 @@ func (h *Handler) DeleteSession(c *fiber.Ctx) error {
 
 	origin := c.Get("Origin")
 	environment := os.Getenv("ENVIRONMENT") // Ensure this is set correctly
-	appOrigin := c.Get("App-Origin")        // Ensure this is passed in request headers
+	appOrigin := c.Get("X-App-Origin")      // Ensure this is passed in request headers
 	var cookieName string
 
 	if environment == constant.PRODUCTION {
