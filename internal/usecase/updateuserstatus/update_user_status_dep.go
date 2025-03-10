@@ -11,6 +11,6 @@ type repoUserInterface interface {
 	dbtx.DBTXInterface
 
 	GetUserByID(ctx context.Context, id int64) (user.User, error)
-	UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus string, versions []int64) error
+	UpdateUserStatus(ctx context.Context, tx *sqlx.Tx, ids []int64, updatedStatus int64, versions []int64) error
 	GetUserVersions(ctx context.Context, ids []int64) ([]int64, error)
 }
