@@ -319,6 +319,9 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	logger.Print(loglevel.INFO, requestId, module, functionName,
 		"Incoming request", string(c.Body()))
 
+	ipAddress := c.IP()
+	userAgent := c.Get("User-Agent")
+	campaignId := c.Query("campaign_id")
 	returnedState := c.Query("state")
 	stateCookie := c.Cookies("oauthstate")
 
@@ -347,9 +350,11 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	logger.Print(loglevel.INFO, requestId, module, functionName,
-		"User data retrieved", fmt.Sprintf("ID: %d, Email: %s, Name: %s", userData.ID, userData.Email, userData.Name))
+		"User data retrieved", fmt.Sprintf("ID: %d, Email: %s, Name: %s", userData.ID,
+			userData.Email, userData.Name))
 
-	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email, userData.Name, userData.Role, userData.Photo, "")
+	token, err := h.generateAndSaveSessionToken(c.Context(), userData.ID, userData.Email, userData.Name,
+		userData.Role, userData.Photo, "")
 	if err != nil {
 		logger.Print(loglevel.ERROR, requestId, module, functionName,
 			"Session token generation failed", err.Error())
@@ -370,6 +375,20 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 
 	logger.Print(loglevel.INFO, requestId, module, functionName,
 		"Login successful", fmt.Sprintf("UserID: %d, Role: %v", userData.ID, userData.Role))
+
+	if campaignId != "" {
+		userCampaign := campaign.UserCampaign{
+			Email:      userData.Email,
+			IPAddress:  ipAddress,
+			UserAgent:  userAgent,
+			CampaignId: campaignId,
+		}
+		err = h.createUserCampaign.Execute(c.Context(), userCampaign)
+
+		if err != nil {
+			return nil
+		}
+	}
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
