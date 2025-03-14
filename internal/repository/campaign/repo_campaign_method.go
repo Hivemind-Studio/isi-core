@@ -86,7 +86,7 @@ func (r *Repository) Get(ctx context.Context, params campaign.Params, page int64
 			err, "failed to count campaigns")
 	}
 
-	dataQuery := baseQuery + " ORDER BY name ASC LIMIT ? OFFSET ?"
+	dataQuery := baseQuery + " ORDER BY created_at DESC, updated_at DESC LIMIT ? OFFSET ?"
 	queryArgs := append(args, perPage, (page-1)*perPage)
 	err = r.GetConnDb().SelectContext(ctx, &campaigns, dataQuery, queryArgs...)
 	if err != nil {
