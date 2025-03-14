@@ -139,7 +139,7 @@ func (r *Repository) UpdateStatus(ctx context.Context, ids []int64, status int8)
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve campaigns")
 	}
 
-	updateQuery := fmt.Sprintf("UPDATE campaigns SET status = ? WHERE id IN (%s)", idsStr)
+	updateQuery := fmt.Sprintf("UPDATE campaigns SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id IN (%s)", idsStr)
 
 	_, err = r.GetConnDb().ExecContext(ctx, updateQuery, status)
 	if err != nil {
