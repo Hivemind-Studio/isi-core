@@ -92,6 +92,7 @@ func initEmailClient(cfg *configs.Config) *mail.EmailClient {
 		APIKey: mailConfig.ApiKey,
 		Sender: mailConfig.Sender,
 		Email:  mailConfig.Email,
+		Url:    mailConfig.Url,
 	})
 
 	return emailClient

@@ -16,6 +16,7 @@ type EmailConfig struct {
 	APIKey string
 	Sender string
 	Email  string
+	Url    string
 }
 
 type EmailClient struct {
@@ -64,7 +65,7 @@ func (c *EmailClient) SendMail(to []string, subject string, templateFile string,
 		return fmt.Errorf("failed to marshal JSON payload: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "https://api.brevo.com/v3/smtp/email", bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest("POST", c.config.Url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %v", err)
 	}

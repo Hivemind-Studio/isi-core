@@ -19,6 +19,7 @@ type Config struct {
 		ApiKey string `envconfig:"MAIL_API_KEY"`
 		Sender string `envconfig:"MAIL_SENDER"`
 		Email  string `envconfig:"MAIL_EMAIL"`
+		Url    string `envconfig:"MAIL_URL"`
 	}
 	GoogleConfig struct {
 		ClientID       string `envconfig:"GOOGLE_CLIENT_ID"`
