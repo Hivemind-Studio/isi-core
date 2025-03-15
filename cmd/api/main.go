@@ -89,12 +89,9 @@ func dbInitConnection(cfg *configs.Config) *sqlx.DB {
 func initEmailClient(cfg *configs.Config) *mail.EmailClient {
 	mailConfig := cfg.Mail
 	emailClient := mail.NewEmailClient(&mail.EmailConfig{
-		Host:        mailConfig.Host,
-		Port:        mailConfig.Port,
-		Username:    mailConfig.Username,
-		Password:    mailConfig.Password,
-		SenderEmail: mailConfig.EmailFrom,
-		SenderName:  mailConfig.NameFrom,
+		APIKey: mailConfig.ApiKey,
+		Sender: mailConfig.Sender,
+		Email:  mailConfig.Email,
 	})
 
 	return emailClient

@@ -16,12 +16,9 @@ type Config struct {
 		EnableDbMigration string `envconfig:"ENABLE_DB_MIGRATION"`
 	}
 	Mail struct {
-		Host      string `envconfig:"MAIL_SMTP_HOST"`
-		Port      string `envconfig:"MAIL_SMTP_PORT"`
-		Username  string `envconfig:"MAIL_SMTP_USERNAME"`
-		Password  string `envconfig:"MAIL_SMTP_PASSWORD"`
-		NameFrom  string `envconfig:"MAIL_SENDER_NAME"`
-		EmailFrom string `envconfig:"MAIL_AUTH_EMAIL"`
+		ApiKey string `envconfig:"MAIL_API_KEY"`
+		Sender string `envconfig:"MAIL_SENDER"`
+		Email  string `envconfig:"MAIL_EMAIL"`
 	}
 	GoogleConfig struct {
 		ClientID       string `envconfig:"GOOGLE_CLIENT_ID"`
