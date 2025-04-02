@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"os"
 	"strconv"
@@ -52,6 +53,8 @@ func main() {
 		AppName:      "Inspirasi Satu",
 		ErrorHandler: globalErrorHandler,
 	})
+
+	initLogger()
 
 	prometheus.MustRegister(requestCount)
 	prometheus.MustRegister(requestDuration)
@@ -95,7 +98,7 @@ func main() {
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
-		log.Printf("Incoming Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
+		logrus.Printf("Incoming Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
 			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
 		)
 
@@ -167,11 +170,17 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 		code = fiberErr.Code
 	}
 
-	log.Printf("Error: %v", err)
+	logrus.New().Error("Error:" + err.Error())
 
 	return c.Status(code).JSON(fiber.Map{
 		"status":  "error",
 		"message": err.Error(),
 		"code":    code,
 	})
+}
+
+func initLogger() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetOutput(os.Stdout)
 }

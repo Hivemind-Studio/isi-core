@@ -3,8 +3,8 @@ package middleware
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -35,7 +35,8 @@ func logRequestDetails(c *fiber.Ctx, requestID string) {
 		body = "no body"
 	}
 
-	log.Printf("Request ID: %s | Path: %s | Headers: %v | Body: %s", requestID, path, headers, body)
+	logrus.Printf("Request ID: %s | Path: %s | Headers: %v | Body: %s", requestID, path, headers, body)
+
 }
 
 func BodyLimit(limitMB string) fiber.Handler {
