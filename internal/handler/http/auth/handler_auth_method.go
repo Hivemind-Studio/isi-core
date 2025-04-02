@@ -171,7 +171,9 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
 		requestBody.Email, requestBody.Token); err != nil {
-		return err
+		logger.Print(loglevel.ERROR, requestId, module, functionName,
+			"Registration token is not valid", string(c.Body()))
+		return httperror.New(fiber.StatusBadRequest, "Registration token is not valid")
 	}
 
 	if err := validator.ValidatePassword(&requestBody.Password, &requestBody.ConfirmPassword); err != nil {

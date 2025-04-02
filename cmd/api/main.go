@@ -10,7 +10,10 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	redisutils "github.com/Hivemind-Studio/isi-core/pkg/redis"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/oauth2"
 	"os"
 	"strconv"
@@ -26,11 +29,53 @@ import (
 	"log"
 )
 
+var (
+	requestCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests received",
+		},
+	)
+
+	requestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "Duration of HTTP requests in seconds",
+			Buckets: prometheus.DefBuckets, // Default buckets for latency
+		},
+		[]string{"method", "route"}, // Labels for method and route
+	)
+)
+
 func main() {
 	app := fiber.New(fiber.Config{
 		AppName:      "Inspirasi Satu",
 		ErrorHandler: globalErrorHandler,
 	})
+
+	prometheus.MustRegister(requestCount)
+	prometheus.MustRegister(requestDuration)
+
+	// Middleware for counting requests and tracking duration
+	app.Use(func(c *fiber.Ctx) error {
+		// Start time for duration tracking
+		start := time.Now()
+
+		// Increment request count
+		requestCount.Inc()
+
+		// Call the next handler
+		err := c.Next()
+
+		// Measure the duration and observe it in the histogram
+		duration := time.Since(start).Seconds()
+		requestDuration.WithLabelValues(c.Method(), c.Path()).Observe(duration)
+
+		return err
+	})
+	// Expose Prometheus metrics at /metrics
+	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
 	app.Use(compress.New())
 	app.Use(logger.New())
 	app.Use(recover.New())
