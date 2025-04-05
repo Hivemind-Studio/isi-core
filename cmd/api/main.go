@@ -37,15 +37,6 @@ var (
 			Help: "Total number of HTTP requests received",
 		},
 	)
-
-	requestDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "Duration of HTTP requests in seconds",
-			Buckets: prometheus.DefBuckets, // Default buckets for latency
-		},
-		[]string{"method", "route"}, // Labels for method and route
-	)
 )
 
 func main() {
@@ -57,22 +48,17 @@ func main() {
 	initLogger()
 
 	prometheus.MustRegister(requestCount)
-	prometheus.MustRegister(requestDuration)
 
 	// Middleware for counting requests and tracking duration
 	app.Use(func(c *fiber.Ctx) error {
-		// Start time for duration tracking
-		start := time.Now()
-
+		if c.Path() == "/metrics" {
+			return c.Next()
+		}
 		// Increment request count
 		requestCount.Inc()
 
 		// Call the next handler
 		err := c.Next()
-
-		// Measure the duration and observe it in the histogram
-		duration := time.Since(start).Seconds()
-		requestDuration.WithLabelValues(c.Method(), c.Path()).Observe(duration)
 
 		return err
 	})
