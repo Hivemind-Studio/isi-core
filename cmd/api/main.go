@@ -30,14 +30,7 @@ import (
 	"log"
 )
 
-var (
-	requestCount = prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "Total number of HTTP requests received",
-		},
-	)
-)
+var requestCount *prometheus.CounterVec
 
 func main() {
 	app := fiber.New(fiber.Config{
@@ -46,22 +39,29 @@ func main() {
 	})
 
 	initLogger()
+	initMetrics()
 
-	prometheus.MustRegister(requestCount)
-
-	// Middleware for counting requests and tracking duration
+	// Middleware to count requests with method, route, and status
 	app.Use(func(c *fiber.Ctx) error {
 		if c.Path() == "/metrics" {
 			return c.Next()
 		}
-		// Increment request count
-		requestCount.Inc()
 
-		// Call the next handler
+		start := time.Now()
 		err := c.Next()
+		status := c.Response().StatusCode()
+
+		route := c.Route().Path
+		if route == "" {
+			route = c.Path() // fallback
+		}
+
+		requestCount.WithLabelValues(c.Method(), route, strconv.Itoa(status)).Inc()
+		logrus.Infof("Request %s %s took %v with status %d", c.Method(), route, time.Since(start), status)
 
 		return err
 	})
+
 	// Expose Prometheus metrics at /metrics
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
@@ -101,6 +101,26 @@ func main() {
 	}
 
 	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
+}
+
+func initMetrics() {
+	requestCountVec := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests by method, route, and status",
+		},
+		[]string{"method", "route", "status"},
+	)
+
+	if err := prometheus.Register(requestCountVec); err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			requestCount = are.ExistingCollector.(*prometheus.CounterVec)
+		} else {
+			panic(err)
+		}
+	} else {
+		requestCount = requestCountVec
+	}
 }
 
 func dbInitConnection(cfg *configs.Config) *sqlx.DB {
