@@ -88,7 +88,14 @@ func main() {
 			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
 		)
 
-		return c.Next()
+		err := c.Next()
+		logrus.Printf(
+			"Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
+			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
+		)
+		logrus.Printf("Response: status=%d body=%s", c.Response().StatusCode(), string(c.Response().Body()))
+
+		return err
 	})
 
 	config := configs.Init()
