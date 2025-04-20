@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
@@ -70,6 +69,7 @@ func main() {
 		origin := c.Get("Origin")
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
+		requestID := c.Locals("request_id").(string)
 
 		log.Info().
 			Str("method", c.Method()).
@@ -78,12 +78,13 @@ func main() {
 			Str("cookie", cookie).
 			Str("user_agent", userAgent).
 			Str("ip", c.IP()).
-			Str("request_id", c.Locals("request_id").(string)).
+			Str("request_id", requestID).
 			Msg("Incoming request")
 
 		err := c.Next()
 
 		status := c.Response().StatusCode()
+		responseBody := string(c.Response().Body())
 
 		event := log.With().
 			Str("method", c.Method()).
@@ -94,12 +95,12 @@ func main() {
 			Str("ip", c.IP()).
 			Int("status", status).
 			Dur("duration", time.Since(start)).
-			Str("request_id", c.Locals("request_id").(string)).
+			Str("request_id", requestID).
+			Str("response_body", responseBody). // 👈 Logged here
 			Logger()
 
-		// If the status code is not 2xx, log as an error
-		if status == 200 || status == 201 {
-			event.Info().Msg(fmt.Sprintf("Response sent"))
+		if status >= 200 && status < 300 {
+			event.Info().Msg("Response sent")
 		} else {
 			event.Error().Msg("Response sent")
 		}
