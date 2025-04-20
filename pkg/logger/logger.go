@@ -15,6 +15,7 @@ var loggerInstance *zerolog.Logger
 
 func InitLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	// JSON logger for production
 	logger := zerolog.New(os.Stdout).
