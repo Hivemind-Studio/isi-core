@@ -15,17 +15,17 @@ var loggerInstance *zerolog.Logger
 
 func InitLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
-	logFilePath := "/var/pm2-logs/isi-core-log/app.log"
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	// Open or create the log file
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to open log file")
-	}
+	// JSON logger for production
+	logger := zerolog.New(os.Stdout).
+		With().
+		Timestamp().
+		Str("service", "isi-core").
+		Logger()
 
-	// Set up logger to write to the file
-	logger := zerolog.New(logFile).With().Timestamp().Str("service", "isi-core").Logger()
 	log.Logger = logger
+	loggerInstance = &logger
 }
 
 func GetLogger() *zerolog.Logger {
