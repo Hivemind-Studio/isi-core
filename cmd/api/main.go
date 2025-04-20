@@ -191,7 +191,10 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 		code = fiberErr.Code
 	}
 
-	log.Error().Err(err).Int("status_code", code).Msg("Unhandled error occurred")
+	logger.GetLogger().Error().
+		Err(err).
+		Int("status_code", code).
+		Msg("Unhandled error occurred")
 
 	return c.Status(code).JSON(fiber.Map{
 		"status":  "error",

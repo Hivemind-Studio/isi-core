@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var loggerInstance *zerolog.Logger
+
 func InitLogger() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
@@ -22,6 +24,11 @@ func InitLogger() {
 		Logger()
 
 	log.Logger = logger
+	loggerInstance = &logger
+}
+
+func GetLogger() *zerolog.Logger {
+	return loggerInstance
 }
 
 func Print(logLevel string, requestId string, className string, functionName string, message string, params interface{}) {
