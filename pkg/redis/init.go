@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"github.com/Hivemind-Studio/isi-core/utils"
+	logger2 "github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/redis/go-redis/v9"
 )
@@ -13,7 +13,7 @@ var (
 )
 
 func InitRedis(addr string, password string, db int) *redis.Client {
-	logger := utils.NewLogger()
+	logger := logger2.GetLogger()
 
 	// Set up Redis options
 	redisOptions = &redis.Options{
@@ -30,11 +30,11 @@ func InitRedis(addr string, password string, db int) *redis.Client {
 	ctx := context.Background()
 	_, err := redisClient.Ping(ctx).Result()
 	if err != nil {
-		logger.Error("Failed Connect Redis %v", err)
+		logger.Error().Err(err).Msg("redis ping failed")
 		return nil
 	}
 
-	logger.Success("Connected to Redis %s", addr)
+	logger.Info().Msg("redis ping success")
 	return redisClient
 }
 

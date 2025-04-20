@@ -14,18 +14,23 @@ import (
 var loggerInstance *zerolog.Logger
 
 func InitLogger() {
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	// Single log file (create "logs" dir if needed)
+	logFile, err := os.OpenFile("logs/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to open log file")
+	}
 
-	// JSON logger for production
-	logger := zerolog.New(os.Stdout).
+	// Optional: console output
+	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+
+	// Multi writer: file + console (or just logFile if you want only file)
+	multi := zerolog.MultiLevelWriter(logFile, consoleWriter)
+
+	log.Logger = zerolog.New(multi).
 		With().
 		Timestamp().
 		Str("service", "isi-core").
 		Logger()
-
-	log.Logger = logger
-	loggerInstance = &logger
 }
 
 func GetLogger() *zerolog.Logger {
