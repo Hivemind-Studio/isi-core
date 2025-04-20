@@ -8,37 +8,41 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
+	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
 	redisutils "github.com/Hivemind-Studio/isi-core/pkg/redis"
 	"github.com/Hivemind-Studio/isi-core/pkg/session"
+
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"golang.org/x/oauth2"
+
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/jmoiron/sqlx"
-	"log"
 )
 
 var requestCount *prometheus.CounterVec
 
 func main() {
+	initLogger()
+
 	app := fiber.New(fiber.Config{
 		AppName:      "Inspirasi Satu",
 		ErrorHandler: globalErrorHandler,
 	})
 
-	initLogger()
 	initMetrics()
 
 	// Middleware to count requests with method, route, and status
@@ -53,20 +57,23 @@ func main() {
 
 		route := c.Route().Path
 		if route == "" {
-			route = c.Path() // fallback
+			route = c.Path()
 		}
 
 		requestCount.WithLabelValues(c.Method(), route, strconv.Itoa(status)).Inc()
-		logrus.Infof("Request %s %s took %v with status %d", c.Method(), route, time.Since(start), status)
+		log.Info().
+			Str("method", c.Method()).
+			Str("route", route).
+			Int("status", status).
+			Dur("duration", time.Since(start)).
+			Msg("Request handled")
 
 		return err
 	})
 
-	// Expose Prometheus metrics at /metrics
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	app.Use(compress.New())
-	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(middleware.TimeoutMiddleware(5 * time.Second))
 	app.Use(middleware.RequestIdMiddleware)
@@ -84,22 +91,32 @@ func main() {
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
-		logrus.Printf("Incoming Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
-			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
-		)
+		log.Info().
+			Str("method", c.Method()).
+			Str("path", c.Path()).
+			Str("origin", origin).
+			Str("cookie", cookie).
+			Str("user_agent", userAgent).
+			Str("ip", c.IP()).
+			Msg("Incoming request")
 
 		err := c.Next()
-		logrus.Printf(
-			"Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
-			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
-		)
-		logrus.Printf("Response: status=%d body=%s", c.Response().StatusCode(), string(c.Response().Body()))
+
+		log.Info().
+			Str("method", c.Method()).
+			Str("path", c.Path()).
+			Str("origin", origin).
+			Str("cookie", cookie).
+			Str("user_agent", userAgent).
+			Str("ip", c.IP()).
+			Int("status", c.Response().StatusCode()).
+			Bytes("body", c.Response().Body()).
+			Msg("Response sent")
 
 		return err
 	})
 
 	config := configs.Init()
-
 	sessionManager := initSessionManager(config)
 	api, _ := initApp(config, sessionManager)
 
@@ -107,7 +124,7 @@ func main() {
 		r.RegisterRoutes(app, sessionManager)
 	}
 
-	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
+	log.Fatal().Err(app.Listen(os.Getenv("APP_PORT"))).Msg("Fiber server exited")
 }
 
 func initMetrics() {
@@ -183,7 +200,7 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 		code = fiberErr.Code
 	}
 
-	logrus.New().Error("Error:" + err.Error())
+	log.Error().Err(err).Int("status_code", code).Msg("Unhandled error occurred")
 
 	return c.Status(code).JSON(fiber.Map{
 		"status":  "error",
@@ -193,7 +210,6 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 }
 
 func initLogger() {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetLevel(logrus.InfoLevel)
-	logrus.SetOutput(os.Stdout)
+	zerolog.TimeFieldFormat = time.RFC3339
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }

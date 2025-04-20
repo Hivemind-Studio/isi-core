@@ -4,20 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
+	"os"
 	"strconv"
 )
 
-func Print(logLevel string, requestId string, className string, functionName string, message string, params interface{}) {
-	var log *logrus.Entry
-	fields := logrus.Fields{
-		"request_id": requestId,
-		"class":      className,
-		"function":   functionName,
-		"message":    message,
-	}
+func init() {
+	// Default output to stdout, in JSON format
+	log.Logger = log.Output(os.Stdout).With().Timestamp().Logger()
+}
 
+func Print(logLevel string, requestId string, className string, functionName string, message string, params interface{}) {
 	var formattedParams string
+
 	switch v := params.(type) {
 	case string:
 		formattedParams = v
@@ -32,34 +31,28 @@ func Print(logLevel string, requestId string, className string, functionName str
 		}
 	}
 
-	unescapedStr, err := strconv.Unquote(`"` + formattedParams + `"`)
-	if err == nil {
+	if unescapedStr, err := strconv.Unquote(`"` + formattedParams + `"`); err == nil {
 		formattedParams = unescapedStr
 	}
 
+	event := log.With().
+		Str("request_id", requestId).
+		Str("class", className).
+		Str("function", functionName).
+		Str("message", message).
+		Str("parameters", formattedParams).
+		Logger()
+
 	switch logLevel {
 	case loglevel.INFO:
-		fields["parameters"] = formattedParams
-		log = logrus.WithFields(fields)
-		log.Info(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
-
+		event.Info().Msg(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
 	case loglevel.WARN:
-		fields["parameters"] = formattedParams
-		log = logrus.WithFields(fields)
-		log.Warn(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
-
+		event.Warn().Msg(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
 	case loglevel.DEBUG:
-		fields["parameters"] = formattedParams
-		log = logrus.WithFields(fields)
-		log.Debug(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
-
+		event.Debug().Msg(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
 	case loglevel.ERROR:
-		fields["parameters"] = formattedParams
-		log = logrus.WithFields(fields)
-		log.Error(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
-
+		event.Error().Msg(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
 	default:
-		log = logrus.WithFields(fields)
-		log.Info(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
+		event.Info().Msg(fmt.Sprintf("Function: %s processed by class: %s", functionName, className))
 	}
 }

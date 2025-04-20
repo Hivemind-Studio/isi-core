@@ -1,45 +1,56 @@
 package utils
 
 import (
-	"fmt"
+	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
+	_ "github.com/rs/zerolog/log"
 )
 
 type Logger struct {
-	logger *logrus.Logger
+	logger zerolog.Logger
 }
 
 func NewLogger() *Logger {
-	logger := &logrus.Logger{
-		Out:          logrus.StandardLogger().Out,
-		Formatter:    &CustomFormatter{},
-		Hooks:        make(logrus.LevelHooks),
-		Level:        logrus.InfoLevel,
-		ExitFunc:     logrus.StandardLogger().ExitFunc,
-		ReportCaller: false,
-	}
-
+	zerolog.TimeFieldFormat = time.RFC3339
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	return &Logger{logger: logger}
 }
 
 func (l *Logger) Request(method, path string, headers, query string) {
-	l.logger.Info(fmt.Sprintf("Request: %s %s at %s\nHeaders: %s\nQuery: %s", method, path, time.Now().Format(time.RFC3339), headers, query))
+	l.logger.Info().
+		Str("type", "request").
+		Str("method", method).
+		Str("path", path).
+		Str("headers", headers).
+		Str("query", query).
+		Time("timestamp", time.Now()).
+		Msg("Incoming HTTP request")
 }
 
 func (l *Logger) Response(method, path string, status int, duration time.Duration) {
-	l.logger.Info(fmt.Sprintf("Response: %s %s %d in %s at %s", method, path, status, duration, time.Now().Format(time.RFC3339)))
+	l.logger.Info().
+		Str("type", "response").
+		Str("method", method).
+		Str("path", path).
+		Int("status", status).
+		Dur("duration", duration).
+		Time("timestamp", time.Now()).
+		Msg("HTTP response sent")
 }
 
 func (l *Logger) Success(message string, args ...interface{}) {
-	l.logger.Infof(message, args...)
+	l.logger.Info().
+		Msgf(message, args...)
 }
 
 func (l *Logger) Error(message string, args ...interface{}) {
-	l.logger.Errorf(message, args...)
+	l.logger.Error().
+		Msgf(message, args...)
 }
 
 func (l *Logger) Warning(message string, args ...interface{}) {
-	l.logger.Warnf(message, args...)
+	l.logger.Warn().
+		Msgf(message, args...)
 }
