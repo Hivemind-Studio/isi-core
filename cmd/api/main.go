@@ -91,6 +91,16 @@ func main() {
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
+		log.Info().
+			Str("method", c.Method()).
+			Str("path", c.Path()).
+			Str("origin", origin).
+			Str("cookie", cookie).
+			Str("user_agent", userAgent).
+			Str("ip", c.IP()).
+			Str("request_id", c.Locals("request_id").(string)).
+			Msg("Incoming request")
+
 		err := c.Next()
 
 		status := c.Response().StatusCode()
@@ -98,7 +108,6 @@ func main() {
 		// If the status code is not 2xx, log as an error
 		if status < 200 || status >= 300 {
 			log.Error().
-				Str("request_id", c.Locals("request_id").(string)).
 				Str("method", c.Method()).
 				Str("path", c.Path()).
 				Str("origin", origin).
@@ -110,7 +119,6 @@ func main() {
 				Bytes("body", c.Response().Body())
 		} else {
 			log.Info().
-				Str("request_id", c.Locals("request_id").(string)).
 				Str("method", c.Method()).
 				Str("path", c.Path()).
 				Str("origin", origin).
@@ -118,6 +126,7 @@ func main() {
 				Str("user_agent", userAgent).
 				Str("ip", c.IP()).
 				Int("status", status).
+				Str("request_id", c.Locals("request_id").(string)).
 				Bytes("body", c.Response().Body())
 		}
 
