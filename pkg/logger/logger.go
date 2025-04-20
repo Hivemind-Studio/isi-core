@@ -14,23 +14,18 @@ import (
 var loggerInstance *zerolog.Logger
 
 func InitLogger() {
-	// Single log file (create "logs" dir if needed)
-	logFile, err := os.OpenFile("logs/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+	logFilePath := "/var/pm2-logs/isi-core-log/app.log"
+
+	// Open or create the log file
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to open log file")
 	}
 
-	// Optional: console output
-	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
-
-	// Multi writer: file + console (or just logFile if you want only file)
-	multi := zerolog.MultiLevelWriter(logFile, consoleWriter)
-
-	log.Logger = zerolog.New(multi).
-		With().
-		Timestamp().
-		Str("service", "isi-core").
-		Logger()
+	// Set up logger to write to the file
+	logger := zerolog.New(logFile).With().Timestamp().Str("service", "isi-core").Logger()
+	log.Logger = logger
 }
 
 func GetLogger() *zerolog.Logger {
