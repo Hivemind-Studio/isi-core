@@ -318,7 +318,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	functionName := "GoogleCallback"
 	requestId := c.Locals("request_id").(string)
 
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"Incoming request", string(c.Body()))
 
 	ipAddress := c.IP()
@@ -327,7 +327,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	returnedState := c.Query("state")
 	stateCookie := c.Cookies("oauthstate")
 
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"State Verification", fmt.Sprintf("ReturnedState: %s, StateCookie: %s", returnedState, stateCookie))
 
 	if returnedState == "" || stateCookie == "" || returnedState != stateCookie {
@@ -340,7 +340,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	code := c.Query("code")
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"Exchanging code", fmt.Sprintf("Code: %s", code))
 
 	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), code)
@@ -351,7 +351,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		return err
 	}
 
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"User data retrieved", fmt.Sprintf("ID: %d, Email: %s, Name: %s", userData.ID,
 			userData.Email, userData.Name))
 
@@ -364,7 +364,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		return err
 	}
 
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"Session token generated", fmt.Sprintf("Token: %s", token))
 
 	err = h.setCookieByRole(c, userData.RoleID, token)
@@ -375,7 +375,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 		return err
 	}
 
-	logger.Print(loglevel.INFO, requestId, module, functionName,
+	logger.Print(loglevel.DEBUG, requestId, module, functionName,
 		"Login successful", fmt.Sprintf("UserID: %d, Role: %v", userData.ID, userData.Role))
 
 	if campaignId != "" {
