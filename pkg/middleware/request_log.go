@@ -36,7 +36,7 @@ func logRequestDetails(c *fiber.Ctx, requestID string) {
 		body = "no body"
 	}
 
-	log.Info().
+	log.Debug().
 		Str("request_id", requestID).
 		Str("path", path).
 		Msg(fmt.Sprintf("Request ID: %s | Path: %s | Headers: %v | Body: %s", requestID, path, headers, body))
