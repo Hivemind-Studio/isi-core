@@ -98,7 +98,7 @@ func main() {
 			Logger()
 
 		// If the status code is not 2xx, log as an error
-		if status < 200 || status >= 300 {
+		if status == 200 || status == 201 {
 			event.Info().Msg(fmt.Sprintf("Response sent"))
 		} else {
 			event.Error().Msg("Response sent")
