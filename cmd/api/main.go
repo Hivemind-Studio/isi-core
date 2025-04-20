@@ -46,32 +46,6 @@ func main() {
 
 	initMetrics()
 
-	// Middleware to count requests with method, route, and status
-	app.Use(func(c *fiber.Ctx) error {
-		if c.Path() == "/metrics" {
-			return c.Next()
-		}
-
-		start := time.Now()
-		err := c.Next()
-		status := c.Response().StatusCode()
-
-		route := c.Route().Path
-		if route == "" {
-			route = c.Path()
-		}
-
-		requestCount.WithLabelValues(c.Method(), route, strconv.Itoa(status)).Inc()
-		log.Info().
-			Str("method", c.Method()).
-			Str("route", route).
-			Int("status", status).
-			Dur("duration", time.Since(start)).
-			Msg("Request handled")
-
-		return err
-	})
-
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	app.Use(compress.New())
@@ -88,6 +62,11 @@ func main() {
 	}))
 
 	app.Use(func(c *fiber.Ctx) error {
+		if c.Path() == "/metrics" {
+			return c.Next()
+		}
+
+		start := time.Now()
 		origin := c.Get("Origin")
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
@@ -114,6 +93,7 @@ func main() {
 			Str("user_agent", userAgent).
 			Str("ip", c.IP()).
 			Int("status", status).
+			Dur("duration", time.Since(start)).
 			Str("request_id", c.Locals("request_id").(string)).
 			Logger()
 
