@@ -4,14 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Hivemind-Studio/isi-core/internal/constant/loglevel"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"os"
 	"strconv"
+	"time"
 )
 
-func init() {
-	// Default output to stdout, in JSON format
-	log.Logger = log.Output(os.Stdout).With().Timestamp().Logger()
+func InitLogger() {
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+
+	// JSON logger for production
+	logger := zerolog.New(os.Stdout).
+		With().
+		Timestamp().
+		Str("service", "isi-core").
+		Logger()
+
+	log.Logger = logger
 }
 
 func Print(logLevel string, requestId string, className string, functionName string, message string, params interface{}) {

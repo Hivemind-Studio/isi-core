@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Hivemind-Studio/isi-core/configs"
 	"github.com/Hivemind-Studio/isi-core/db"
 	"github.com/Hivemind-Studio/isi-core/internal/constant"
 	"github.com/Hivemind-Studio/isi-core/pkg/googleoauth2"
 	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/pkg/logger"
 	"github.com/Hivemind-Studio/isi-core/pkg/mail"
 	"github.com/Hivemind-Studio/isi-core/pkg/middleware"
 	"github.com/Hivemind-Studio/isi-core/pkg/mysqlconn"
@@ -22,7 +24,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"golang.org/x/oauth2"
@@ -36,7 +37,7 @@ import (
 var requestCount *prometheus.CounterVec
 
 func main() {
-	initLogger()
+	logger.InitLogger()
 
 	app := fiber.New(fiber.Config{
 		AppName:      "Inspirasi Satu",
@@ -105,29 +106,22 @@ func main() {
 
 		status := c.Response().StatusCode()
 
+		event := log.With().
+			Str("method", c.Method()).
+			Str("path", c.Path()).
+			Str("origin", origin).
+			Str("cookie", cookie).
+			Str("user_agent", userAgent).
+			Str("ip", c.IP()).
+			Int("status", status).
+			Str("request_id", c.Locals("request_id").(string)).
+			Logger()
+
 		// If the status code is not 2xx, log as an error
 		if status < 200 || status >= 300 {
-			log.Error().
-				Str("method", c.Method()).
-				Str("path", c.Path()).
-				Str("origin", origin).
-				Str("cookie", cookie).
-				Str("user_agent", userAgent).
-				Str("ip", c.IP()).
-				Int("status", status).
-				Str("request_id", c.Locals("request_id").(string)).
-				Bytes("body", c.Response().Body()).Msg("Response sent")
+			event.Info().Msg(fmt.Sprintf("Response sent"))
 		} else {
-			log.Info().
-				Str("method", c.Method()).
-				Str("path", c.Path()).
-				Str("origin", origin).
-				Str("cookie", cookie).
-				Str("user_agent", userAgent).
-				Str("ip", c.IP()).
-				Int("status", status).
-				Str("request_id", c.Locals("request_id").(string)).
-				Bytes("body", c.Response().Body()).Msg("Response sent")
+			event.Error().Msg("Response sent")
 		}
 
 		return err
@@ -224,9 +218,4 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 		"message": err.Error(),
 		"code":    code,
 	})
-}
-
-func initLogger() {
-	zerolog.TimeFieldFormat = time.RFC3339
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
