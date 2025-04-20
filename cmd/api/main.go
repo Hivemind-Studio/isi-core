@@ -116,7 +116,7 @@ func main() {
 				Str("ip", c.IP()).
 				Int("status", status).
 				Str("request_id", c.Locals("request_id").(string)).
-				Bytes("body", c.Response().Body())
+				Bytes("body", c.Response().Body()).Msg("Response sent")
 		} else {
 			log.Info().
 				Str("method", c.Method()).
@@ -127,7 +127,7 @@ func main() {
 				Str("ip", c.IP()).
 				Int("status", status).
 				Str("request_id", c.Locals("request_id").(string)).
-				Bytes("body", c.Response().Body())
+				Bytes("body", c.Response().Body()).Msg("Response sent")
 		}
 
 		return err
