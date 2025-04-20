@@ -91,27 +91,35 @@ func main() {
 		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
-		log.Info().
-			Str("method", c.Method()).
-			Str("path", c.Path()).
-			Str("origin", origin).
-			Str("cookie", cookie).
-			Str("user_agent", userAgent).
-			Str("ip", c.IP()).
-			Msg("Incoming request")
-
 		err := c.Next()
 
-		log.Info().
-			Str("method", c.Method()).
-			Str("path", c.Path()).
-			Str("origin", origin).
-			Str("cookie", cookie).
-			Str("user_agent", userAgent).
-			Str("ip", c.IP()).
-			Int("status", c.Response().StatusCode()).
-			Bytes("body", c.Response().Body()).
-			Msg("Response sent")
+		status := c.Response().StatusCode()
+
+		// If the status code is not 2xx, log as an error
+		if status < 200 || status >= 300 {
+			log.Error().
+				Str("request_id", c.Locals("request_id").(string)).
+				Str("method", c.Method()).
+				Str("path", c.Path()).
+				Str("origin", origin).
+				Str("cookie", cookie).
+				Str("user_agent", userAgent).
+				Str("ip", c.IP()).
+				Int("status", status).
+				Str("request_id", c.Locals("request_id").(string)).
+				Bytes("body", c.Response().Body())
+		} else {
+			log.Info().
+				Str("request_id", c.Locals("request_id").(string)).
+				Str("method", c.Method()).
+				Str("path", c.Path()).
+				Str("origin", origin).
+				Str("cookie", cookie).
+				Str("user_agent", userAgent).
+				Str("ip", c.IP()).
+				Int("status", status).
+				Bytes("body", c.Response().Body())
+		}
 
 		return err
 	})
