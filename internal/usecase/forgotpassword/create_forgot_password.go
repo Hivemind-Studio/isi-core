@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, email string) (err error) {
+func (uc *UseCase) SendVerificationUseCase(ctx context.Context, email string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "User service", "CreateStaff", "function start", email)

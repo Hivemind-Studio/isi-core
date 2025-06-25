@@ -24,7 +24,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.createUserStaffUseCase.Execute(c.Context(), newUser)
+	err := h.createUserStaffUseCase.CreateUserStaff(c.Context(), newUser)
 	if err != nil {
 		return httperror.Wrap(fiber.StatusInternalServerError, err, "Failed to create user")
 	}
@@ -79,7 +79,7 @@ func (h *Handler) GetUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, paginate, err := h.getUsersUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end,
+	users, paginate, err := h.getUsersUseCase.GetCoachees(c.Context(), name, email, phoneNumber, status, start, end,
 		campaignId, page, perPage)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (h *Handler) GetUserById(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid user id")
 	}
 
-	res, err := h.getUserByIDUseCase.Execute(c.Context(), id)
+	res, err := h.getUserByIDUseCase.GetCoacheeByID(c.Context(), id)
 
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (h *Handler) UpdateStatusUser(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.updateUserStatusUseCase.Execute(c.Context(), payload.Ids, payload.UpdatedStatus)
+	err := h.updateUserStatusUseCase.UpdateUserStatus(c.Context(), payload.Ids, payload.UpdatedStatus)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update status users")
@@ -146,7 +146,7 @@ func (h *Handler) UpdateUserRole(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err = h.updateUserRoleCase.Execute(c.Context(), id, constant.GetRoleID(payload.Role))
+	err = h.updateUserRoleCase.UpdateUserRole(c.Context(), id, constant.GetRoleID(payload.Role))
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")
@@ -171,7 +171,7 @@ func (h *Handler) SendChangeEmailVerification(c *fiber.Ctx) error {
 				logger.GetLogger().Printf("Recovered from panic in SendChangeEmailVerification: %v", r)
 			}
 		}()
-		err := h.sendChangeEmailVerificationUseCase.Execute(c.Context(), userSession.Email)
+		err := h.sendChangeEmailVerificationUseCase.SendVerificationUseCase(c.Context(), userSession.Email)
 		if err != nil {
 			logger.GetLogger().Printf("Failed to send change email verification: %v", err)
 		}
@@ -202,7 +202,7 @@ func (h *Handler) SendConfirmationNewEmail(c *fiber.Ctx) error {
 
 	email := u["email"].(string)
 
-	err := h.sendConfirmationChangeNewEmailUseCase.Execute(c.Context(), payload.Token, payload.NewEmail, email)
+	err := h.sendConfirmationChangeNewEmailUseCase.SendConfirmationChangeNewEmail(c.Context(), payload.Token, payload.NewEmail, email)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update email users")
@@ -233,7 +233,7 @@ func (h *Handler) ConfirmChangeNewEmail(c *fiber.Ctx) error {
 
 	email := u["email"].(string)
 
-	err := h.updateUserEmailUseCase.Execute(c.Context(), payload.Token, email)
+	err := h.updateUserEmailUseCase.VerifyRegistrationToken(c.Context(), payload.Token, email)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update email users")

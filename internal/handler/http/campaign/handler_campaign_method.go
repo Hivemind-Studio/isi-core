@@ -28,7 +28,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	res, err := h.createCampaignUseCase.Execute(c.Context(), newCampaign)
+	res, err := h.createCampaignUseCase.CreateCampaign(c.Context(), newCampaign)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 		}
 	}
 
-	campaigns, paginate, err := h.getCampaignUseCase.Execute(c.Context(), name, status, channel, start,
+	campaigns, paginate, err := h.getCampaignUseCase.GetCampaign(c.Context(), name, status, channel, start,
 		end, page, perPage)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (h *Handler) UpdateStatusCampaign(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.updateStatusCampaign.Execute(c.Context(), patchCampaign.IDS, patchCampaign.Status)
+	err := h.updateStatusCampaign.UpdateStatusCampaign(c.Context(), patchCampaign.IDS, patchCampaign.Status)
 
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func (h *Handler) Update(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	res, err := h.updateCampaign.Execute(c.Context(), id, newCampaign)
+	res, err := h.updateCampaign.UpdateCampaign(c.Context(), id, newCampaign)
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,7 @@ func (h *Handler) GetCampaignById(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid campaign id")
 	}
 
-	res, err := h.getCampaignByID.Execute(c.Context(), id)
+	res, err := h.getCampaignByID.GetCampaignByID(c.Context(), id)
 
 	if err != nil {
 		return err

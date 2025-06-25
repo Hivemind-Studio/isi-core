@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, password string, confirmPassword string, token string) (err error) {
+func (uc *UseCase) SendConfirmationChangeNewEmail(ctx context.Context, password string, confirmPassword string, token string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "User service", "UpdatePassword", "function start", token)

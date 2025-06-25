@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, email string, token string) (err error) {
+func (uc *UseCase) VerifyRegistrationToken(ctx context.Context, email string, token string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	if err != nil {
 		return err

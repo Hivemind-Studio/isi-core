@@ -9,31 +9,31 @@ import (
 )
 
 type LoginUseCaseInterface interface {
-	Execute(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error)
+	Login(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error)
 }
 
 type SendVerificationUseCaseInterface interface {
-	Execute(ctx context.Context, email string) error
+	SendVerificationUseCase(ctx context.Context, email string) error
 }
 
 type VerifyRegistrationTokenUseCaseInterface interface {
-	Execute(ctx context.Context, registrationToken string, token string) (err error)
+	VerifyRegistrationToken(ctx context.Context, registrationToken string, token string) (err error)
 }
 
 type CreateUserUseCaseInterface interface {
-	Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
+	CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error)
 }
 
 type UpdateCoachPasswordInterface interface {
-	Execute(ctx context.Context, password string, confirmPassword string, token string) (err error)
+	SendConfirmationChangeNewEmail(ctx context.Context, password string, confirmPassword string, token string) (err error)
 }
 
 type ForgotPasswordUseCaseInterface interface {
-	Execute(ctx context.Context, email string) (err error)
+	SendVerificationUseCase(ctx context.Context, email string) (err error)
 }
 
 type GoogleLoginUseCaseInterface interface {
-	Execute(*fiber.Ctx) string
+	GoogleLogin(*fiber.Ctx) string
 }
 
 type GoogleCallbackUseCaseInterface interface {
@@ -41,5 +41,5 @@ type GoogleCallbackUseCaseInterface interface {
 }
 
 type CreateUserCampaign interface {
-	Execute(ctx context.Context, payload campaign.UserCampaign) error
+	CreateUser(ctx context.Context, payload campaign.UserCampaign) error
 }

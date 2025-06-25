@@ -9,39 +9,39 @@ import (
 )
 
 type CreateUserStaffUseCaseInterface interface {
-	Execute(ctx context.Context, body auth.RegistrationStaffDTO) (err error)
+	CreateUserStaff(ctx context.Context, body auth.RegistrationStaffDTO) (err error)
 }
 
 type GetUsersUseCaseInterface interface {
-	Execute(ctx context.Context, name string, email string, phoneNumber string, status string,
+	GetCoachees(ctx context.Context, name string, email string, phoneNumber string, status string,
 		startDate *time.Time, endDate *time.Time, campaignId string, page int64, perPage int64,
 	) ([]user.UserDTO, pagination.Pagination, error)
 }
 
 type GetUserByIDUseCaseInterface interface {
-	Execute(ctx context.Context, id int64) (result *user.UserDTO, err error)
+	GetCoacheeByID(ctx context.Context, id int64) (result *user.UserDTO, err error)
 }
 
 type UpdateUserStatusUseCaseInterface interface {
-	Execute(ctx context.Context, ids []int64, status int64) error
+	UpdateUserStatus(ctx context.Context, ids []int64, status int64) error
 }
 
 type UpdateUserRoleUseCaseInterface interface {
-	Execute(ctx context.Context, id int64, role int64) error
+	UpdateUserRole(ctx context.Context, id int64, role int64) error
 }
 
 type UpdateUserEmailInterface interface {
-	Execute(ctx context.Context, token string, oldEmail string) (err error)
+	VerifyRegistrationToken(ctx context.Context, token string, oldEmail string) (err error)
 }
 
 type SendChangeEmailVerificationInterface interface {
-	Execute(ctx context.Context, email string) error
+	SendVerificationUseCase(ctx context.Context, email string) error
 }
 
 type SendConfirmationChangeNewEmailInterface interface {
-	Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
+	SendConfirmationChangeNewEmail(ctx context.Context, token string, newEmail string, oldEmail string) (err error)
 }
 
 type ConfirmChangeNewEmail interface {
-	Execute(ctx context.Context, token string, oldEmail string) (err error)
+	VerifyRegistrationToken(ctx context.Context, token string, oldEmail string) (err error)
 }

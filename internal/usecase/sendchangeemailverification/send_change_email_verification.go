@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, email string) error {
+func (uc *UseCase) SendVerificationUseCase(ctx context.Context, email string) error {
 	token, err := uc.userEmailService.GenerateTokenVerification(ctx, email, constant.EMAIL_UPDATE, false)
 	if err != nil {
 		return err

@@ -9,11 +9,11 @@ import (
 
 type Handler struct {
 	getCoacheesUseCase    GetCoacheesUseCaseInterface
-	getCoacheeByIdUseCase GetCoacheeByIdUseCaseInterface
+	getCoacheeByIDUseCase GetCoacheeByIDUseCaseInterface
 }
 
 func NewCoacheeHandler(getCoacheesUseCase GetCoacheesUseCaseInterface,
-	getCoacheeByIdUseCase GetCoacheeByIdUseCaseInterface) *Handler {
+	getCoacheeByIdUseCase GetCoacheeByIDUseCaseInterface) *Handler {
 	return &Handler{
 		getCoacheesUseCase,
 		getCoacheeByIdUseCase,

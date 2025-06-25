@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, photo string) error {
+func (uc *UseCase) updateCoachLevel(ctx context.Context, id int64, photo string) error {
 	tx, err := uc.repoUser.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")

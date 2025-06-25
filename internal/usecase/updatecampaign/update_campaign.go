@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, payload dto.DTO) (dto.DTO, error) {
+func (uc *UseCase) UpdateCampaign(ctx context.Context, id int64, payload dto.DTO) (dto.DTO, error) {
 	tx, err := uc.repoCampaign.StartTx(ctx)
 	if err != nil {
 		return dto.DTO{}, httperror.New(fiber.StatusInternalServerError, "error when starting transaction")

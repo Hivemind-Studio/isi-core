@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error) {
+func (uc *UseCase) Login(ctx context.Context, body *auth.LoginDTO) (user dto.UserDTO, err error) {
 	requestID := ctx.Value("request_id").(string)
 
 	logger.Print("info", requestID, "user_login", "execute", "attempting login for email", body.Email)

@@ -25,7 +25,7 @@ func generateStateOauthCookie() (string, fiber.Cookie) {
 	return state, cookie
 }
 
-func (uc *UseCase) Execute(c *fiber.Ctx) string {
+func (uc *UseCase) GoogleLogin(c *fiber.Ctx) string {
 	state, cookie := generateStateOauthCookie()
 
 	c.Cookie(&cookie)

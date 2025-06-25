@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, ids []int64, status int8) error {
+func (uc *UseCase) UpdateStatusCampaign(ctx context.Context, ids []int64, status int8) error {
 	tx, err := uc.repoCampaign.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")

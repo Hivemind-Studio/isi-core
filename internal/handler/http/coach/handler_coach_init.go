@@ -10,14 +10,14 @@ import (
 type Handler struct {
 	getCoachUseCase         GetCoachesUseCaseInterface
 	createCoachUseCase      CreateCoachUseCaseInterface
-	getCoachByIdUseCase     GetCoachByIdUseCaseInterface
+	getCoachByIdUseCase     GetCoachByIDUseCaseInterface
 	updateCoachLevelUseCase UpdateCoachLevelUseCaseInterface
 }
 
 func NewCoachHandler(
 	getCoachUseCase GetCoachesUseCaseInterface,
 	createCoachUseCase CreateCoachUseCaseInterface,
-	getCoachByIdUseCase GetCoachByIdUseCaseInterface,
+	getCoachByIdUseCase GetCoachByIDUseCaseInterface,
 	updateCoachLevelUseCase UpdateCoachLevelUseCaseInterface,
 ) *Handler {
 	return &Handler{

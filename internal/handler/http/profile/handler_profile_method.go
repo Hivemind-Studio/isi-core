@@ -42,7 +42,7 @@ func (h *Handler) GetProfile(c *fiber.Ctx) error {
 	logger.Print("info", requestId, module, functionName,
 		fmt.Sprintf("Fetching profile for user: %+v", user), "")
 
-	res, err := h.getProfileUser.Execute(c.Context(), user.ID, user.Role)
+	res, err := h.getProfileUser.GetProfileUser(c.Context(), user.ID, user.Role)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
 			fmt.Sprintf("Failed to retrieve profile for user ID=%s", user.ID), err.Error())
@@ -81,7 +81,7 @@ func (h *Handler) UpdateProfilePassword(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = h.updateProfilePassword.Execute(c.Context(), userSession.ID, requestBody.CurrentPassword, requestBody.Password)
+	err = h.updateProfilePassword.UpdateProfileUserPassword(c.Context(), userSession.ID, requestBody.CurrentPassword, requestBody.Password)
 
 	if err != nil {
 		return err
@@ -123,7 +123,7 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 		return err
 	}
 
-	res, err := h.updateProfile.Execute(c.Context(), userSession.ID, userSession.Role, requestBody)
+	res, err := h.updateProfile.UpdateProfileUser(c.Context(), userSession.ID, userSession.Role, requestBody)
 
 	if err != nil {
 		return err
@@ -185,7 +185,7 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusInternalServerError, "Failed to upload file")
 	}
 
-	err = h.updatePhoto.Execute(c.Context(), userSession.ID, fileURL)
+	err = h.updatePhoto.updateCoachLevel(c.Context(), userSession.ID, fileURL)
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ func (h *Handler) DeletePhoto(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = h.deletePhoto.Execute(c.Context(), userSession.ID)
+	err = h.deletePhoto.DeletePhoto(c.Context(), userSession.ID)
 
 	if err != nil {
 		return err

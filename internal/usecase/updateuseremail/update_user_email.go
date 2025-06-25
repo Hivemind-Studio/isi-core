@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, token string, oldEmail string) (err error) {
+func (uc *UseCase) VerifyRegistrationToken(ctx context.Context, token string, oldEmail string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	defer dbtx.HandleRollback(tx)
 

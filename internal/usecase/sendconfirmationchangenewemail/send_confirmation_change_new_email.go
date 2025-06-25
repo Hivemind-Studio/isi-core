@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, token string, newEmail string, oldEmail string) (err error) {
+func (uc *UseCase) SendConfirmationChangeNewEmail(ctx context.Context, token string, newEmail string, oldEmail string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	defer dbtx.HandleRollback(tx)
 

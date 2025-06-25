@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, name string, email string, phoneNumber string, status string, startDate,
+func (uc *UseCase) GetCoachees(ctx context.Context, name string, email string, phoneNumber string, status string, startDate,
 	endDate *time.Time, campaignId string, page int64, perPage int64,
 ) ([]dto.UserDTO, pagination.Pagination, error) {
 	params := dto.GetUsersDTO{

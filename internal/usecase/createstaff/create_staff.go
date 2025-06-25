@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) (err error) {
+func (uc *UseCase) CreateUserStaff(ctx context.Context, body auth.RegistrationStaffDTO) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "User service", "CreateStaff", "function start", body)

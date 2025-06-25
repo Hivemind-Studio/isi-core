@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, payload dto.DTO) (respond dto.DTO, err error) {
+func (uc *UseCase) CreateCampaign(ctx context.Context, payload dto.DTO) (respond dto.DTO, err error) {
 	tx, err := uc.repoCampaign.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "Campaign service", "CreateCampaign",
@@ -41,7 +41,7 @@ func (uc *UseCase) Execute(ctx context.Context, payload dto.DTO) (respond dto.DT
 		return dto.DTO{}, httperror.Wrap(fiber.StatusInternalServerError, err, "Transaction commit failed")
 	}
 
-	dto := campaign.ConvertCampaignToDTO(c)
+	response := campaign.ConvertCampaignToDTO(c)
 
-	return dto, err
+	return response, err
 }

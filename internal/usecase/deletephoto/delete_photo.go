@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64) error {
+func (uc *UseCase) DeletePhoto(ctx context.Context, id int64) error {
 	tx, err := uc.repoUser.StartTx(ctx)
 	if err != nil {
 		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")

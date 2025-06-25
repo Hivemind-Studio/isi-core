@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *UseCase) Execute(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
+func (s *UseCase) CreateUser(ctx context.Context, body *auth.RegistrationDTO) (result *auth.RegisterResponse, err error) {
 	tx, err := s.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "User service", "CreateUser", "function start", body)

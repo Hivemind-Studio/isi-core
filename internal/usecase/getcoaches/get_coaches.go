@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
+func (uc *UseCase) GetCoaches(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
 	endDate *time.Time, page int64, perPage int64,
 ) ([]coach.DTO, pagination.Pagination, error) {
 	coachRoleId := constant.RoleIDCoach
@@ -29,7 +29,7 @@ func (uc *UseCase) Execute(ctx context.Context, name string, email string, phone
 		return nil, pagination.Pagination{}, httperror.Wrap(fiber.StatusInternalServerError, err, "failed to retrieve users")
 	}
 
-	dtos := coachDTO.ConvertCoachesToDTO(coaches)
+	responses := coachDTO.ConvertCoachesToDTO(coaches)
 
-	return dtos, paginate, nil
+	return responses, paginate, nil
 }

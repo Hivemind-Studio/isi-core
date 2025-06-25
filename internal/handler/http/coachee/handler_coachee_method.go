@@ -51,7 +51,7 @@ func (h *Handler) GetCoachees(c *fiber.Ctx) error {
 		}
 	}
 
-	users, paginate, err := h.getCoacheesUseCase.Execute(c.Context(), name, email, phoneNumber, status, start, end, campaignId, page, perPage)
+	users, paginate, err := h.getCoacheesUseCase.GetCoachees(c.Context(), name, email, phoneNumber, status, start, end, campaignId, page, perPage)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (h *Handler) GetCoacheeById(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid coach id")
 	}
 
-	res, err := h.getCoacheeByIdUseCase.Execute(c.Context(), id)
+	res, err := h.getCoacheeByIDUseCase.GetCoacheeByID(c.Context(), id)
 
 	if err != nil {
 		return err

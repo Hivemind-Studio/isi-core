@@ -5,7 +5,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, level string) error {
+func (uc *UseCase) updateCoachLevel(ctx context.Context, id int64, level string) error {
 	tx, err := uc.repoCoach.StartTx(ctx)
 	if err != nil {
 		return err

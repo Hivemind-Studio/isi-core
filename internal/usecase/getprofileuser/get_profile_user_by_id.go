@@ -11,9 +11,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *UseCase) Execute(ctx context.Context, id int64, role string) (*dto.UserDTO, error) {
+func (s *UseCase) GetProfileUser(ctx context.Context, id int64, role string) (*dto.UserDTO, error) {
 	module := "get_profile_user_by_id"
-	functionName := "Execute"
+	functionName := "CreateCampaign"
 	requestId := ctx.Value("request_id").(string) // Assuming request_id is stored in the context
 
 	logger.Print("info", requestId, module, functionName,

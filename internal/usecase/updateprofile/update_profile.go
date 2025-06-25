@@ -12,7 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, role string, payload dto.UpdateUserDTO) (*dto.UserDTO, error) {
+func (uc *UseCase) UpdateProfileUser(ctx context.Context, id int64, role string, payload dto.UpdateUserDTO) (*dto.UserDTO, error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print(loglevel.INFO, requestId, "Profile service", "UpdateProfile", "function start", payload.Title)

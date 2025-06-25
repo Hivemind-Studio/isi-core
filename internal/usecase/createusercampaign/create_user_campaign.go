@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, payload dto.UserCampaign) error {
+func (uc *UseCase) CreateUser(ctx context.Context, payload dto.UserCampaign) error {
 	tx, err := uc.repoCampaign.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "Campaign service", "CreateUserCampaign",

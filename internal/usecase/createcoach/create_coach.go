@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, payload coach.CreateCoachDTO) (err error) {
+func (uc *UseCase) createCoach(ctx context.Context, payload coach.CreateCoachDTO) (err error) {
 	tx, err := uc.repoCoach.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "Coach service", "CreateCoach", "function start", payload)

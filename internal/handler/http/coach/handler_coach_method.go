@@ -53,7 +53,7 @@ func (h *Handler) GetCoaches(c *fiber.Ctx) error {
 		}
 	}
 
-	users, paginate, err := h.getCoachUseCase.Execute(c.Context(), name, email, phoneNumber, status, level, start, end, page, perPage)
+	users, paginate, err := h.getCoachUseCase.GetCoaches(c.Context(), name, email, phoneNumber, status, level, start, end, page, perPage)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (h *Handler) CreateCoach(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err := h.createCoachUseCase.Execute(c.Context(), newCoach)
+	err := h.createCoachUseCase.createCoach(c.Context(), newCoach)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (h *Handler) GetCoachById(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid coach id")
 	}
 
-	res, err := h.getCoachByIdUseCase.Execute(c.Context(), id)
+	res, err := h.getCoachByIdUseCase.GetCoachByID(c.Context(), id)
 
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func (h *Handler) UpdateCoachLevel(c *fiber.Ctx) error {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Invalid Input")
 	}
 
-	err = h.updateCoachLevelUseCase.Execute(c.Context(), id, payload.Level)
+	err = h.updateCoachLevelUseCase.UpdateCoachLevel(c.Context(), id, payload.Level)
 
 	if err != nil {
 		return httperror.Wrap(fiber.StatusBadRequest, err, "Failed to update role users")

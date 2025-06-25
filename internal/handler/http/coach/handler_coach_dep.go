@@ -9,19 +9,19 @@ import (
 )
 
 type GetCoachesUseCaseInterface interface {
-	Execute(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
+	GetCoaches(ctx context.Context, name string, email string, phoneNumber string, status string, level string, startDate,
 		endDate *time.Time, page int64, perPage int64,
 	) ([]coach.DTO, pagination.Pagination, error)
 }
 
 type CreateCoachUseCaseInterface interface {
-	Execute(ctx context.Context, payload coach.CreateCoachDTO) (err error)
+	createCoach(ctx context.Context, payload coach.CreateCoachDTO) (err error)
 }
 
-type GetCoachByIdUseCaseInterface interface {
-	Execute(ctx context.Context, id int64) (result *dto.UserDTO, err error)
+type GetCoachByIDUseCaseInterface interface {
+	GetCoachByID(ctx context.Context, id int64) (result *dto.UserDTO, err error)
 }
 
 type UpdateCoachLevelUseCaseInterface interface {
-	Execute(ctx context.Context, id int64, level string) error
+	UpdateCoachLevel(ctx context.Context, id int64, level string) error
 }

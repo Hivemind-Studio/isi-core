@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *UseCase) Execute(ctx context.Context, id int64) (dto.DTO, error) {
+func (s *UseCase) GetCampaignByID(ctx context.Context, id int64) (dto.DTO, error) {
 	res, err := s.repoCampaign.GetById(ctx, id)
 	if err != nil {
 		return dto.DTO{}, httperror.New(fiber.StatusNotFound, "campaign not found")

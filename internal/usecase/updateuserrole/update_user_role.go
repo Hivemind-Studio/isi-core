@@ -5,7 +5,7 @@ import (
 	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, role int64) error {
+func (uc *UseCase) UpdateUserRole(ctx context.Context, id int64, role int64) error {
 	tx, err := uc.repoUser.StartTx(ctx)
 	if err != nil {
 		return err

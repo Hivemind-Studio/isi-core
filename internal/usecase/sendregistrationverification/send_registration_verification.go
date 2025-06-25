@@ -15,7 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, email string) error {
+func (uc *UseCase) SendVerificationUseCase(ctx context.Context, email string) error {
 	log.Info("Executing email verification")
 
 	if valid := uc.userEmailService.ValidateEmail(ctx, email); !valid {
@@ -38,20 +38,20 @@ func (uc *UseCase) Execute(ctx context.Context, email string) error {
 		requestId = "unknown"
 	}
 
-	logger.Print(loglevel.INFO, requestId, "emailVerification", "Execute",
+	logger.Print(loglevel.INFO, requestId, "emailVerification", "CreateCampaign",
 		fmt.Sprintf("requestId: %v", requestId), nil)
 
 	go func(emailAddr, tokenStr, recipient, reqId string) {
 		defer func() {
 			if r := recover(); r != nil {
-				logger.Print(loglevel.ERROR, reqId, "emailVerification", "Execute",
+				logger.Print(loglevel.ERROR, reqId, "emailVerification", "CreateCampaign",
 					fmt.Sprintf("panic recovered in email verification: %v", r), emailAddr)
 				debug.PrintStack()
 			}
 		}()
 
 		if err := uc.emailVerification(emailAddr, tokenStr, recipient, reqId); err != nil {
-			logger.Print(loglevel.ERROR, reqId, "emailVerification", "Execute",
+			logger.Print(loglevel.ERROR, reqId, "emailVerification", "CreateCampaign",
 				"sending registration verification email failed: "+err.Error(), emailAddr)
 		}
 	}(email, token, email, requestId)

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, name, status, channel string, startDate,
+func (uc *UseCase) GetCampaign(ctx context.Context, name, status, channel string, startDate,
 	endDate *time.Time, page int64, perPage int64,
 ) ([]dto.DTO, pagination.Pagination, error) {
 	params := dto.Params{
@@ -26,7 +26,7 @@ func (uc *UseCase) Execute(ctx context.Context, name, status, channel string, st
 			"failed to retrieve campaigns")
 	}
 
-	dtos := campaign.ConvertCampaignToDTOs(campaigns)
+	responses := campaign.ConvertCampaignToDTOs(campaigns)
 
-	return dtos, paginate, nil
+	return responses, paginate, nil
 }

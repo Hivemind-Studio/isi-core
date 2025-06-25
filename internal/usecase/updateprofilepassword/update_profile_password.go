@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (uc *UseCase) Execute(ctx context.Context, id int64, currentPassword string, password string) (err error) {
+func (uc *UseCase) UpdateProfileUserPassword(ctx context.Context, id int64, currentPassword string, password string) (err error) {
 	tx, err := uc.repoUser.StartTx(ctx)
 	requestId := ctx.Value("request_id").(string)
 	logger.Print("info", requestId, "Profile service", "UpdatePassword", "function start", id)

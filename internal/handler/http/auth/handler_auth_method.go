@@ -33,7 +33,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	user, err := h.loginUseCase.Execute(c.Context(), &loginDTO)
+	user, err := h.loginUseCase.Login(c.Context(), &loginDTO)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	if err := h.verifyRegistrationTokenUseCase.Execute(c.Context(),
+	if err := h.verifyRegistrationTokenUseCase.VerifyRegistrationToken(c.Context(),
 		requestBody.Email, requestBody.Token); err != nil {
 		logger.Print(loglevel.ERROR, requestId, module, functionName,
 			"Registration token is not valid", string(c.Body()))
@@ -187,7 +187,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	requestBody.IPAddress = ipAddress
 	requestBody.UserAgent = userAgent
 
-	result, err := h.createUserUseCase.Execute(c.Context(), &requestBody)
+	result, err := h.createUserUseCase.CreateUser(c.Context(), &requestBody)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
@@ -201,7 +201,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 			UserAgent:  userAgent,
 			CampaignId: *requestBody.CampaignId,
 		}
-		err = h.createUserCampaign.Execute(c.Context(), userCampaign)
+		err = h.createUserCampaign.CreateUser(c.Context(), userCampaign)
 
 		if err != nil {
 			return nil
@@ -230,7 +230,7 @@ func (h *Handler) EmailVerification(c *fiber.Ctx) error {
 	}
 
 	ctx := context.WithValue(c.Context(), "request_id", requestId)
-	if err := h.sendRegistrationEmailVerificationUseCase.Execute(ctx, requestBody.Email); err != nil {
+	if err := h.sendRegistrationEmailVerificationUseCase.SendVerificationUseCase(ctx, requestBody.Email); err != nil {
 		logger.Print("error", requestId, module, functionName,
 			err.Error(), requestBody)
 		return err
@@ -260,7 +260,7 @@ func (h *Handler) PatchPassword(c *fiber.Ctx) error {
 		return err
 	}
 
-	err := h.updateCoachPasswordUseCase.Execute(c.Context(), requestBody.Password,
+	err := h.updateCoachPasswordUseCase.SendConfirmationChangeNewEmail(c.Context(), requestBody.Password,
 		requestBody.ConfirmPassword, requestBody.Token)
 
 	if err != nil {
@@ -289,7 +289,7 @@ func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
 		return httperror.New(fiber.StatusBadRequest, "Invalid input")
 	}
 
-	err := h.forgotPasswordUseCase.Execute(c.Context(), requestBody.Email)
+	err := h.forgotPasswordUseCase.SendVerificationUseCase(c.Context(), requestBody.Email)
 
 	if err != nil {
 		return err
@@ -308,7 +308,7 @@ func (h *Handler) GoogleLogin(c *fiber.Ctx) error {
 	logger.Print(loglevel.INFO, requestId, module, functionName,
 		"", string(c.Body()))
 
-	url := h.googleLoginUseCase.Execute(c)
+	url := h.googleLoginUseCase.GoogleLogin(c)
 
 	return c.Redirect(url)
 }
@@ -385,7 +385,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 			UserAgent:  userAgent,
 			CampaignId: campaignId,
 		}
-		err = h.createUserCampaign.Execute(c.Context(), userCampaign)
+		err = h.createUserCampaign.CreateUser(c.Context(), userCampaign)
 
 		if err != nil {
 			return nil
