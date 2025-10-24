@@ -52,3 +52,4 @@ go.work
 *.log
 *.tmp
 !Makefile
+!Dockerfile
