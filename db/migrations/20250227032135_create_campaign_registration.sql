@@ -12,6 +12,8 @@ CREATE TABLE campaign_registrations (
    FOREIGN KEY (campaign_id) REFERENCES campaigns(campaign_id),
    INDEX idx_campaign_id (campaign_id)
 );
+
+CREATE INDEX idx_campaign_registrations_campaign_id ON campaign_registrations(campaign_id);
 -- +goose StatementEnd
 
 -- +goose Down

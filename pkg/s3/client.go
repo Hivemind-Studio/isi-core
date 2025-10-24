@@ -1,6 +1,8 @@
 package s3
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -9,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -26,7 +29,7 @@ func s3Client() (*session.Session, error) {
 	return sess, nil
 }
 
-func UploadFile(filePath string, fileName string, username string) (string, error) {
+func UploadFile(filePath string, fileName string) (string, error) {
 	s, err := s3Client()
 	if err != nil {
 		return "", fmt.Errorf("failed to create S3 client: %v", err)
@@ -40,11 +43,19 @@ func UploadFile(filePath string, fileName string, username string) (string, erro
 	}
 	defer file.Close()
 
-	fileName = strings.ToLower(username) + "/" + fileName
+	hasher := sha256.New()
+	hasher.Write([]byte(fileName))
+	hashedName := hex.EncodeToString(hasher.Sum(nil))
+
+	ext := filepath.Ext(fileName)
+	s3Key := hashedName
+	if ext != "" {
+		s3Key = hashedName + ext
+	}
 
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("CDN_BUCKET")),
-		Key:    aws.String(fileName),
+		Key:    aws.String(s3Key),
 		Body:   file,
 		ACL:    aws.String("public-read"),
 	})
@@ -52,7 +63,7 @@ func UploadFile(filePath string, fileName string, username string) (string, erro
 		return "", fmt.Errorf("failed to upload file: %v", err)
 	}
 
-	cdnUrl := fmt.Sprintf("%s/%s", os.Getenv("CDN_URL"), fileName)
+	cdnUrl := fmt.Sprintf("%s/%s", os.Getenv("CDN_URL"), s3Key)
 
 	return cdnUrl, nil
 }

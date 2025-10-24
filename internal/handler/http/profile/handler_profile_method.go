@@ -177,8 +177,7 @@ func (h *Handler) UploadPhoto(c *fiber.Ctx) error {
 		}
 	}(tempFilePath)
 
-	username := userSession.Name
-	fileURL, err := s3.UploadFile(tempFilePath, file.Filename, username)
+	fileURL, err := s3.UploadFile(tempFilePath, file.Filename)
 	if err != nil {
 		logger.Print("error", requestId, module, functionName,
 			"Failed to upload file to S3", err.Error())
