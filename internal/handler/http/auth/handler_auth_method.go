@@ -44,7 +44,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	}
 
 	logger.Print("info", requestId, module, functionName,
-		fmt.Sprintf("token created: %s", token), string(c.Body()))
+		fmt.Sprintf("session token created for user id: %d", user.ID), string(c.Body()))
 
 	if user.RoleID == nil {
 		logger.Print("error", requestId, module, functionName,
@@ -59,7 +59,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	}
 
 	logger.Print("info", requestId, module, functionName,
-		fmt.Sprintf("cookie set created: %s", token), string(c.Body()))
+		fmt.Sprintf("session cookie set for user id: %d", user.ID), string(c.Body()))
 
 	return c.Status(fiber.StatusOK).JSON(
 		response.WebResponse{
@@ -339,7 +339,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 
 	code := c.Query("code")
 	logger.Print(loglevel.INFO, requestId, module, functionName,
-		"Exchanging code", fmt.Sprintf("Code: %s", code))
+		"Exchanging code", "Exchanging Google authorization code")
 
 	userData, err := h.googleCallbackUseCase.GetUserDataFromGoogle(c.Context(), code)
 	if err != nil {
@@ -363,7 +363,7 @@ func (h *Handler) GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	logger.Print(loglevel.INFO, requestId, module, functionName,
-		"Session token generated", fmt.Sprintf("Token: %s", token))
+		"Session token generated", fmt.Sprintf("User ID: %d", userData.ID))
 
 	err = h.setCookieByRole(c, userData.RoleID, token)
 	if err != nil {

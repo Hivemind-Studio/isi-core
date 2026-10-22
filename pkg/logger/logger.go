@@ -36,6 +36,7 @@ func Print(logLevel string, requestId string, className string, functionName str
 	if err == nil {
 		formattedParams = unescapedStr
 	}
+	formattedParams = redactSecrets(formattedParams)
 
 	switch logLevel {
 	case loglevel.INFO:

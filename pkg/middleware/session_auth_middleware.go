@@ -46,7 +46,7 @@ func SessionAuthMiddleware(sessionManager *session.SessionManager, accessControl
 		token := c.Cookies(cookieName)
 		sessionID := rediskey.SESSION_PREFIX_KEY + token
 
-		log.Printf("SessionAuthMiddleware: Selected cookie=%s, SessionID=%s", cookieName, sessionID)
+		log.Printf("SessionAuthMiddleware: Selected cookie=%s", cookieName)
 
 		if token == "" {
 			log.Println("Unauthorized access: No session token found in cookies")

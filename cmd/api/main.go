@@ -47,11 +47,10 @@ func main() {
 
 	app.Use(func(c *fiber.Ctx) error {
 		origin := c.Get("Origin")
-		cookie := string(c.Request().Header.Peek("Cookie"))
 		userAgent := string(c.Request().Header.Peek("User-Agent"))
 
-		log.Printf("Incoming Request: method=%s path=%s origin=%s cookie=(%s) userAgent=%s ip=%s",
-			c.Method(), c.Path(), origin, cookie, userAgent, c.IP(),
+		log.Printf("Incoming Request: method=%s path=%s origin=%s userAgent=%s ip=%s",
+			c.Method(), c.Path(), origin, userAgent, c.IP(),
 		)
 
 		return c.Next()
