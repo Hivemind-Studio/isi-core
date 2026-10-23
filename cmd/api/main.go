@@ -30,6 +30,10 @@ func main() {
 	app := fiber.New(fiber.Config{
 		AppName:      "Inspirasi Satu",
 		ErrorHandler: globalErrorHandler,
+		// Behind nginx: read the client IP nginx sets, but only trust it from localhost
+		ProxyHeader:             "X-Real-IP",
+		EnableTrustedProxyCheck: true,
+		TrustedProxies:          []string{"127.0.0.1", "::1"},
 	})
 	app.Use(compress.New())
 	app.Use(logger.New())
