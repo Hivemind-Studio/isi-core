@@ -1,0 +1,91 @@
+package createstaff
+
+import (
+	"context"
+	"fmt"
+	"github.com/Hivemind-Studio/isi-core/internal/constant"
+	"github.com/Hivemind-Studio/isi-core/internal/dto/auth"
+	"github.com/Hivemind-Studio/isi-core/pkg/dbtx"
+	"github.com/Hivemind-Studio/isi-core/pkg/httperror"
+	"github.com/Hivemind-Studio/isi-core/pkg/logger"
+	"github.com/gofiber/fiber/v2"
+	"os"
+	"strconv"
+	"time"
+)
+
+func (uc *UseCase) Execute(ctx context.Context, body auth.RegistrationStaffDTO) (err error) {
+	tx, err := uc.repoUser.StartTx(ctx)
+	requestId := ctx.Value("request_id").(string)
+	logger.Print("info", requestId, "User service", "CreateStaff", "function start", body)
+
+	if err != nil {
+		return httperror.New(fiber.StatusInternalServerError, "error when starting transaction")
+	}
+	defer dbtx.HandleRollback(tx)
+
+	generatePassword := time.Now().String()
+	_, err = uc.repoUser.CreateStaff(ctx, tx, body.Name, body.Email, generatePassword, body.Address, &body.Phone,
+		int(constant.PENDING), body.Gender,
+		strconv.FormatInt(constant.GetRoleID(body.Role), 10))
+
+	if err != nil {
+		logger.Print("error", requestId, "User service", "CreateStaff", err.Error(), body)
+		dbtx.HandleRollback(tx)
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "Transaction commit failed")
+	}
+
+	err = uc.sendEmailVerification(ctx, body.Name, body.Email)
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "Sending email verification failed")
+	}
+
+	return err
+}
+
+func (uc *UseCase) sendEmailVerification(ctx context.Context, name string, email string) error {
+	trial, err := uc.userEmailService.ValidateTrialByDate(ctx, email, constant.REGISTER)
+	if err != nil {
+		return err
+	}
+
+	token, err := uc.userEmailService.HandleTokenGeneration(ctx, email, *trial, constant.STAFF_REGISTRATION)
+	if err != nil {
+		return err
+	}
+
+	if err := uc.emailVerification(name, token, email); err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send user email verification")
+	}
+
+	return nil
+}
+
+func (uc *UseCase) emailVerification(name string, token string, email string) error {
+	emailData := struct {
+		Name            string
+		VerificationURL string
+		Year            int
+	}{
+		Name:            name,
+		VerificationURL: fmt.Sprintf("%sjoin?token=%s", os.Getenv("CALLBACK_BACKOFFICE_URL"), token),
+		Year:            time.Now().Year(),
+	}
+
+	err := uc.userEmailService.SendEmail([]string{email},
+		"Inspirasi Satu - Verify Your Email",
+		"template/verification_email.html",
+		emailData,
+	)
+
+	if err != nil {
+		return httperror.Wrap(fiber.StatusInternalServerError, err, "failed to send verification user email")
+	}
+
+	return nil
+}

@@ -5,12 +5,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepository struct {
+type Repository struct {
 	dbtx.DBTX
 }
 
-func NewUserRepo(db *sqlx.DB) *UserRepository {
-	r := &UserRepository{}
+func NewUserRepo(db *sqlx.DB) *Repository {
+	r := &Repository{}
 
 	r.SetConnDB(db)
 
